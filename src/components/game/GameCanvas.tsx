@@ -124,6 +124,7 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
     <RendererBoundary>
       <Canvas
         className="game-canvas"
+        shadows={{ enabled: false, type: THREE.PCFShadowMap }}
         dpr={quality === "low" ? 1 : quality === "medium" ? 1.3 : 1.6}
         camera={{
           fov: GAME_CONFIG.camera.baseFov,
