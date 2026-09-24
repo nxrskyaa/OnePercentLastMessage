@@ -1,7 +1,7 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { RefObject, useRef } from "react";
+import { RefObject, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { localAdvisor } from "@/game/advisor";
 import { GAME_CONFIG } from "@/game/config";
@@ -9,6 +9,8 @@ import type { GameNode } from "@/game/nodes";
 import { playSound } from "@/lib/audio";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
+import { dataSurface, energySurface } from "@/rendering/materials";
+import { signalState } from "@/rendering/signalState";
 
 interface PlayerProps {
   playerRef: RefObject<THREE.Group | null>;
@@ -26,6 +28,20 @@ export function Player({
   nodes,
 }: PlayerProps) {
   const visual = useRef<THREE.Group>(null);
+  const trail = useRef<THREE.Group>(null);
+  const core = useRef<THREE.Mesh>(null);
+  const materials = useMemo(() => {
+    const shell = dataSurface("#17435b", "#71d5ef");
+    shell.wireframe = true;
+    return { core: energySurface("#e5ffff", 5.4, true), shell };
+  }, []);
+  useEffect(
+    () => () => {
+      materials.core.dispose();
+      materials.shell.dispose();
+    },
+    [materials],
+  );
   const speed = useRef<number>(GAME_CONFIG.movement.cruiseSpeed);
   const sideSpeed = useRef(0);
   const battery = useRef<number>(GAME_CONFIG.battery.start);
@@ -41,6 +57,8 @@ export function Player({
   const crossed = useRef(new Set<string>());
   const splitAdvised = useRef(false);
   const warningLevel = useRef(0);
+  const hitUntil = useRef(0);
+  const relayPulseUntil = useRef(0);
 
   useFrame(({ clock }, frameDelta) => {
     const body = playerRef.current;
@@ -48,6 +66,31 @@ export function Player({
     if (!body || !model) return;
     const state = useGameStore.getState();
     if (state.phase !== "playing") {
+      if (state.phase === "failed") {
+        if (trail.current) trail.current.visible = false;
+        model.scale.setScalar(
+          THREE.MathUtils.damp(
+            model.scale.x,
+            0.15,
+            4,
+            Math.min(frameDelta, 0.05),
+          ),
+        );
+      } else if (state.phase === "success") {
+        model.scale.setScalar(
+          THREE.MathUtils.damp(
+            model.scale.x,
+            1.55,
+            3,
+            Math.min(frameDelta, 0.05),
+          ),
+        );
+      } else if (state.phase !== "paused") {
+        if (trail.current) trail.current.visible = true;
+        model.scale.setScalar(
+          THREE.MathUtils.damp(model.scale.x, 1, 5, Math.min(frameDelta, 0.05)),
+        );
+      }
       if (
         [
           "loading",
@@ -66,6 +109,18 @@ export function Player({
     const delta = Math.min(frameDelta, 0.05);
     const input = keys.current;
     const boosting = input.has("shift");
+    signalState.boost.value = THREE.MathUtils.damp(
+      signalState.boost.value,
+      boosting ? 1 : 0,
+      6,
+      delta,
+    );
+    signalState.critical.value = THREE.MathUtils.damp(
+      signalState.critical.value,
+      battery.current < 0.15 ? 1 : 0,
+      2.6,
+      delta,
+    );
     const braking = input.has("s") || input.has("arrowdown");
     const accelerating = input.has("w") || input.has("arrowup");
     const burst = elapsed.current < burstUntil.current ? burstSpeed.current : 0;
@@ -114,9 +169,40 @@ export function Player({
       delta,
     );
     model.rotation.y += delta * (boosting ? 2.1 : 1.3);
+    const struck = elapsed.current < hitUntil.current;
+    const relayPulse = elapsed.current < relayPulseUntil.current;
     model.scale.setScalar(
-      THREE.MathUtils.damp(model.scale.x, boosting ? 1.17 : 1, 7, delta),
+      THREE.MathUtils.damp(
+        model.scale.x,
+        struck ? 1.33 : relayPulse ? 1.22 : boosting ? 1.17 : 1,
+        7,
+        delta,
+      ),
     );
+    if (trail.current) {
+      const trailScale = boosting
+        ? 1.75
+        : relayPulse
+          ? 1.45
+          : battery.current < 0.15
+            ? 0.55
+            : 1;
+      trail.current.scale.z = THREE.MathUtils.damp(
+        trail.current.scale.z,
+        trailScale,
+        6,
+        delta,
+      );
+      trail.current.visible =
+        !struck &&
+        (battery.current > 0.035 || Math.sin(clock.elapsedTime * 17) > 0);
+    }
+    if (core.current) {
+      const pulse = battery.current < 0.15 ? 0.78 : 1;
+      core.current.scale.setScalar(
+        pulse + Math.sin(clock.elapsedTime * 7) * 0.05,
+      );
+    }
 
     if (boosting && !boostHeld.current) playSound("boost");
     boostHeld.current = boosting;
@@ -169,6 +255,7 @@ export function Player({
             battery.current - GAME_CONFIG.nodes.trackerBatteryDamage,
           );
           state.recordEvent("tracker");
+          hitUntil.current = elapsed.current + 0.42;
           state.setAdvisor(
             "Tracker contact. Protect your privacy; steer around the next red ring.",
           );
@@ -180,6 +267,7 @@ export function Player({
       } else if (node.type === "relay" && gap <= node.radius) {
         if (gap <= 2.1) {
           state.recordEvent("perfect");
+          relayPulseUntil.current = elapsed.current + 0.4;
           burstSpeed.current = GAME_CONFIG.nodes.relayBurstSpeed;
           burstUntil.current =
             elapsed.current + GAME_CONFIG.nodes.relayBurstSeconds;
@@ -194,6 +282,7 @@ export function Player({
         burstUntil.current =
           elapsed.current + GAME_CONFIG.nodes.boosterBurstSeconds;
         state.recordEvent("booster");
+        relayPulseUntil.current = elapsed.current + 0.55;
         playSound("relay");
       } else if (node.type === "tip" && gap <= node.radius) {
         tipCombo.current =
@@ -285,31 +374,85 @@ export function Player({
   return (
     <group ref={playerRef}>
       <group ref={visual}>
-        <mesh>
-          <icosahedronGeometry args={[0.55, 1]} />
-          <meshBasicMaterial color="#e6ffff" toneMapped={false} />
+        <mesh ref={core} material={materials.core}>
+          <icosahedronGeometry args={[0.57, 2]} />
+        </mesh>
+        <mesh material={materials.shell}>
+          <icosahedronGeometry args={[0.78, 1]} />
         </mesh>
         <mesh>
-          <icosahedronGeometry args={[0.94, 1]} />
+          <icosahedronGeometry args={[1.05, 1]} />
           <meshBasicMaterial
-            color="#51d9ed"
+            color="#83ddf0"
             wireframe
             transparent
-            opacity={0.48}
+            opacity={0.56}
+            depthWrite={false}
           />
         </mesh>
         <mesh rotation={[Math.PI / 2.9, 0, 0]}>
-          <torusGeometry args={[1.15, 0.035, 4, 32]} />
+          <torusGeometry args={[1.3, 0.035, 4, 48]} />
           <meshBasicMaterial
             color="#94f8ff"
             transparent
-            opacity={0.8}
+            opacity={0.75}
+            toneMapped={false}
+          />
+        </mesh>
+        <mesh rotation={[-Math.PI / 3.2, 0.25, 0]}>
+          <torusGeometry args={[1.38, 0.022, 3, 48]} />
+          <meshBasicMaterial
+            color="#427fbb"
+            transparent
+            opacity={0.76}
+            toneMapped={false}
+          />
+        </mesh>
+        {[0, 1, 2, 3].map((index) => (
+          <mesh
+            key={index}
+            rotation={[0, 0, (index * Math.PI) / 2]}
+            position={[0, 0, 0.1]}
+            material={materials.shell}
+          >
+            <boxGeometry args={[0.17, 2.7, 0.22]} />
+          </mesh>
+        ))}
+        {Array.from({ length: 9 }, (_, index) => {
+          const angle = index * 2.39996;
+          return (
+            <mesh
+              key={index}
+              position={[
+                Math.cos(angle) * (1.45 + (index % 3) * 0.17),
+                Math.sin(angle) * (1.1 + (index % 2) * 0.16),
+                ((index % 4) - 2) * 0.24,
+              ]}
+            >
+              <octahedronGeometry args={[0.045 + (index % 3) * 0.02, 0]} />
+              <meshBasicMaterial
+                color={index % 3 ? "#77cee7" : "#e9ffff"}
+                toneMapped={false}
+              />
+            </mesh>
+          );
+        })}
+      </group>
+      <group ref={trail}>
+        <mesh position={[0, 0, 3]} rotation={[-Math.PI / 2, 0, 0]}>
+          <coneGeometry args={[0.13, 5, 6, 1, true]} />
+          <meshBasicMaterial
+            color="#4ac8e9"
+            transparent
+            opacity={0.18}
+            depthWrite={false}
+            side={THREE.DoubleSide}
             toneMapped={false}
           />
         </mesh>
         {[1.3, 2.3, 3.6, 5.2, 7].map((z, index) => (
           <mesh key={z} position={[0, 0, z]} scale={1 - index * 0.15}>
-            <sphereGeometry args={[0.24, 8, 8]} />
+            <octahedronGeometry args={[0.22, 0]} />
             <meshBasicMaterial
               color={index < 2 ? "#82f3ff" : "#2786bb"}
               transparent

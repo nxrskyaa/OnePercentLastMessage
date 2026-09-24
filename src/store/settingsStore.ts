@@ -86,7 +86,7 @@ interface SettingsState extends GameSettings {
 export const useSettingsStore = create<SettingsState>((set, get) => ({
   ...DEFAULT_SETTINGS,
   hydrated: false,
-  runtimeQuality: "high",
+  runtimeQuality: "medium",
   hydrate: () => {
     let settings = DEFAULT_SETTINGS;
     try {
@@ -98,7 +98,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({
       ...settings,
       hydrated: true,
-      runtimeQuality: settings.quality === "auto" ? "high" : settings.quality,
+      runtimeQuality: settings.quality === "auto" ? "medium" : settings.quality,
     });
   },
   update: (patch) => {
@@ -106,7 +106,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const settings = validate({ ...current, ...patch, version: 1 });
     set({
       ...settings,
-      runtimeQuality: settings.quality === "auto" ? "high" : settings.quality,
+      runtimeQuality: settings.quality === "auto" ? "medium" : settings.quality,
     });
     try {
       window.localStorage.setItem(KEY, JSON.stringify(settings));

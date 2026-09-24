@@ -12,6 +12,7 @@ import { HUD } from "@/components/ui/HUD";
 import { MainMenu } from "@/components/ui/MainMenu";
 import { MissionBriefing } from "@/components/ui/MissionBriefing";
 import { PauseMenu } from "@/components/ui/PauseMenu";
+import { PerformanceHUD } from "@/components/ui/PerformanceHUD";
 import { ResultsScreen } from "@/components/ui/ResultsScreen";
 import { SettingsMenu } from "@/components/ui/SettingsMenu";
 import { configureAudio, setAudioPhase, shutdownAudio } from "@/lib/audio";
@@ -102,6 +103,7 @@ export function GameApp() {
         </div>
       )}
       <div className="screen-noise" aria-hidden="true" />
+      <PerformanceHUD />
       {!mobileWarningDismissed && (
         <section
           className="desktop-recommendation"

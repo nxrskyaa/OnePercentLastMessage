@@ -74,7 +74,7 @@ export function NetworkWorld() {
     const helper = new THREE.Object3D();
     if (rings.current) {
       for (let i = 0; i < ringCount; i++) {
-        helper.position.set(0, 0, -22 - i * 29);
+        helper.position.set(0, 0, -55 - i * 29);
         helper.scale.setScalar(0.78 + random(i + 100) * 0.32);
         helper.rotation.z = random(i + 200) * 0.12;
         helper.updateMatrix();
@@ -124,7 +124,7 @@ export function NetworkWorld() {
         <meshBasicMaterial
           color="#ffffff"
           transparent
-          opacity={0.58}
+          opacity={0.33}
           depthWrite={false}
         />
       </instancedMesh>

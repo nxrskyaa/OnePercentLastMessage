@@ -1,16 +1,26 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import {
+  Component,
+  type ReactNode,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import * as THREE from "three";
+import { WebGPURenderer } from "three/webgpu";
 import { ChaseCamera } from "@/components/game/ChaseCamera";
 import { Destination } from "@/components/game/Destination";
 import { NetworkWorld } from "@/components/game/NetworkWorld";
 import { NodeManager } from "@/components/game/NodeManager";
+import { PacketTraffic } from "@/components/game/PacketTraffic";
 import { Player } from "@/components/game/Player";
 import { PostProcessing } from "@/components/game/PostProcessing";
 import { QualityMonitor } from "@/components/game/QualityMonitor";
 import { ScanPulse } from "@/components/game/ScanPulse";
+import { SignalStructures } from "@/components/game/SignalStructures";
 import { GAME_CONFIG } from "@/game/config";
 import { generateNodes } from "@/game/nodes";
 import { useKeyboard } from "@/hooks/useKeyboard";
@@ -27,9 +37,16 @@ function GameScene() {
     <>
       <color attach="background" args={["#030911"]} />
       <fogExp2 attach="fog" args={["#06111c", GAME_CONFIG.world.fogDensity]} />
-      <ambientLight color="#6699bb" intensity={0.65} />
+      <ambientLight color="#55758c" intensity={0.32} />
+      <directionalLight
+        color="#87bcd0"
+        intensity={1.8}
+        position={[-15, 28, 20]}
+      />
+      <SignalStructures />
       <NetworkWorld />
-      <NodeManager nodes={nodes} />
+      <PacketTraffic />
+      <NodeManager nodes={nodes} playerRef={playerRef} />
       <Destination />
       <Player
         key={`player-${runId}`}
@@ -47,22 +64,84 @@ function GameScene() {
   );
 }
 
+function RendererUnavailable() {
+  return (
+    <div className="renderer-error" role="alert">
+      ADVANCED RENDERER UNAVAILABLE
+      <br />
+      Try updating your browser or graphics driver.
+    </div>
+  );
+}
+
+class RendererBoundary extends Component<
+  { children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  render() {
+    return this.state.failed ? <RendererUnavailable /> : this.props.children;
+  }
+}
+
 export default function GameCanvas({ onReady }: { onReady?: () => void }) {
   const quality = useSettingsStore((state) => state.runtimeQuality);
+  const [rendererError, setRendererError] = useState(false);
+  const createRenderer = useCallback(
+    async ({ canvas }: { canvas: EventTarget }) => {
+      const options = {
+        canvas: canvas as HTMLCanvasElement,
+        antialias: true,
+        alpha: false,
+      };
+      try {
+        const forceWebGL =
+          new URLSearchParams(window.location.search).get("renderer") ===
+          "webgl2";
+        const renderer = new WebGPURenderer({ ...options, forceWebGL });
+        await renderer.init();
+        return renderer;
+      } catch {
+        try {
+          const renderer = new WebGPURenderer({ ...options, forceWebGL: true });
+          await renderer.init();
+          return renderer;
+        } catch {
+          setRendererError(true);
+          throw new Error("No compatible graphics renderer is available.");
+        }
+      }
+    },
+    [],
+  );
+  if (rendererError) return <RendererUnavailable />;
   return (
-    <Canvas
-      className="game-canvas"
-      dpr={quality === "low" ? 1 : quality === "medium" ? 1.3 : 1.6}
-      camera={{
-        fov: GAME_CONFIG.camera.baseFov,
-        near: 0.1,
-        far: 1100,
-        position: [0, 5, 13],
-      }}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
-      onCreated={onReady}
-    >
-      <GameScene />
-    </Canvas>
+    <RendererBoundary>
+      <Canvas
+        className="game-canvas"
+        dpr={quality === "low" ? 1 : quality === "medium" ? 1.3 : 1.6}
+        camera={{
+          fov: GAME_CONFIG.camera.baseFov,
+          near: 0.1,
+          far: 1100,
+          position: [0, 5, 13],
+        }}
+        gl={createRenderer}
+        onCreated={({ gl }) => {
+          const renderer = gl as unknown as WebGPURenderer;
+          const backend = renderer.backend;
+          gl.domElement.dataset.rendererBackend =
+            "isWebGPUBackend" in backend ? "webgpu" : "webgl2";
+          onReady?.();
+        }}
+      >
+        <GameScene />
+      </Canvas>
+    </RendererBoundary>
   );
 }

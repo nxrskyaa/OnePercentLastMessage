@@ -28,10 +28,12 @@ The first run includes a three-step field guide. Later runs skip it. The game wo
 - Local best score, time, privacy, completed run count, intro/tutorial completion, and settings persistence.
 - Synthesized Web Audio cues and ambient tone. Audio, motion, quality, and visual options are functional and optional.
 - Generated Open Graph preview and a small SVG favicon.
+- The Signal Void renderer: WebGPU with a WebGL2 compatibility backend, TSL signal materials, a restrained RenderPipeline bloom pass, layered structural infrastructure, and GPU-animated packet highways.
+- Working auto/low/medium/high visual presets. Auto adjusts internal resolution and scene density from sustained frame rate.
 
 ## Technology
 
-Next.js App Router, TypeScript, React, Three.js, React Three Fiber, Drei, React Three Postprocessing, Zustand, Tailwind CSS, ESLint, and Prettier. Geometry, particles, artwork, and audio are generated in code; no large model, texture, or audio assets are required.
+Next.js App Router, TypeScript, React, Three.js WebGPURenderer/TSL, React Three Fiber, Drei, Zustand, Tailwind CSS, ESLint, and Prettier. Geometry, particles, artwork, and audio are generated in code; no large model, texture, or audio assets are required.
 
 ## Development
 
@@ -43,6 +45,8 @@ npm run dev
 ```
 
 Open <http://localhost:3000> in a modern desktop browser. A viewport of 1280×720 or larger is recommended.
+
+The renderer uses WebGPU when available and falls back to the Three.js WebGL2 backend. Add `?renderer=webgl2` to force the compatibility backend for QA. In development, `?perf=1` displays FPS, frame time, backend, draw calls, triangles, packet count, render scale, and quality. The panel is absent from production builds.
 
 ## Verify and build
 
@@ -67,8 +71,9 @@ Push this repository to GitHub, then import it in Vercel as a Next.js project. T
 | `src/game`            | Tuning, missions, node generation, scoring, and DILI rules        |
 | `src/store`           | Game phases, run data, profile, and settings                      |
 | `src/lib/audio.ts`    | Generated audio cues and ambient tone                             |
+| `src/rendering`       | Shared TSL materials, signal uniforms, and renderer metrics       |
 
-`PLAN.md` documents the first playable; `UPGRADE_PLAN.md` documents the presentation and gameplay upgrade.
+`PLAN.md` documents the first playable; `UPGRADE_PLAN.md` documents the presentation and gameplay upgrade. `RENDERING_AUDIT.md` and `WEBGPU_OVERHAUL_PLAN.md` record the visual migration and its tradeoffs.
 
 ## Screenshots
 
