@@ -1,4 +1,4 @@
-/** All first-playable tuning lives here. Distances are Three.js world units. */
+/** Gameplay tuning. Distances are Three.js world units. */
 export const GAME_CONFIG = {
   destination: { z: -640, radius: 13, name: "MOM" },
   battery: {
@@ -19,4 +19,18 @@ export const GAME_CONFIG = {
   },
   camera: { baseFov: 70, boostFov: 79, followResponse: 3.8, lookAhead: 22 },
   world: { fogDensity: 0.00115, ringCount: 22, particleCount: 240 },
+  scan: { cooldown: 5 },
+  nodes: {
+    trackerPrivacyDamage: 12,
+    trackerBatteryDamage: 0.04,
+    nearMissMargin: 4.2,
+    boosterCharge: 0.08,
+    publicPrivacyDamage: 12,
+    relayBurstSpeed: 4.5,
+    relayBurstSeconds: 1.8,
+    boosterBurstSeconds: 2.4,
+    publicBurstSpeed: 9,
+    publicBurstSeconds: 7,
+    tipComboWindowSeconds: 5,
+  },
 } as const;

@@ -1,0 +1,655 @@
+.boot-screen {
+  position: absolute;
+  z-index: 8;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(
+    circle at 50% 50%,
+    #091b25 0%,
+    #030810 34%,
+    #02050a 75%
+  );
+  overflow: hidden;
+}
+.boot-screen::before {
+  content: "";
+  position: absolute;
+  width: 72vmin;
+  height: 72vmin;
+  border: 1px solid #59bfdb24;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 18vmin #3fd0df08,
+    0 0 0 37vmin #3fd0df04;
+  animation: boot-breathe 3s ease-in-out infinite;
+}
+.boot-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, #b8faff55 1px, transparent 2px);
+  background-size: 93px 89px;
+  opacity: 0.16;
+}
+.boot-cross {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #6cc8da88;
+  transform: rotate(45deg);
+}
+.boot-cross--a {
+  top: 20%;
+  left: 18%;
+}
+.boot-cross--b {
+  bottom: 24%;
+  right: 19%;
+  transform: scale(0.7) rotate(45deg);
+}
+.boot-center {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+  animation: rise-in 0.6s ease-out both;
+}
+.boot-center strong {
+  color: #d7f9fb;
+  font:
+    500 13px/1.4 Consolas,
+    monospace;
+  letter-spacing: 0.22em;
+}
+.boot-symbol {
+  color: #a8f6fb;
+  font-size: 44px;
+  line-height: 1;
+  text-shadow: 0 0 32px #5ae2ef;
+  animation: boot-breathe 1.5s ease-in-out infinite;
+}
+.boot-line {
+  width: 124px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #9eebef, transparent);
+  animation: boot-breathe 1.7s ease-in-out infinite;
+}
+.boot-ident strong {
+  margin: 5px 0;
+  font:
+    700 clamp(72px, 12vw, 140px)/0.9 "Segoe UI",
+    sans-serif;
+  letter-spacing: -0.085em;
+  text-shadow: 0 0 55px #74d5e32b;
+}
+.boot-title strong {
+  font:
+    700 clamp(105px, 16vw, 190px)/0.8 "Segoe UI",
+    sans-serif;
+  letter-spacing: -0.12em;
+}
+.boot-title strong span {
+  color: #9debf2;
+  font-size: 0.49em;
+  vertical-align: top;
+}
+.boot-title b {
+  font-size: clamp(25px, 4.2vw, 50px);
+  letter-spacing: 0.08em;
+  animation: title-reveal 0.8s 0.2s ease both;
+}
+.boot-title p {
+  margin: 5px 0;
+  color: #a4c1ca;
+  line-height: 1.5;
+}
+.boot-skip {
+  position: absolute;
+  z-index: 2;
+  bottom: 31px;
+  right: 4vw;
+}
+@keyframes boot-breathe {
+  50% {
+    opacity: 0.5;
+    transform: scale(1.025);
+  }
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(17px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes title-reveal {
+  from {
+    opacity: 0;
+    filter: blur(7px);
+    letter-spacing: 0.23em;
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    letter-spacing: 0.08em;
+  }
+}
+
+.main-menu {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 35px 4.8vw 29px;
+  background: linear-gradient(
+    90deg,
+    #030a14f2 0%,
+    #030a14d7 32%,
+    #030a1470 58%,
+    #030a1417 100%
+  );
+  animation: screen-in 0.55s ease both;
+}
+.top-signature {
+  display: flex;
+  justify-content: space-between;
+  color: #93aeb8;
+  font:
+    600 10px/1 Consolas,
+    monospace;
+  letter-spacing: 0.19em;
+}
+.top-signature i {
+  color: #92eff2;
+  font-style: normal;
+}
+.menu-main {
+  width: min(455px, 100%);
+  margin-top: auto;
+  margin-bottom: auto;
+  transform: translateY(18px);
+}
+.menu-kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #9bdce6;
+  font:
+    600 10px/1 Consolas,
+    monospace;
+  letter-spacing: 0.21em;
+}
+.kicker-line {
+  flex: 1;
+  height: 1px;
+  background: #5895a03d;
+}
+.game-title {
+  display: flex;
+  flex-direction: column;
+  margin: 28px 0 16px;
+}
+.game-title > span {
+  font-size: clamp(110px, 13.5vw, 176px);
+  font-weight: 700;
+  line-height: 0.68;
+  letter-spacing: -0.105em;
+  text-shadow: 0 0 60px #67d1e827;
+}
+.game-title em {
+  color: #a3f1f4;
+  font-size: 0.49em;
+  font-style: normal;
+  vertical-align: top;
+}
+.game-title small {
+  margin-top: 35px;
+  font-size: clamp(30px, 3.3vw, 44px);
+  line-height: 1;
+  letter-spacing: 0.045em;
+  font-weight: 600;
+}
+.menu-subtitle {
+  margin: 25px 0 30px;
+  color: #a7bec6;
+  font-size: 16px;
+  line-height: 1.48;
+}
+.menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: min(390px, 100%);
+}
+.menu-actions > .game-button--primary {
+  margin-bottom: 7px;
+}
+.menu-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  color: #9ebbc4;
+  font:
+    600 10px/1.3 Consolas,
+    monospace;
+  letter-spacing: 0.11em;
+}
+.menu-footer strong {
+  color: #e3fbfc;
+}
+.footer-muted {
+  color: #75939d;
+}
+.footer-stats {
+  color: #b3d0d6;
+}
+.footer-stats i {
+  margin: 0 8px;
+  color: #6a9fa9;
+  font-style: normal;
+}
+@keyframes screen-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.briefing-screen {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 5vw;
+  background: linear-gradient(
+    90deg,
+    #020813ef 0%,
+    #020813c9 50%,
+    #02081369 100%
+  );
+  animation: screen-in 0.45s ease both;
+}
+.briefing-index {
+  position: absolute;
+  left: 5vw;
+  top: 35px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #a2d3dc;
+  font:
+    600 10px/1 Consolas,
+    monospace;
+  letter-spacing: 0.2em;
+}
+.briefing-index > span:last-child {
+  color: #678f9b;
+  margin-left: 14px;
+}
+.briefing-card {
+  width: min(565px, 100%);
+  padding: clamp(26px, 4vw, 46px);
+  border: 1px solid #5fa7b54d;
+  border-top: 2px solid #93e7ed;
+  background: #03111fdb;
+  box-shadow: 0 30px 90px #0008;
+}
+.briefing-card h2 {
+  margin: 19px 0 29px;
+  font-size: clamp(43px, 5.4vw, 72px);
+  line-height: 0.94;
+  letter-spacing: -0.055em;
+  font-weight: 650;
+}
+.briefing-card h2 em {
+  color: #abf0f4;
+  font-style: normal;
+}
+.briefing-details {
+  border-top: 1px solid #5b92a339;
+}
+.briefing-details > div {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid #5b92a339;
+}
+.briefing-details span,
+.briefing-resources span {
+  color: #77a0aa;
+  font:
+    600 10px/1.35 Consolas,
+    monospace;
+  letter-spacing: 0.17em;
+}
+.briefing-details strong {
+  color: #e5fbfd;
+  font-weight: 500;
+  font-size: 15px;
+}
+.briefing-resources {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 24px 0 20px;
+}
+.briefing-resources strong {
+  display: block;
+  margin-top: 8px;
+  font:
+    600 18px/1.2 Consolas,
+    monospace;
+}
+.briefing-back {
+  margin-top: 12px;
+}
+.briefing-ghost {
+  position: absolute;
+  bottom: 38px;
+  right: 4.8vw;
+  color: #7ab3c084;
+  font:
+    600 11px/1 Consolas,
+    monospace;
+  letter-spacing: 0.21em;
+}
+
+.tutorial-screen {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 45% 55%;
+  background: #030b16ee;
+  animation: screen-in 0.4s ease both;
+}
+.tutorial-visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle, #14405588, #04121e77 42%, #020812 72%);
+  border-right: 1px solid #5b93a63d;
+  overflow: hidden;
+}
+.tutorial-visual::before,
+.tutorial-visual::after {
+  content: "";
+  position: absolute;
+  width: 52vmin;
+  height: 52vmin;
+  border: 1px solid #6fc7d543;
+  border-radius: 50%;
+}
+.tutorial-visual::after {
+  width: 73vmin;
+  height: 73vmin;
+  opacity: 0.4;
+}
+.tutorial-orbit {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 22vmin;
+  height: 22vmin;
+  border: 1px solid #96f1f4;
+  border-radius: 50%;
+  box-shadow: 0 0 32px #66c9dc33;
+  animation: orbit 14s linear infinite;
+}
+.tutorial-orbit::before,
+.tutorial-orbit::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #9af3f5;
+  top: 11%;
+  right: 11%;
+}
+.tutorial-orbit::after {
+  top: auto;
+  right: auto;
+  bottom: 11%;
+  left: 11%;
+  opacity: 0.5;
+}
+.tutorial-packet {
+  width: 42px;
+  height: 42px;
+  transform: rotate(45deg);
+  background: #d3ffff;
+  box-shadow:
+    0 0 32px #8af2f9,
+    0 0 75px #50c9ea66;
+}
+.tutorial-visual > span {
+  position: absolute;
+  bottom: 35px;
+  left: 35px;
+  color: #80b6c1;
+  font:
+    600 10px/1 Consolas,
+    monospace;
+  letter-spacing: 0.2em;
+}
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.tutorial-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: min(520px, 100%);
+  padding: clamp(30px, 5vw, 72px);
+}
+.tutorial-content h2 {
+  margin: 20px 0 15px;
+  font-size: clamp(34px, 4.1vw, 58px);
+  line-height: 1.03;
+  letter-spacing: -0.045em;
+}
+.tutorial-content p {
+  color: #afc5cc;
+  font-size: 16px;
+  line-height: 1.55;
+  max-width: 425px;
+}
+.tutorial-chips {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 28px 0 28px;
+}
+.tutorial-chips > div {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 80px;
+  padding: 14px;
+  border: 1px solid #5e9eaf53;
+  background: #10405422;
+}
+.tutorial-chips kbd {
+  color: #dcfcfd;
+  font:
+    600 12px Consolas,
+    monospace;
+}
+.tutorial-chips span {
+  color: #7ea5b0;
+  font:
+    600 9px Consolas,
+    monospace;
+  letter-spacing: 0.13em;
+}
+.tutorial-progress {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.tutorial-progress span {
+  width: 28px;
+  height: 2px;
+  background: #416a76;
+}
+.tutorial-progress span.active {
+  background: #a7f5f6;
+  box-shadow: 0 0 12px #6de4ec;
+}
+.tutorial-content > .game-button--quiet {
+  align-self: flex-start;
+  margin-top: 12px;
+}
+
+.countdown-screen {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #020a13bd;
+  backdrop-filter: blur(3px);
+}
+.countdown-core {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  color: #a5edf2;
+  font:
+    600 10px Consolas,
+    monospace;
+  letter-spacing: 0.22em;
+}
+.countdown-core strong {
+  display: grid;
+  place-items: center;
+  width: 160px;
+  height: 160px;
+  margin: 8px 0;
+  border: 1px solid #8debf1aa;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 30px #91e6f51b,
+    0 0 38px #7ce4ed1e;
+  color: #e9ffff;
+  font:
+    300 86px/1 "Segoe UI",
+    sans-serif;
+  letter-spacing: -0.07em;
+  animation: count-pop 0.5s ease both;
+}
+@keyframes count-pop {
+  from {
+    transform: scale(1.15);
+    opacity: 0.3;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@media (max-height: 710px) {
+  .menu-main {
+    transform: none;
+  }
+  .game-title > span {
+    font-size: 112px;
+  }
+  .game-title small {
+    margin-top: 21px;
+    font-size: 31px;
+  }
+  .menu-subtitle {
+    margin: 17px 0 20px;
+  }
+  .menu-actions .game-button--menu {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+  .briefing-card {
+    padding: 25px;
+  }
+  .briefing-card h2 {
+    font-size: 48px;
+    margin-bottom: 18px;
+  }
+  .briefing-details > div {
+    padding: 9px 0;
+  }
+  .briefing-resources {
+    margin: 17px 0 12px;
+  }
+}
+@media (max-width: 800px) {
+  .main-menu {
+    padding: 22px 25px;
+  }
+  .menu-footer {
+    flex-wrap: wrap;
+  }
+  .tutorial-screen {
+    grid-template-columns: 1fr;
+  }
+  .tutorial-visual {
+    display: none;
+  }
+  .tutorial-content {
+    margin: auto;
+  }
+  .briefing-screen {
+    padding: 25px;
+  }
+  .briefing-index {
+    left: 25px;
+    top: 22px;
+  }
+}
+
+.desktop-recommendation {
+  display: none;
+}
+@media (max-width: 760px) {
+  .desktop-recommendation {
+    position: absolute;
+    z-index: 20;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 9vw;
+    background: #030b16f7;
+  }
+  .desktop-recommendation h2 {
+    max-width: 520px;
+    margin: 25px 0 10px;
+    font-size: clamp(36px, 9vw, 65px);
+    line-height: 1;
+    letter-spacing: -0.06em;
+  }
+  .desktop-recommendation p {
+    max-width: 430px;
+    color: #a6c2ca;
+    line-height: 1.5;
+    margin-bottom: 26px;
+  }
+  .desktop-recommendation .game-button {
+    width: min(100%, 390px);
+  }
+}

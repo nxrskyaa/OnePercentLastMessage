@@ -1,191 +1,124 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect } from "react";
-import { GAME_CONFIG } from "@/game/config";
-import { formatTime } from "@/lib/format";
+import { useCallback, useEffect, useState } from "react";
+import { AboutMenu } from "@/components/ui/AboutMenu";
+import { BootSequence } from "@/components/ui/BootSequence";
+import { Countdown } from "@/components/ui/Countdown";
+import { FirstRunTutorial } from "@/components/ui/FirstRunTutorial";
+import { GameButton } from "@/components/ui/GameButton";
+import { HowToPlay } from "@/components/ui/HowToPlay";
+import { HUD } from "@/components/ui/HUD";
+import { MainMenu } from "@/components/ui/MainMenu";
+import { MissionBriefing } from "@/components/ui/MissionBriefing";
+import { PauseMenu } from "@/components/ui/PauseMenu";
+import { ResultsScreen } from "@/components/ui/ResultsScreen";
+import { SettingsMenu } from "@/components/ui/SettingsMenu";
+import { configureAudio, setAudioPhase, shutdownAudio } from "@/lib/audio";
 import { useGameStore } from "@/store/gameStore";
+import { useSettingsStore } from "@/store/settingsStore";
 
 const GameCanvas = dynamic(() => import("@/components/game/GameCanvas"), {
   ssr: false,
-  loading: () => <div className="canvas-loading">INITIALIZING NETWORK…</div>,
+  loading: () => null,
 });
 
-function BatteryReadout({ battery }: { battery: number }) {
-  const critical = battery < 0.2;
-  return (
-    <div className={`battery-readout ${critical ? "is-critical" : ""}`}>
-      <span className="eyebrow">BATTERY REMAINING</span>
-      <strong>{battery.toFixed(2)}%</strong>
-      <div className="battery-track" aria-hidden="true">
-        <span style={{ width: `${battery * 100}%` }} />
-      </div>
-    </div>
-  );
-}
-
 export function GameApp() {
+  const [mobileWarningDismissed, setMobileWarningDismissed] = useState(false);
   const phase = useGameStore((state) => state.phase);
-  const battery = useGameStore((state) => state.battery);
-  const elapsed = useGameStore((state) => state.elapsed);
-  const distance = useGameStore((state) => state.distance);
-  const boosting = useGameStore((state) => state.boosting);
-  const bestTime = useGameStore((state) => state.bestTime);
-  const startRun = useGameStore((state) => state.startRun);
-  const resume = useGameStore((state) => state.resume);
-  const pause = useGameStore((state) => state.pause);
+  const panel = useGameStore((state) => state.panel);
+  const screenEffects = useSettingsStore((state) => state.screenEffects);
+  const reducedMotion = useSettingsStore((state) => state.reducedMotion);
+  const masterVolume = useSettingsStore((state) => state.masterVolume);
+  const musicVolume = useSettingsStore((state) => state.musicVolume);
+  const sfxVolume = useSettingsStore((state) => state.sfxVolume);
+  const mute = useSettingsStore((state) => state.mute);
+  const onCanvasReady = useCallback(() => {
+    if (useGameStore.getState().phase === "loading")
+      useGameStore.getState().bootReady();
+  }, []);
 
   useEffect(() => {
-    useGameStore.getState().loadBestTime();
+    useSettingsStore.getState().hydrate();
     const onVisibilityChange = () => {
       if (document.hidden) useGameStore.getState().pause();
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
-    return () =>
+    return () => {
       document.removeEventListener("visibilitychange", onVisibilityChange);
+      shutdownAudio();
+    };
   }, []);
 
+  useEffect(() => {
+    if (phase === "ident") {
+      const timer = window.setTimeout(
+        () => useGameStore.getState().setPhase("title"),
+        950,
+      );
+      return () => window.clearTimeout(timer);
+    }
+    if (phase === "title") {
+      const timer = window.setTimeout(
+        () => useGameStore.getState().finishIntro(),
+        1250,
+      );
+      return () => window.clearTimeout(timer);
+    }
+  }, [phase]);
+
+  useEffect(
+    () => configureAudio({ masterVolume, musicVolume, sfxVolume, mute }),
+    [masterVolume, musicVolume, sfxVolume, mute],
+  );
+  useEffect(() => setAudioPhase(phase), [phase]);
+
   return (
-    <main className="game-shell">
+    <main
+      className={`game-shell ${screenEffects ? "game-shell--effects" : ""} ${reducedMotion ? "game-shell--reduced" : ""}`}
+    >
       <div className="scene-layer">
-        <GameCanvas />
+        <GameCanvas onReady={onCanvasReady} />
       </div>
-      <div className="vignette" aria-hidden="true" />
-
-      {phase === "menu" && (
-        <section className="menu-panel" aria-label="Game start">
-          <div className="brand-row">
-            <span className="brand-mark">{"//"}</span> DLICOM AI GAME JAM{" "}
-            <span>001 / 001</span>
-          </div>
-          <div className="menu-content">
-            <div className="incoming">
-              <span className="signal-dot" /> INCOMING / PRIORITY ONE
-            </div>
-            <h1>
-              <span>
-                1<span className="percent">%</span>
-              </span>
-              <small>LAST MESSAGE</small>
-            </h1>
-            <p className="tagline">
-              One battery percent.
-              <br />
-              One message left.
-            </p>
-            <div className="message-card">
-              <span className="eyebrow">ONE MESSAGE QUEUED</span>
-              <div className="message-line">
-                <span>FROM</span>
-                <strong>MOM</strong>
-              </div>
-              <div className="message-line">
-                <span>MESSAGE</span>
-                <strong>“where are you?”</strong>
-              </div>
-              <p>Deliver your reply before the signal disappears.</p>
-            </div>
-            <button className="primary-button" onClick={startRun}>
-              TRANSMIT <span>→</span>
-            </button>
-            <div className="menu-foot">
-              <span>A network survival game.</span>
-              <span>WASD / ARROWS · SHIFT · ESC</span>
-            </div>
-            {bestTime !== null && (
-              <div className="best-time">
-                BEST DELIVERY <strong>{formatTime(bestTime)}</strong>
-              </div>
-            )}
-          </div>
-        </section>
+      <div className="world-vignette" aria-hidden="true" />
+      {["loading", "ident", "title"].includes(phase) && (
+        <BootSequence
+          phase={phase}
+          onSkip={() => useGameStore.getState().finishIntro()}
+        />
       )}
-
-      {(phase === "playing" || phase === "paused") && (
-        <div className="hud" aria-live="off">
-          <header className="hud-top">
-            <BatteryReadout battery={battery} />
-            <div className="destination-readout">
-              <span className="eyebrow">DELIVER TO</span>
-              <strong>{GAME_CONFIG.destination.name}</strong>
-              <span>{Math.ceil(distance)}m TO RECEIVER</span>
-            </div>
-            <div className="time-readout">
-              <span className="eyebrow">TIME ELAPSED</span>
-              <strong>{formatTime(elapsed)}</strong>
-            </div>
-          </header>
-          <div className="reticle" aria-hidden="true">
-            <span />
-            <span />
-          </div>
-          <footer className="hud-bottom">
-            <div>
-              <span className="small-key">W</span> ACCELERATE{" "}
-              <span className="small-key">A</span>
-              <span className="small-key">D</span> STEER{" "}
-              <span className="small-key">S</span> BRAKE
-            </div>
-            <div className={boosting ? "boost-label active" : "boost-label"}>
-              <span className="small-key">SHIFT</span> BOOST
-            </div>
-            <button className="text-button" onClick={pause}>
-              ESC / PAUSE
-            </button>
-          </footer>
+      {phase === "menu" && panel === "none" && <MainMenu />}
+      {phase === "briefing" && <MissionBriefing />}
+      {phase === "tutorial" && <FirstRunTutorial />}
+      {phase === "countdown" && <Countdown />}
+      {(phase === "playing" || phase === "paused") && <HUD />}
+      {phase === "paused" && panel === "none" && <PauseMenu />}
+      {(phase === "success" || phase === "failed") && <ResultsScreen />}
+      {panel !== "none" && (
+        <div className="panel-backdrop">
+          {panel === "how" && <HowToPlay />}
+          {panel === "settings" && <SettingsMenu />}
+          {panel === "about" && <AboutMenu />}
         </div>
       )}
-
-      {phase === "paused" && (
-        <section className="overlay-panel pause-panel" aria-label="Paused">
-          <span className="eyebrow">TRANSMISSION HELD</span>
-          <h2>PAUSED</h2>
-          <p>Your battery is holding. Resume when ready.</p>
-          <button className="primary-button" onClick={resume}>
-            RESUME <span>→</span>
-          </button>
-          <button className="text-button" onClick={startRun}>
-            RESTART TRANSMISSION
-          </button>
-        </section>
-      )}
-
-      {(phase === "success" || phase === "failed") && (
+      <div className="screen-noise" aria-hidden="true" />
+      {!mobileWarningDismissed && (
         <section
-          className={`overlay-panel results-panel ${phase}`}
-          aria-label="Run result"
+          className="desktop-recommendation"
+          aria-label="Desktop recommendation"
         >
-          <span className="eyebrow">
-            TRANSMISSION / {phase === "success" ? "COMPLETE" : "INTERRUPTED"}
-          </span>
-          <h2>{phase === "success" ? "MESSAGE\nDELIVERED" : "SIGNAL\nLOST"}</h2>
+          <span className="micro-label">NXR // DISPLAY NOTICE</span>
+          <h2>DESKTOP TRANSMISSION RECOMMENDED.</h2>
           <p>
-            {phase === "success"
-              ? "Your message reached Mom."
-              : "The battery died before your message arrived."}
+            This signal is tuned for a desktop browser and keyboard. You can
+            still continue here.
           </p>
-          <div className="results-stats">
-            <div>
-              <span>TIME</span>
-              <strong>{formatTime(elapsed)}</strong>
-            </div>
-            <div>
-              <span>BATTERY</span>
-              <strong>{battery.toFixed(2)}%</strong>
-            </div>
-            <div>
-              <span>DISTANCE LEFT</span>
-              <strong>{Math.ceil(distance)}m</strong>
-            </div>
-          </div>
-          <button className="primary-button" onClick={startRun}>
-            RETRY <span>↗</span>
-          </button>
-          {bestTime !== null && (
-            <div className="best-time">
-              BEST DELIVERY <strong>{formatTime(bestTime)}</strong>
-            </div>
-          )}
+          <GameButton
+            variant="primary"
+            onClick={() => setMobileWarningDismissed(true)}
+          >
+            CONTINUE ANYWAY ↗
+          </GameButton>
         </section>
       )}
     </main>
