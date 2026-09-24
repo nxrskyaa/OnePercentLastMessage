@@ -31,14 +31,18 @@ export function Player({
   const trail = useRef<THREE.Group>(null);
   const core = useRef<THREE.Mesh>(null);
   const materials = useMemo(() => {
-    const shell = dataSurface("#17435b", "#71d5ef");
-    shell.wireframe = true;
-    return { core: energySurface("#e5ffff", 5.4, true), shell };
+    const shell = dataSurface("#304451", "#4f91aa");
+    shell.transparent = true;
+    shell.opacity = 0.68;
+    shell.depthWrite = false;
+    const plate = dataSurface("#172936", "#32627a");
+    return { core: energySurface("#e5ffff", 5.4, true), shell, plate };
   }, []);
   useEffect(
     () => () => {
       materials.core.dispose();
       materials.shell.dispose();
+      materials.plate.dispose();
     },
     [materials],
   );
@@ -375,68 +379,36 @@ export function Player({
     <group ref={playerRef}>
       <group ref={visual}>
         <mesh ref={core} material={materials.core}>
-          <icosahedronGeometry args={[0.57, 2]} />
+          <octahedronGeometry args={[0.52, 0]} />
         </mesh>
         <mesh material={materials.shell}>
-          <icosahedronGeometry args={[0.78, 1]} />
+          <octahedronGeometry args={[0.92, 0]} />
         </mesh>
         <mesh>
           <icosahedronGeometry args={[1.05, 1]} />
           <meshBasicMaterial
-            color="#83ddf0"
-            wireframe
+            color="#60b4d3"
             transparent
-            opacity={0.56}
+            opacity={0.085}
             depthWrite={false}
-          />
-        </mesh>
-        <mesh rotation={[Math.PI / 2.9, 0, 0]}>
-          <torusGeometry args={[1.3, 0.035, 4, 48]} />
-          <meshBasicMaterial
-            color="#94f8ff"
-            transparent
-            opacity={0.75}
-            toneMapped={false}
-          />
-        </mesh>
-        <mesh rotation={[-Math.PI / 3.2, 0.25, 0]}>
-          <torusGeometry args={[1.38, 0.022, 3, 48]} />
-          <meshBasicMaterial
-            color="#427fbb"
-            transparent
-            opacity={0.76}
-            toneMapped={false}
+            side={THREE.BackSide}
           />
         </mesh>
         {[0, 1, 2, 3].map((index) => (
-          <mesh
-            key={index}
-            rotation={[0, 0, (index * Math.PI) / 2]}
-            position={[0, 0, 0.1]}
-            material={materials.shell}
-          >
-            <boxGeometry args={[0.17, 2.7, 0.22]} />
-          </mesh>
-        ))}
-        {Array.from({ length: 9 }, (_, index) => {
-          const angle = index * 2.39996;
-          return (
+          <group key={index} rotation={[0, 0, (index * Math.PI) / 2]}>
             <mesh
-              key={index}
-              position={[
-                Math.cos(angle) * (1.45 + (index % 3) * 0.17),
-                Math.sin(angle) * (1.1 + (index % 2) * 0.16),
-                ((index % 4) - 2) * 0.24,
-              ]}
+              position={[0, 0.94, 0]}
+              rotation={[0, 0, Math.PI / 4]}
+              material={materials.plate}
             >
-              <octahedronGeometry args={[0.045 + (index % 3) * 0.02, 0]} />
-              <meshBasicMaterial
-                color={index % 3 ? "#77cee7" : "#e9ffff"}
-                toneMapped={false}
-              />
+              <boxGeometry args={[0.45, 0.45, 0.72]} />
             </mesh>
-          );
-        })}
+            <mesh position={[0, 1.14, -0.31]}>
+              <boxGeometry args={[0.12, 0.32, 0.08]} />
+              <meshBasicMaterial color="#a8edfa" toneMapped={false} />
+            </mesh>
+          </group>
+        ))}
       </group>
       <group ref={trail}>
         <mesh position={[0, 0, 3]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -462,7 +434,7 @@ export function Player({
           </mesh>
         ))}
       </group>
-      <pointLight color="#34c7ed" intensity={8} distance={22} decay={2} />
+      <pointLight color="#a2e9ff" intensity={17} distance={25} decay={2} />
     </group>
   );
 }

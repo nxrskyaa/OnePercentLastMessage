@@ -48,12 +48,25 @@ export function energySurface(tint = "#7bdff0", speed = 2.5, player = false) {
   const pulse = sin(time.mul(speed).add(positionLocal.y.mul(1.8)))
     .mul(0.14)
     .add(0.86);
+  const scanResponse = smoothstep(
+    0,
+    3,
+    positionWorld
+      .sub(signalState.scanOrigin)
+      .length()
+      .sub(signalState.scanRadius)
+      .abs(),
+  )
+    .oneMinus()
+    .mul(signalState.scanStrength)
+    .mul(0.7)
+    .add(1);
   material.colorNode = color(tint).mul(
     player
       ? pulse
           .mul(signalState.boost.mul(0.55).add(1))
           .mul(signalState.critical.mul(-0.32).add(1))
-      : pulse,
+      : pulse.mul(scanResponse),
   );
   material.toneMapped = false;
   return material;

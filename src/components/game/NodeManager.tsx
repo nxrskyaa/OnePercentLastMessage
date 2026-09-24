@@ -1,12 +1,58 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { type RefObject, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { GameNode } from "@/game/nodes";
 import { energySurface } from "@/rendering/materials";
 import { useGameStore } from "@/store/gameStore";
-import type { RefObject } from "react";
+
+const hull = new THREE.MeshStandardMaterial({
+  color: "#44545d",
+  metalness: 0.55,
+  roughness: 0.61,
+});
+const dark = new THREE.MeshStandardMaterial({
+  color: "#26343e",
+  metalness: 0.46,
+  roughness: 0.77,
+});
+
+function PolygonFrame({
+  radius,
+  sides = 6,
+  color,
+}: {
+  radius: number;
+  sides?: number;
+  color: string;
+}) {
+  const length = 2 * radius * Math.sin(Math.PI / sides) * 0.92;
+  return (
+    <group>
+      {Array.from({ length: sides }, (_, i) => {
+        const angle = (i * Math.PI * 2) / sides + Math.PI / sides;
+        return (
+          <group
+            key={i}
+            position={[Math.cos(angle) * radius, Math.sin(angle) * radius, 0]}
+            rotation={[0, 0, angle + Math.PI / 2]}
+          >
+            <mesh material={hull}>
+              <boxGeometry args={[length, 0.62, 1.35]} />
+            </mesh>
+            {i % 2 === 0 && (
+              <mesh position={[0, 0.4, -0.12]}>
+                <boxGeometry args={[length * 0.46, 0.08, 0.1]} />
+                <meshBasicMaterial color={color} toneMapped={false} />
+              </mesh>
+            )}
+          </group>
+        );
+      })}
+    </group>
+  );
+}
 
 function TrackerScanner() {
   const sweep = useRef<THREE.Group>(null);
@@ -14,30 +60,30 @@ function TrackerScanner() {
   const reveal = useRef(0);
   useFrame(({ clock }, delta) => {
     if (!sweep.current) return;
-    sweep.current.rotation.z = clock.elapsedTime * 1.55;
+    sweep.current.rotation.z = Math.sin(clock.elapsedTime * 1.6) * 0.5;
     const scanPulse = useGameStore.getState().scanPulse;
     if (scanPulse !== lastScan.current) {
       lastScan.current = scanPulse;
       reveal.current = 1;
     }
-    reveal.current = Math.max(0, reveal.current - delta * 0.42);
-    sweep.current.scale.setScalar(1 + reveal.current * 0.22);
+    reveal.current = Math.max(0, reveal.current - delta * 1.4);
+    sweep.current.scale.setScalar(1 + reveal.current * 0.12);
   });
   return (
     <group ref={sweep}>
-      <mesh rotation={[0, 0, -Math.PI / 6]}>
-        <ringGeometry args={[0.5, 3.2, 32, 1, 0, Math.PI / 3]} />
-        <meshBasicMaterial
-          color="#e77b6b"
-          transparent
-          opacity={0.2}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-        />
+      <mesh position={[0, 1.55, 0.38]}>
+        <boxGeometry args={[0.1, 3, 0.07]} />
+        <meshBasicMaterial color="#ff9282" toneMapped={false} />
       </mesh>
-      <mesh position={[0, 1.7, 0]}>
-        <boxGeometry args={[0.055, 3.4, 0.07]} />
-        <meshBasicMaterial color="#ffaaa0" toneMapped={false} />
+      <mesh position={[0, 0, 0.3]}>
+        <planeGeometry args={[2.1, 5.4]} />
+        <meshBasicMaterial
+          color="#ec665b"
+          transparent
+          opacity={0.09}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+        />
       </mesh>
     </group>
   );
@@ -46,119 +92,86 @@ function TrackerScanner() {
 function NodeVisual({ node }: { node: GameNode }) {
   const color =
     node.type === "tracker"
-      ? "#fd6c78"
-      : node.type === "tip"
-        ? "#f3d289"
-        : node.type === "public"
-          ? "#e6b67c"
-          : "#82eaf2";
+      ? "#ed7466"
+      : node.type === "public"
+        ? "#d7a25a"
+        : node.type === "tip"
+          ? "#f3d289"
+          : node.type === "booster"
+            ? "#b8faff"
+            : "#76d3e5";
   const energy = useMemo(
-    () => energySurface(color, node.type === "tracker" ? 4.2 : 2.3),
+    () => energySurface(color, node.type === "booster" ? 4.2 : 2),
     [color, node.type],
   );
   useEffect(() => () => energy.dispose(), [energy]);
   if (node.type === "tip")
     return (
       <group position={[node.x, 0, node.z]}>
-        <mesh rotation={[0.35, 0.6, 0]}>
-          <octahedronGeometry args={[1.35, 0]} />
-          <primitive object={energy} attach="material" />
+        <mesh rotation={[0.35, 0.6, 0]} material={energy}>
+          <octahedronGeometry args={[1.1, 0]} />
         </mesh>
-        <pointLight color={color} intensity={5} distance={15} />
+        <pointLight color={color} intensity={4} distance={12} />
       </group>
     );
   if (node.type === "tracker")
     return (
       <group position={[node.x, 0, node.z]}>
-        <mesh>
-          <torusGeometry args={[3.85, 0.45, 6, 48]} />
-          <meshStandardMaterial
-            color="#2b3039"
-            metalness={0.55}
-            roughness={0.62}
-          />
+        <mesh position={[-3, -0.1, 0]} material={dark}>
+          <boxGeometry args={[1, 7.8, 2.1]} />
         </mesh>
-        <mesh>
-          <torusGeometry args={[3.2, 0.22, 5, 40]} />
-          <primitive object={energy} attach="material" />
+        <mesh position={[3, -0.1, 0]} material={dark}>
+          <boxGeometry args={[1, 7.8, 2.1]} />
         </mesh>
-        <mesh rotation={[0.4, 0.2, 0.35]}>
-          <torusGeometry args={[2.2, 0.1, 4, 32]} />
-          <meshBasicMaterial
-            color={color}
-            transparent
-            opacity={0.62}
-            toneMapped={false}
-          />
+        <mesh position={[0, 4.1, 0]} material={hull}>
+          <boxGeometry args={[7.6, 1.2, 2.4]} />
         </mesh>
-        <mesh>
-          <sphereGeometry args={[0.7, 10, 8]} />
-          <meshBasicMaterial color="#ffb1aa" transparent opacity={0.65} />
+        <mesh position={[0, 3.25, 0.5]} material={energy}>
+          <boxGeometry args={[1.5, 0.32, 0.2]} />
+        </mesh>
+        <mesh position={[-3, -0.1, 1.08]}>
+          <boxGeometry args={[0.13, 4.8, 0.06]} />
+          <meshBasicMaterial color="#a84742" toneMapped={false} />
         </mesh>
         <TrackerScanner />
-        <pointLight color={color} intensity={5} distance={18} />
+        <pointLight color="#f06e60" intensity={6} distance={17} />
       </group>
     );
-  if (node.type === "booster")
-    return (
-      <group position={[node.x, 0, node.z]}>
-        <mesh>
-          <torusGeometry args={[4.3, 0.46, 6, 48]} />
-          <meshStandardMaterial
-            color="#193b49"
-            metalness={0.45}
-            roughness={0.66}
-          />
-        </mesh>
-        <mesh>
-          <torusGeometry args={[3.7, 0.3, 6, 40]} />
-          <primitive object={energy} attach="material" />
-        </mesh>
-        <mesh>
-          <torusGeometry args={[2.7, 0.1, 4, 36]} />
-          <meshBasicMaterial color="#59bde0" transparent opacity={0.6} />
-        </mesh>
-        <mesh>
-          <sphereGeometry args={[0.9, 10, 8]} />
-          <meshBasicMaterial color="#d2ffff" toneMapped={false} />
-        </mesh>
-        <pointLight color="#7de9f3" intensity={8} distance={24} />
-      </group>
-    );
-  const radius = node.type === "relay" ? 5 : 6.5;
+  const radius =
+    node.type === "booster" ? 4.35 : node.type === "relay" ? 5.2 : 6;
   return (
     <group position={[node.x, 0, node.z]}>
-      <mesh>
-        <torusGeometry args={[radius + 0.72, 0.38, 6, 48]} />
-        <meshStandardMaterial
-          color={node.type === "public" ? "#3c302d" : "#1a313a"}
-          metalness={0.5}
-          roughness={0.66}
+      <PolygonFrame
+        radius={radius}
+        sides={node.type === "booster" ? 8 : 6}
+        color={color}
+      />
+      <mesh position={[0, 0, 0.42]} material={dark}>
+        <torusGeometry args={[radius - 0.65, 0.18, 5, 48]} />
+      </mesh>
+      <mesh position={[0, 0, 0.5]} material={energy}>
+        <torusGeometry args={[radius - 0.72, 0.075, 4, 48]} />
+      </mesh>
+      <mesh position={[0, 0, 0.2]}>
+        <circleGeometry args={[radius - 0.78, 32]} />
+        <meshBasicMaterial
+          color={color}
+          transparent
+          opacity={node.type === "booster" ? 0.07 : 0.025}
+          depthWrite={false}
+          side={THREE.DoubleSide}
         />
       </mesh>
-      <mesh>
-        <torusGeometry
-          args={[radius, node.type === "relay" ? 0.14 : 0.26, 5, 48]}
-        />
-        <primitive object={energy} attach="material" />
-      </mesh>
-      {[0, 1, 2, 3].map((index) => (
-        <mesh
-          key={index}
-          rotation={[0, 0, (index * Math.PI) / 2]}
-          position={[0, 0, -0.3]}
-        >
-          <boxGeometry args={[0.28, radius * 0.8, 0.34]} />
-          <meshStandardMaterial
-            color={node.type === "public" ? "#5d4938" : "#28404d"}
-            metalness={0.44}
-            roughness={0.7}
-          />
-        </mesh>
-      ))}
-      <mesh rotation={[0, 0, 0.32]}>
-        <torusGeometry args={[radius + 0.7, 0.04, 3, 48]} />
-        <meshBasicMaterial color={color} transparent opacity={0.4} />
+      {node.type === "booster" && (
+        <>
+          <mesh material={energy}>
+            <octahedronGeometry args={[0.82, 0]} />
+          </mesh>
+          <pointLight color={color} intensity={9} distance={22} />
+        </>
+      )}
+      <mesh position={[0, -radius - 1.7, 0]} material={hull}>
+        <boxGeometry args={[2.8, 3.4, 2.2]} />
       </mesh>
     </group>
   );
@@ -178,7 +191,9 @@ export function NodeManager({
       const group = groups.current[index];
       if (!group) return;
       const ahead = playerZ - node.z;
-      group.visible = ahead > -32 && ahead < 230;
+      // Devices leave the scene as the player crosses them, before the chase
+      // camera reaches their plane. No field can clip through the near plane.
+      group.visible = ahead > -1.5 && ahead < 230;
     });
   });
   return (

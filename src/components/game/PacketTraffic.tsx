@@ -10,6 +10,7 @@ import {
   mix,
   mod,
   positionLocal,
+  sin,
   time,
   vec3,
 } from "three/tsl";
@@ -26,19 +27,20 @@ function trafficGeometry(count: number) {
   const heats = new Float32Array(count * 2);
   const ends = new Float32Array(count * 2);
   const lengths = new Float32Array(count * 2);
+  const curves = new Float32Array(count * 2);
   for (let i = 0; i < count; i++) {
     const lane = i % 12;
     const distant = lane >= 8;
     const side = lane % 2 ? 1 : -1;
     const x = distant
-      ? side * (36 + Math.floor((lane - 8) / 2) * 18)
-      : side * (5 + Math.floor(lane / 2) * 3.2);
+      ? side * (46 + Math.floor((lane - 8) / 2) * 18)
+      : side * (19 + Math.floor(lane / 2) * 3.2);
     const y = distant
-      ? 12 + Math.floor((lane - 8) / 2) * 9
-      : -3.2 + Math.floor(lane / 2) * 2.4;
+      ? 13.75 + Math.floor((lane - 8) / 2) * 9
+      : -6.8 + Math.floor(lane / 2) * 2.4;
     const start = random(i * 4 + 2) * 705;
     const speed = (distant ? 12 : 22) + random(i * 6 + 5) * (distant ? 14 : 24);
-    const length = (distant ? 0.5 : 0.9) + random(i * 3 + 4) * 1.5;
+    const length = (distant ? 0.25 : 0.45) + random(i * 3 + 4) * 0.9;
     const heat =
       lane === 7 || lane === 5
         ? 0.22 + random(i + 34) * 0.22
@@ -52,6 +54,7 @@ function trafficGeometry(count: number) {
       heats[k] = heat;
       ends[k] = j;
       lengths[k] = length;
+      curves[k] = distant ? side * 8 : 0;
     }
   }
   const geometry = new THREE.BufferGeometry();
@@ -60,26 +63,28 @@ function trafficGeometry(count: number) {
   geometry.setAttribute("aHeat", new THREE.BufferAttribute(heats, 1));
   geometry.setAttribute("aEnd", new THREE.BufferAttribute(ends, 1));
   geometry.setAttribute("aLength", new THREE.BufferAttribute(lengths, 1));
+  geometry.setAttribute("aCurve", new THREE.BufferAttribute(curves, 1));
   return geometry;
 }
 
 export function PacketTraffic() {
   const quality = useSettingsStore((state) => state.runtimeQuality);
-  const count = quality === "low" ? 600 : quality === "medium" ? 1600 : 3600;
+  const count = quality === "low" ? 220 : quality === "medium" ? 520 : 1050;
   const geometry = useMemo(() => trafficGeometry(count), [count]);
   const material = useMemo(() => {
     const traffic = new LineBasicNodeMaterial();
+    const z = float(34)
+      .sub(
+        mod(
+          positionLocal.z.add(time.mul(attribute("aSpeed", "float"))),
+          float(705),
+        ),
+      )
+      .add(attribute("aEnd", "float").mul(attribute("aLength", "float")));
     traffic.positionNode = vec3(
-      positionLocal.x,
+      positionLocal.x.add(sin(z.mul(0.013)).mul(attribute("aCurve", "float"))),
       positionLocal.y,
-      float(34)
-        .sub(
-          mod(
-            positionLocal.z.add(time.mul(attribute("aSpeed", "float"))),
-            float(705),
-          ),
-        )
-        .add(attribute("aEnd", "float").mul(attribute("aLength", "float"))),
+      z,
     );
     traffic.colorNode = mix(
       color("#195372"),
@@ -87,7 +92,7 @@ export function PacketTraffic() {
       attribute("aHeat", "float"),
     );
     traffic.transparent = true;
-    traffic.opacity = 0.55;
+    traffic.opacity = 0.38;
     traffic.depthWrite = false;
     traffic.toneMapped = false;
     return traffic;
