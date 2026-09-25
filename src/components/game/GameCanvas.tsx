@@ -13,7 +13,7 @@ import * as THREE from "three";
 import { WebGPURenderer } from "three/webgpu";
 import { ChaseCamera } from "@/components/game/ChaseCamera";
 import { Destination } from "@/components/game/Destination";
-import { NetworkWorld } from "@/components/game/NetworkWorld";
+import { NetworkStage } from "@/components/game/NetworkStage";
 import { NodeManager } from "@/components/game/NodeManager";
 import { PacketTraffic } from "@/components/game/PacketTraffic";
 import { Player } from "@/components/game/Player";
@@ -21,9 +21,7 @@ import { PostProcessing } from "@/components/game/PostProcessing";
 import { QualityMonitor } from "@/components/game/QualityMonitor";
 import { RouteFork } from "@/components/game/RouteFork";
 import { ScanPulse } from "@/components/game/ScanPulse";
-import { SignalStructures } from "@/components/game/SignalStructures";
-import { SignalLoom } from "@/components/game/SignalLoom";
-import { WorldLandmarks } from "@/components/game/WorldLandmarks";
+import { budgetedDpr } from "@/rendering/resolution";
 import { GAME_CONFIG } from "@/game/config";
 import { generateNodes } from "@/game/nodes";
 import { useKeyboard } from "@/hooks/useKeyboard";
@@ -51,11 +49,8 @@ function GameScene() {
         intensity={1.15}
         position={[30, -12, -35]}
       />
-      <SignalStructures />
-      <SignalLoom />
+      <NetworkStage />
       <RouteFork />
-      <WorldLandmarks />
-      <NetworkWorld />
       <PacketTraffic />
       <NodeManager nodes={nodes} playerRef={playerRef} />
       <Destination />
@@ -110,30 +105,36 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
       ).matches;
       const options = {
         canvas: canvas as HTMLCanvasElement,
-        antialias:
-          !constrained && useSettingsStore.getState().runtimeQuality !== "low",
+        antialias: false,
         alpha: false,
       };
       try {
-        const forceWebGL =
-          new URLSearchParams(window.location.search).get("renderer") ===
-          "webgl2";
-        const renderer = new WebGPURenderer({ ...options, forceWebGL });
+        if (
+          new URLSearchParams(window.location.search).get("renderer") !==
+          "webgpu"
+        ) {
+          const renderer = new THREE.WebGLRenderer({
+            ...options,
+            powerPreference: "high-performance",
+          });
+          if (useSettingsStore.getState().quality === "auto")
+            useSettingsStore.getState().setRuntimeQuality("low");
+          return renderer;
+        }
+        const renderer = new WebGPURenderer({
+          ...options,
+          antialias: !constrained,
+        });
         await renderer.init();
         if (
           useSettingsStore.getState().quality === "auto" &&
-          "isWebGPUBackend" in renderer.backend === false
+          !("isWebGPUBackend" in renderer.backend)
         )
           useSettingsStore.getState().setRuntimeQuality("low");
         return renderer;
       } catch {
         try {
-          const renderer = new WebGPURenderer({
-            ...options,
-            antialias: false,
-            forceWebGL: true,
-          });
-          await renderer.init();
+          const renderer = new THREE.WebGLRenderer(options);
           if (useSettingsStore.getState().quality === "auto")
             useSettingsStore.getState().setRuntimeQuality("low");
           return renderer;
@@ -151,7 +152,7 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
       <Canvas
         className="game-canvas"
         shadows={{ enabled: false, type: THREE.PCFShadowMap }}
-        dpr={quality === "low" ? 0.8 : quality === "medium" ? 1 : 1.25}
+        dpr={budgetedDpr(window.innerWidth, window.innerHeight, quality)}
         camera={{
           fov: GAME_CONFIG.camera.baseFov,
           near: 0.1,
@@ -160,10 +161,9 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
         }}
         gl={createRenderer}
         onCreated={({ gl }) => {
-          const renderer = gl as unknown as WebGPURenderer;
-          const backend = renderer.backend;
+          const backend = (gl as unknown as WebGPURenderer).backend;
           gl.domElement.dataset.rendererBackend =
-            "isWebGPUBackend" in backend ? "webgpu" : "webgl2";
+            backend && "isWebGPUBackend" in backend ? "webgpu" : "webgl2";
           onReady?.();
         }}
       >

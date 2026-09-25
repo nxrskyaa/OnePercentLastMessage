@@ -1,0 +1,277 @@
+.dlicom-signature,
+.hud-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #d7faff;
+}
+.dlicom-signature img,
+.hud-brand img {
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+}
+.menu-mascot {
+  position: absolute;
+  right: 6vw;
+  top: 50%;
+  width: min(42vw, 620px);
+  height: min(42vw, 620px);
+  aspect-ratio: 1;
+  transform: translateY(-52%);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  filter: drop-shadow(0 30px 65px #1727a8a9);
+}
+.menu-mascot::before {
+  content: "";
+  position: absolute;
+  inset: 13%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    #2c72b36b 0,
+    #1d3c8a4a 42%,
+    transparent 72%
+  );
+  filter: blur(28px);
+}
+.menu-mascot img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  object-fit: contain;
+  animation: mascot-float 6s ease-in-out infinite;
+}
+.menu-mascot-orbit {
+  position: absolute;
+  inset: 4%;
+  border: 1px solid #72ccf53d;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 42px #67bceb0b,
+    0 0 0 104px #6ba8d707;
+  transform: rotate(-23deg) scaleX(0.85);
+}
+.menu-mascot-orbit::before,
+.menu-mascot-orbit::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #9beaff;
+  box-shadow: 0 0 20px #72dfff;
+  left: 14%;
+  top: 13%;
+}
+.menu-mascot-orbit::after {
+  left: auto;
+  top: auto;
+  right: 12%;
+  bottom: 15%;
+  width: 5px;
+  height: 5px;
+  background: #d3baff;
+}
+.menu-mascot-caption {
+  position: absolute;
+  bottom: 2%;
+  color: #b6ddec;
+  font:
+    600 10px Consolas,
+    monospace;
+  letter-spacing: 0.24em;
+}
+.main-menu {
+  background: linear-gradient(
+    90deg,
+    #020817f5 0%,
+    #030b1ce8 35%,
+    #060b1d5c 70%,
+    #030817bf 100%
+  );
+}
+.menu-main {
+  position: relative;
+  z-index: 1;
+}
+.menu-kicker {
+  color: #93d8fa;
+}
+.game-title {
+  position: relative;
+}
+.game-title > span {
+  color: #eafcff;
+  font-weight: 800;
+  filter: drop-shadow(0 1px 24px #8fe9ff29);
+}
+.game-title em {
+  color: #75d9ff;
+}
+.game-title small {
+  font-weight: 700;
+  letter-spacing: 0.085em;
+}
+.menu-mission-line {
+  width: min(390px, 100%);
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #6fa5ca66;
+  border-bottom: 1px solid #6fa5ca33;
+  padding: 9px 3px;
+  margin: -7px 0 18px;
+  color: #87afd0;
+  font:
+    600 10px Consolas,
+    monospace;
+  letter-spacing: 0.16em;
+}
+.menu-mission-line span:first-child,
+.menu-mission-line span:last-child {
+  color: #81eeff;
+}
+.boot-screen {
+  background: radial-gradient(
+    circle at 50% 56%,
+    #112952,
+    #040b20 48%,
+    #020610 85%
+  );
+}
+.boot-logo {
+  object-fit: cover;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 25px #80dcff88);
+}
+.boot-mascot {
+  object-fit: contain;
+  filter: drop-shadow(0 15px 30px #53a4f177);
+  animation: mascot-float 3s ease-in-out infinite;
+}
+.boot-ident strong {
+  font-size: clamp(40px, 7vw, 85px);
+  letter-spacing: 0.04em;
+}
+.hud-companion {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  color: #9cceeb;
+  font:
+    600 9px Consolas,
+    monospace;
+  letter-spacing: 0.15em;
+}
+.hud-companion img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px #83dcff77);
+}
+.hud-brand img {
+  width: 22px;
+  height: 22px;
+}
+.dili-hint {
+  align-items: center;
+  border-left: 0;
+  border-top: 1px solid #81d4fc;
+  background: linear-gradient(110deg, #0b2e53ed, #061626eb);
+  box-shadow:
+    0 14px 28px #0009,
+    inset 0 1px #c5f5ff21;
+}
+.dili-avatar {
+  flex: none;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px #68bfff66);
+}
+@keyframes mascot-float {
+  50% {
+    transform: translateY(-13px) rotate(1deg);
+  }
+}
+@media (max-width: 900px) {
+  .menu-mascot {
+    right: -9vw;
+    top: 36%;
+    width: 65vw;
+    height: 65vw;
+    opacity: 0.7;
+  }
+  .menu-main {
+    margin-left: 0;
+  }
+  .top-signature > span:last-child {
+    display: none;
+  }
+  .hud-companion {
+    margin-top: 4px;
+    font-size: 8px;
+  }
+  .hud-companion img {
+    width: 32px;
+    height: 32px;
+  }
+}
+@media (max-width: 600px) {
+  .menu-mascot {
+    right: -5vw;
+    top: 24%;
+    width: 72vw;
+    height: 72vw;
+    opacity: 0.48;
+  }
+  .menu-mascot-caption {
+    display: none;
+  }
+  .main-menu {
+    background: linear-gradient(90deg, #020817ed, #030a18ba);
+  }
+  .game-title small {
+    font-size: clamp(24px, 7vw, 35px);
+  }
+  .menu-main {
+    width: 100%;
+  }
+  .menu-mission-line {
+    margin: 0 0 13px;
+  }
+}
+@media (max-width: 900px) and (max-height: 500px) {
+  .briefing-index {
+    display: none;
+  }
+  .briefing-card h2 {
+    font-size: 30px;
+    margin: 3px 0 8px;
+  }
+  .briefing-card {
+    padding: 11px 16px;
+  }
+  .menu-mascot {
+    right: 2vw;
+    top: 50%;
+    width: 42vh;
+    height: 42vh;
+    opacity: 0.52;
+  }
+  .menu-mission-line {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-mascot img,
+  .boot-mascot {
+    animation: none;
+  }
+}

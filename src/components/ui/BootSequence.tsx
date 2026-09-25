@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { GamePhase } from "@/store/gameStore";
 import { GameButton } from "@/components/ui/GameButton";
 
@@ -16,16 +17,31 @@ export function BootSequence({
       <div className="boot-cross boot-cross--b" />
       {phase === "loading" && (
         <div className="boot-center">
-          <span className="boot-symbol">◉</span>
-          <span className="micro-label">NXR PRESENTS</span>
+          <Image
+            className="boot-logo"
+            src="/brand/dlicom-mark-reference.jpg"
+            width={58}
+            height={58}
+            alt="Dlicom logo"
+            unoptimized
+          />
+          <span className="micro-label">DLICOM NETWORK / NXR GAME</span>
           <strong>INITIALIZING NETWORK...</strong>
           <span className="boot-line" />
         </div>
       )}
       {phase === "ident" && (
         <div className="boot-center boot-ident" key="ident">
-          <span className="micro-label">A GAME BY</span>
-          <strong>NXR</strong>
+          <Image
+            className="boot-mascot"
+            src="/brand/dili-blue-cutout.png"
+            width={190}
+            height={190}
+            alt="DILI mascot"
+            unoptimized
+          />
+          <span className="micro-label">DILI IS CONNECTING YOUR MESSAGE</span>
+          <strong>DLICOM</strong>
           <span className="boot-line" />
         </div>
       )}

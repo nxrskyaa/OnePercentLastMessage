@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { GameButton } from "@/components/ui/GameButton";
 import { GAME_CONFIG } from "@/game/config";
 import { MISSIONS } from "@/game/missions";
@@ -28,8 +29,15 @@ export function HUD() {
       aria-live="off"
     >
       <div className="hud-topline">
-        <span>
-          NXR <i>{"//"}</i> SECURE CHANNEL
+        <span className="hud-brand">
+          <Image
+            src="/brand/dlicom-mark-reference.jpg"
+            width={22}
+            height={22}
+            alt="Dlicom logo"
+            unoptimized
+          />{" "}
+          DLICOM <i>{"//"}</i> SECURE CHANNEL
         </span>
         <span>TRANSMISSION ACTIVE</span>
         <span>ENCRYPTED PACKET / 001</span>
@@ -47,6 +55,16 @@ export function HUD() {
           <div className="privacy-line">
             <span>PRIVACY</span>
             <b>{Math.round(privacy)}%</b>
+          </div>
+          <div className="hud-companion">
+            <Image
+              src="/brand/dili-blue-cutout.png"
+              width={31}
+              height={31}
+              alt="DILI mascot"
+              unoptimized
+            />
+            <span>DILI ONLINE</span>
           </div>
         </div>
         <div className="hud-target">
@@ -96,7 +114,14 @@ export function HUD() {
       )}
       {advisor && (
         <div key={`advisor-${advisor.id}`} className="dili-hint">
-          <span className="dili-glyph">◈</span>
+          <Image
+            className="dili-avatar"
+            src="/brand/dili-blue-cutout.png"
+            width={52}
+            height={52}
+            alt="DILI"
+            unoptimized
+          />
           <div>
             <small>DILI // NETWORK INTELLIGENCE</small>
             <strong>{advisor.text}</strong>

@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { localAdvisor } from "@/game/advisor";
 import { GAME_CONFIG } from "@/game/config";
 import type { GameNode } from "@/game/nodes";
-import { playSound } from "@/lib/audio";
+import { playSound, setAudioIntensity } from "@/lib/audio";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { dataSurface, energySurface } from "@/rendering/materials";
@@ -460,6 +460,7 @@ export function Player({
     }
     hudInterval.current += delta;
     if (hudInterval.current >= 0.08) {
+      setAudioIntensity(boosting, battery.current);
       state.sample({
         battery: battery.current,
         privacy: privacy.current,

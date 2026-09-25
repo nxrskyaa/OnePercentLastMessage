@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { GameButton } from "@/components/ui/GameButton";
 import { formatTime } from "@/lib/format";
 import { useGameStore } from "@/store/gameStore";
@@ -13,11 +14,32 @@ export function MainMenu() {
   return (
     <section className="main-menu" aria-label="Main menu">
       <header className="top-signature">
-        <span>
-          NXR <i>{"//"}</i> SIGNAL DIVISION
+        <span className="dlicom-signature">
+          <Image
+            src="/brand/dlicom-mark-reference.jpg"
+            width={32}
+            height={32}
+            alt="Dlicom logo"
+            unoptimized
+          />{" "}
+          DLICOM <i>{"//"}</i> LAST TRANSMISSION
         </span>
-        <span>GAME JAM BUILD / 0.2</span>
+        <span>AN NXR GAME / DLICOM GAME JAM</span>
       </header>
+      <div className="menu-mascot" aria-hidden="true">
+        <div className="menu-mascot-orbit" />
+        <Image
+          src="/brand/dili-blue-cutout.png"
+          width={650}
+          height={650}
+          alt=""
+          priority
+          unoptimized
+        />
+        <span className="menu-mascot-caption">
+          DILI / YOUR NETWORK COMPANION
+        </span>
+      </div>
       <div className="menu-main">
         <div className="menu-kicker">
           <span className="live-dot" /> ONE MESSAGE QUEUED{" "}
@@ -34,6 +56,11 @@ export function MainMenu() {
           <br />
           One message left.
         </p>
+        <div className="menu-mission-line">
+          <span>01</span>
+          <span>RECEIVER ONLINE</span>
+          <span>●</span>
+        </div>
         <nav className="menu-actions" aria-label="Game menu">
           <GameButton variant="primary" onClick={() => openBriefing(true)}>
             TRANSMIT <span aria-hidden="true">↗</span>

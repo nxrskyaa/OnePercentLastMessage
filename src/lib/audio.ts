@@ -100,6 +100,13 @@ export function setAudioPhase(phase: GamePhase) {
   applyVolume();
 }
 
+export function setAudioIntensity(boosting: boolean, battery: number) {
+  if (!soundtrack) return;
+  const rate = boosting ? 1.065 : battery < 0.1 ? 0.94 : 1;
+  if (Math.abs(soundtrack.playbackRate - rate) > 0.01)
+    soundtrack.playbackRate = rate;
+}
+
 const SOUNDS: Record<Sound, [number, number, number, OscillatorType]> = {
   click: [480, 330, 0.08, "sine"],
   hover: [260, 360, 0.04, "sine"],
