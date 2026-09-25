@@ -95,9 +95,9 @@ select:focus-visible {
 .game-shell--paused .world-vignette {
   background: radial-gradient(
     ellipse at 50% 45%,
-    transparent 26%,
-    rgba(0, 5, 11, 0.07) 65%,
-    rgba(0, 5, 11, 0.37) 100%
+    transparent 34%,
+    rgba(0, 5, 11, 0.04) 65%,
+    rgba(0, 5, 11, 0.25) 100%
   );
 }
 .screen-noise {

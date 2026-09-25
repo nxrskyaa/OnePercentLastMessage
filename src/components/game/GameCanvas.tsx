@@ -40,7 +40,7 @@ function GameScene() {
     <>
       <color attach="background" args={["#07121d"]} />
       <fogExp2 attach="fog" args={["#0c1b29", GAME_CONFIG.world.fogDensity]} />
-      <ambientLight color="#7797a8" intensity={0.9} />
+      <ambientLight color="#8baab9" intensity={1.1} />
       <directionalLight
         color="#a5c8d3"
         intensity={2.8}
@@ -105,9 +105,13 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
   const [rendererError, setRendererError] = useState(false);
   const createRenderer = useCallback(
     async ({ canvas }: { canvas: EventTarget }) => {
+      const constrained = window.matchMedia(
+        "(max-width: 900px), (pointer: coarse)",
+      ).matches;
       const options = {
         canvas: canvas as HTMLCanvasElement,
-        antialias: true,
+        antialias:
+          !constrained && useSettingsStore.getState().runtimeQuality !== "low",
         alpha: false,
       };
       try {
@@ -124,7 +128,11 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
         return renderer;
       } catch {
         try {
-          const renderer = new WebGPURenderer({ ...options, forceWebGL: true });
+          const renderer = new WebGPURenderer({
+            ...options,
+            antialias: false,
+            forceWebGL: true,
+          });
           await renderer.init();
           if (useSettingsStore.getState().quality === "auto")
             useSettingsStore.getState().setRuntimeQuality("low");
@@ -143,7 +151,7 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
       <Canvas
         className="game-canvas"
         shadows={{ enabled: false, type: THREE.PCFShadowMap }}
-        dpr={quality === "low" ? 0.9 : quality === "medium" ? 1 : 1.25}
+        dpr={quality === "low" ? 0.8 : quality === "medium" ? 1 : 1.25}
         camera={{
           fov: GAME_CONFIG.camera.baseFov,
           near: 0.1,

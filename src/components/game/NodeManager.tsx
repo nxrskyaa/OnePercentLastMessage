@@ -7,6 +7,7 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import type { GameNode } from "@/game/nodes";
 import { energySurface } from "@/rendering/materials";
 import { useGameStore } from "@/store/gameStore";
+import { useSettingsStore } from "@/store/settingsStore";
 
 const hull = new THREE.MeshStandardMaterial({
   color: "#44545d",
@@ -19,6 +20,50 @@ const dark = new THREE.MeshStandardMaterial({
   roughness: 0.77,
 });
 
+const frameCache = new Map<
+  string,
+  { hullGeometry: THREE.BufferGeometry; signalGeometry: THREE.BufferGeometry }
+>();
+
+function frameGeometry(radius: number, sides: number) {
+  const key = `${radius}:${sides}`;
+  const cached = frameCache.get(key);
+  if (cached) return cached;
+  const length = 2 * radius * Math.sin(Math.PI / sides) * 0.92;
+  const frame: THREE.BufferGeometry[] = [];
+  const strips: THREE.BufferGeometry[] = [];
+  for (let i = 0; i < sides; i++) {
+    const angle = (i * Math.PI * 2) / sides + Math.PI / sides;
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+    const rotation = angle + Math.PI / 2;
+    const bar = new THREE.BoxGeometry(length, 0.62, 1.35);
+    bar.rotateZ(rotation);
+    bar.translate(x, y, 0);
+    frame.push(bar);
+    if (i % 2 === 0) {
+      const inset = new THREE.BoxGeometry(length * 0.46, 0.08, 0.1);
+      inset.translate(0, 0.4, -0.12);
+      inset.rotateZ(rotation);
+      inset.translate(x, y, 0);
+      strips.push(inset);
+    }
+  }
+  for (const y of [radius - 0.72, -radius + 0.72]) {
+    const marker = new THREE.BoxGeometry(radius * 0.7, 0.12, 0.12);
+    marker.translate(0, y, 0.58);
+    strips.push(marker);
+  }
+  const geometry = {
+    hullGeometry: mergeGeometries(frame),
+    signalGeometry: mergeGeometries(strips),
+  };
+  frame.forEach((item) => item.dispose());
+  strips.forEach((item) => item.dispose());
+  frameCache.set(key, geometry);
+  return geometry;
+}
+
 function PolygonFrame({
   radius,
   sides = 6,
@@ -28,40 +73,7 @@ function PolygonFrame({
   sides?: number;
   energy: THREE.Material;
 }) {
-  const geometry = useMemo(() => {
-    const length = 2 * radius * Math.sin(Math.PI / sides) * 0.92;
-    const frame: THREE.BufferGeometry[] = [];
-    const strips: THREE.BufferGeometry[] = [];
-    for (let i = 0; i < sides; i++) {
-      const angle = (i * Math.PI * 2) / sides + Math.PI / sides;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      const rotation = angle + Math.PI / 2;
-      const bar = new THREE.BoxGeometry(length, 0.62, 1.35);
-      bar.rotateZ(rotation);
-      bar.translate(x, y, 0);
-      frame.push(bar);
-      if (i % 2 === 0) {
-        const inset = new THREE.BoxGeometry(length * 0.46, 0.08, 0.1);
-        inset.translate(0, 0.4, -0.12);
-        inset.rotateZ(rotation);
-        inset.translate(x, y, 0);
-        strips.push(inset);
-      }
-    }
-    const hullGeometry = mergeGeometries(frame);
-    const signalGeometry = mergeGeometries(strips);
-    frame.forEach((item) => item.dispose());
-    strips.forEach((item) => item.dispose());
-    return { hullGeometry, signalGeometry };
-  }, [radius, sides]);
-  useEffect(
-    () => () => {
-      geometry.hullGeometry.dispose();
-      geometry.signalGeometry.dispose();
-    },
-    [geometry],
-  );
+  const geometry = frameGeometry(radius, sides);
   return (
     <group>
       <mesh geometry={geometry.hullGeometry} material={hull} />
@@ -99,7 +111,7 @@ function TrackerScanner() {
   );
 }
 
-function NodeVisual({ node }: { node: GameNode }) {
+function NodeVisual({ node, low }: { node: GameNode; low: boolean }) {
   const color =
     node.type === "tracker"
       ? "#ed7466"
@@ -111,8 +123,11 @@ function NodeVisual({ node }: { node: GameNode }) {
             ? "#b8faff"
             : "#76d3e5";
   const energy = useMemo(
-    () => energySurface(color, node.type === "booster" ? 4.2 : 2),
-    [color, node.type],
+    () =>
+      low
+        ? new THREE.MeshBasicMaterial({ color, toneMapped: false })
+        : energySurface(color, node.type === "booster" ? 4.2 : 2),
+    [color, low, node.type],
   );
   useEffect(() => () => energy.dispose(), [energy]);
   if (node.type === "tip")
@@ -121,21 +136,20 @@ function NodeVisual({ node }: { node: GameNode }) {
         <mesh rotation={[0.35, 0.6, 0]} material={energy}>
           <octahedronGeometry args={[1.1, 0]} />
         </mesh>
-        <pointLight color={color} intensity={4} distance={12} />
+        {!low && <pointLight color={color} intensity={4} distance={12} />}
       </group>
     );
   if (node.type === "tracker")
     return (
       <group position={[node.x, 0, node.z]}>
         <PolygonFrame radius={3.65} sides={8} energy={energy} />
-        <mesh position={[0, 4.15, 0]} material={dark}>
-          <boxGeometry args={[3.5, 0.65, 1.8]} />
-        </mesh>
-        <mesh position={[0, 4.17, 1.02]} material={energy}>
-          <boxGeometry args={[1.2, 0.16, 0.08]} />
-        </mesh>
+        {!low && (
+          <mesh position={[0, 4.15, 0]} material={dark}>
+            <boxGeometry args={[3.5, 0.65, 1.8]} />
+          </mesh>
+        )}
         <TrackerScanner />
-        <pointLight color="#f06e60" intensity={6} distance={17} />
+        {!low && <pointLight color="#f06e60" intensity={6} distance={17} />}
       </group>
     );
   const radius =
@@ -147,23 +161,19 @@ function NodeVisual({ node }: { node: GameNode }) {
         sides={node.type === "booster" ? 8 : 6}
         energy={energy}
       />
-      <mesh position={[0, radius - 0.72, 0.58]} material={energy}>
-        <boxGeometry args={[radius * 0.7, 0.12, 0.12]} />
-      </mesh>
-      <mesh position={[0, -radius + 0.72, 0.58]} material={energy}>
-        <boxGeometry args={[radius * 0.7, 0.12, 0.12]} />
-      </mesh>
       {node.type === "booster" && (
         <>
           <mesh material={energy}>
             <octahedronGeometry args={[0.82, 0]} />
           </mesh>
-          <pointLight color={color} intensity={9} distance={22} />
+          {!low && <pointLight color={color} intensity={9} distance={22} />}
         </>
       )}
-      <mesh position={[0, -radius - 1.7, 0]} material={hull}>
-        <boxGeometry args={[2.8, 3.4, 2.2]} />
-      </mesh>
+      {!low && (
+        <mesh position={[0, -radius - 1.7, 0]} material={hull}>
+          <boxGeometry args={[2.8, 3.4, 2.2]} />
+        </mesh>
+      )}
     </group>
   );
 }
@@ -175,6 +185,7 @@ export function NodeManager({
   nodes: GameNode[];
   playerRef: RefObject<THREE.Group | null>;
 }) {
+  const low = useSettingsStore((state) => state.runtimeQuality === "low");
   const groups = useRef<Array<THREE.Group | null>>([]);
   useFrame(() => {
     const playerZ = playerRef.current?.position.z ?? 0;
@@ -196,7 +207,7 @@ export function NodeManager({
             groups.current[index] = group;
           }}
         >
-          <NodeVisual node={node} />
+          <NodeVisual node={node} low={low} />
         </group>
       ))}
     </>

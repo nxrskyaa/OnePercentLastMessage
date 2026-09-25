@@ -203,6 +203,9 @@ kbd {
     600 11px Consolas,
     monospace;
 }
+.quality-mobile-note {
+  display: none;
+}
 .settings-actions {
   display: flex;
   gap: 14px;

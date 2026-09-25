@@ -1,4 +1,5 @@
 import { MeshBasicNodeMaterial, MeshStandardNodeMaterial } from "three/webgpu";
+import { Color, MeshStandardMaterial } from "three";
 import {
   color,
   positionLocal,
@@ -12,13 +13,27 @@ import { signalState } from "@/rendering/signalState";
 /** Dark physical infrastructure; animation stays on the embedded signal runs. */
 export function dataSurface(base = "#102434", pulse = "#337e9b") {
   const material = new MeshStandardNodeMaterial();
-  material.colorNode = color(base).mul(signalState.failure.mul(-0.62).add(1));
+  material.colorNode = color(base)
+    .mul(1.23)
+    .mul(signalState.failure.mul(-0.62).add(1));
   material.emissiveNode = color(pulse)
-    .mul(0.055)
+    .mul(0.08)
     .add(color("#78d8f3").mul(signalState.success.mul(0.34)));
-  material.roughness = 0.72;
-  material.metalness = 0.38;
+  material.roughness = 0.76;
+  material.metalness = 0.16;
   return material;
+}
+
+/** The mobile tier keeps the same palette with a standard, static material. */
+export function physicalSurface(base: string, pulse: string, low: boolean) {
+  if (!low) return dataSurface(base, pulse);
+  return new MeshStandardMaterial({
+    color: new Color(base).multiplyScalar(1.28),
+    emissive: pulse,
+    emissiveIntensity: 0.08,
+    roughness: 0.76,
+    metalness: 0.16,
+  });
 }
 
 /** Bright component whose luminance pulses without changing React state. */

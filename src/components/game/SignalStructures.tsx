@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { GAME_CONFIG } from "@/game/config";
-import { dataSurface, energySurface } from "@/rendering/materials";
+import { energySurface, physicalSurface } from "@/rendering/materials";
 import { useSettingsStore } from "@/store/settingsStore";
 
 type Beam = { a: THREE.Vector3; b: THREE.Vector3; width: number };
@@ -17,6 +17,22 @@ type Block = {
   ry?: number;
 };
 const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+const BOX_GEOMETRY = new THREE.BoxGeometry(1, 1, 1);
+const panelOutline = new THREE.Shape();
+panelOutline.moveTo(-0.5, -0.34);
+panelOutline.lineTo(-0.34, -0.5);
+panelOutline.lineTo(0.34, -0.5);
+panelOutline.lineTo(0.5, -0.34);
+panelOutline.lineTo(0.5, 0.34);
+panelOutline.lineTo(0.34, 0.5);
+panelOutline.lineTo(-0.34, 0.5);
+panelOutline.lineTo(-0.5, 0.34);
+panelOutline.closePath();
+const PANEL_GEOMETRY = new THREE.ExtrudeGeometry(panelOutline, {
+  depth: 1,
+  bevelEnabled: false,
+});
+PANEL_GEOMETRY.translate(0, 0, -0.5);
 
 function buildKit(spacing: number) {
   const frame: Beam[] = [];
@@ -305,9 +321,11 @@ function BeamBatch({
 function BlockBatch({
   blocks,
   material,
+  chamfer = false,
 }: {
   blocks: Block[];
   material: THREE.Material;
+  chamfer?: boolean;
 }) {
   const mesh = useRef<THREE.InstancedMesh>(null);
   useLayoutEffect(() => {
@@ -328,9 +346,9 @@ function BlockBatch({
       ref={mesh}
       args={[undefined, undefined, blocks.length]}
       material={material}
-    >
-      <boxGeometry args={[1, 1, 1]} />
-    </instancedMesh>
+      geometry={chamfer ? PANEL_GEOMETRY : BOX_GEOMETRY}
+      dispose={null}
+    />
   );
 }
 
@@ -340,27 +358,32 @@ export function SignalStructures() {
     () => buildKit(quality === "low" ? 86 : quality === "medium" ? 72 : 62),
     [quality],
   );
-  const materials = useMemo(
-    () => ({
-      frame: dataSurface("#344752", "#20455b"),
-      panel: dataSurface("#24343e", "#193143"),
-      warmPanel: dataSurface("#42383a", "#79563f"),
-      violetPanel: dataSurface("#373247", "#614b80"),
-      dangerPanel: dataSurface("#402e37", "#7d424d"),
-      seam: dataSurface("#0b1720", "#193143"),
-      brace: dataSurface("#40515a", "#244a59"),
-      far: dataSurface("#1c2b34", "#152835"),
-      cyan: energySurface("#317f9a", 1.7),
-      amber: energySurface("#aa7a48", 1.6),
-      purple: energySurface("#8d77ba", 1.4),
-      warning: energySurface("#984c48", 1.8),
+  const materials = useMemo(() => {
+    const signal = (color: string, speed: number) =>
+      quality === "low"
+        ? new THREE.MeshBasicMaterial({ color, toneMapped: false })
+        : energySurface(color, speed);
+    const hull = (base: string, pulse: string) =>
+      physicalSurface(base, pulse, quality === "low");
+    return {
+      frame: hull("#344752", "#20455b"),
+      panel: hull("#24343e", "#193143"),
+      warmPanel: hull("#42383a", "#79563f"),
+      violetPanel: hull("#373247", "#614b80"),
+      dangerPanel: hull("#402e37", "#7d424d"),
+      seam: hull("#0b1720", "#193143"),
+      brace: hull("#40515a", "#244a59"),
+      far: hull("#1c2b34", "#152835"),
+      cyan: signal("#317f9a", 1.7),
+      amber: signal("#aa7a48", 1.6),
+      purple: signal("#8d77ba", 1.4),
+      warning: signal("#984c48", 1.8),
       waymark: new THREE.MeshBasicMaterial({
         color: "#80b9c7",
         toneMapped: false,
       }),
-    }),
-    [],
-  );
+    };
+  }, [quality]);
   useEffect(
     () => () =>
       Object.values(materials).forEach((material) => material.dispose()),
@@ -371,10 +394,22 @@ export function SignalStructures() {
       <BeamBatch beams={kit.far} material={materials.far} />
       <BeamBatch beams={kit.frame} material={materials.frame} />
       <BeamBatch beams={kit.braces} material={materials.brace} />
-      <BlockBatch blocks={kit.panels} material={materials.panel} />
-      <BlockBatch blocks={kit.warmPanels} material={materials.warmPanel} />
-      <BlockBatch blocks={kit.violetPanels} material={materials.violetPanel} />
-      <BlockBatch blocks={kit.dangerPanels} material={materials.dangerPanel} />
+      <BlockBatch blocks={kit.panels} material={materials.panel} chamfer />
+      <BlockBatch
+        blocks={kit.warmPanels}
+        material={materials.warmPanel}
+        chamfer
+      />
+      <BlockBatch
+        blocks={kit.violetPanels}
+        material={materials.violetPanel}
+        chamfer
+      />
+      <BlockBatch
+        blocks={kit.dangerPanels}
+        material={materials.dangerPanel}
+        chamfer
+      />
       <BlockBatch blocks={kit.seams} material={materials.seam} />
       <BlockBatch blocks={kit.conduits} material={materials.cyan} />
       <BlockBatch blocks={kit.amber} material={materials.amber} />

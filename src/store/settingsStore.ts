@@ -18,12 +18,21 @@ export interface GameSettings {
 }
 
 const KEY = "last-message.settings.v1";
+function compactDevice(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia("(max-width: 900px), (pointer: coarse)").matches
+  );
+}
 function autoRuntimeQuality(): "low" | "medium" {
   if (typeof window === "undefined") return "low";
-  return window.matchMedia("(max-width: 900px)").matches ||
-    renderMetrics.backend === "webgl2"
+  return compactDevice() || renderMetrics.backend === "webgl2"
     ? "low"
     : "medium";
+}
+function runtimeQualityFor(quality: Quality): "low" | "medium" | "high" {
+  if (compactDevice()) return "low";
+  return quality === "auto" ? autoRuntimeQuality() : quality;
 }
 export const DEFAULT_SETTINGS: GameSettings = {
   version: 1,
@@ -106,8 +115,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({
       ...settings,
       hydrated: true,
-      runtimeQuality:
-        settings.quality === "auto" ? autoRuntimeQuality() : settings.quality,
+      runtimeQuality: runtimeQualityFor(settings.quality),
     });
   },
   update: (patch) => {
@@ -115,8 +123,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const settings = validate({ ...current, ...patch, version: 1 });
     set({
       ...settings,
-      runtimeQuality:
-        settings.quality === "auto" ? autoRuntimeQuality() : settings.quality,
+      runtimeQuality: runtimeQualityFor(settings.quality),
     });
     try {
       window.localStorage.setItem(KEY, JSON.stringify(settings));

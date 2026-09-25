@@ -16,9 +16,9 @@ type Sound =
 
 let context: AudioContext | null = null;
 let master: GainNode | null = null;
-let music: GainNode | null = null;
 let sfx: GainNode | null = null;
-let drones: OscillatorNode[] = [];
+let soundtrack: HTMLAudioElement | null = null;
+let currentPhase: GamePhase = "loading";
 let settings: Pick<
   GameSettings,
   "masterVolume" | "musicVolume" | "sfxVolume" | "mute"
@@ -38,26 +38,9 @@ function ensureAudio(): AudioContext | null {
     }
     context = new AudioContext();
     master = context.createGain();
-    music = context.createGain();
     sfx = context.createGain();
-    music.connect(master);
     sfx.connect(master);
     master.connect(context.destination);
-    const low = context.createOscillator();
-    const high = context.createOscillator();
-    low.type = "sine";
-    high.type = "triangle";
-    low.frequency.value = 55;
-    high.frequency.value = 82.4;
-    const lowGain = context.createGain();
-    const highGain = context.createGain();
-    lowGain.gain.value = 0.018;
-    highGain.gain.value = 0.006;
-    low.connect(lowGain).connect(music);
-    high.connect(highGain).connect(music);
-    low.start();
-    high.start();
-    drones = [low, high];
     applyVolume();
     return context;
   } catch {
@@ -66,15 +49,25 @@ function ensureAudio(): AudioContext | null {
 }
 
 function applyVolume() {
-  if (!context || !master || !music || !sfx) return;
-  const now = context.currentTime;
-  master.gain.setTargetAtTime(
-    settings.mute ? 0 : settings.masterVolume,
-    now,
-    0.06,
-  );
-  music.gain.setTargetAtTime(settings.musicVolume, now, 0.1);
-  sfx.gain.setTargetAtTime(settings.sfxVolume, now, 0.04);
+  if (context && master && sfx) {
+    const now = context.currentTime;
+    master.gain.setTargetAtTime(
+      settings.mute ? 0 : settings.masterVolume,
+      now,
+      0.06,
+    );
+    sfx.gain.setTargetAtTime(settings.sfxVolume, now, 0.04);
+  }
+  if (soundtrack)
+    soundtrack.volume = settings.mute
+      ? 0
+      : settings.masterVolume *
+        settings.musicVolume *
+        (currentPhase === "playing"
+          ? 1
+          : currentPhase === "paused"
+            ? 0.18
+            : 0.4);
 }
 
 export function configureAudio(next: typeof settings) {
@@ -83,19 +76,28 @@ export function configureAudio(next: typeof settings) {
 }
 export function unlockAudio() {
   ensureAudio();
+  if (!soundtrack && typeof window !== "undefined") {
+    soundtrack = new Audio("/audio/signal-run.mp3");
+    soundtrack.loop = true;
+    soundtrack.preload = "auto";
+    soundtrack.hidden = true;
+    document.body.appendChild(soundtrack);
+  }
+  applyVolume();
+  if (soundtrack && soundtrack.paused) void soundtrack.play().catch(() => {});
 }
 
 export function setAudioPhase(phase: GamePhase) {
-  if (!context || !music || drones.length < 2) return;
-  const now = context.currentTime;
-  const active = phase === "playing" || phase === "paused";
-  drones[0].frequency.setTargetAtTime(active ? 62 : 55, now, 0.5);
-  drones[1].frequency.setTargetAtTime(active ? 93 : 82.4, now, 0.5);
-  music.gain.setTargetAtTime(
-    settings.musicVolume * (phase === "playing" ? 1 : 0.62),
-    now,
-    0.6,
-  );
+  // The score is started by the button gesture, so mobile autoplay rules hold.
+  currentPhase = phase;
+  if (soundtrack) {
+    if (phase === "paused") soundtrack.pause();
+    else if (soundtrack.paused)
+      void soundtrack.play().catch(() => {
+        /* Audio never blocks gameplay. */
+      });
+  }
+  applyVolume();
 }
 
 const SOUNDS: Record<Sound, [number, number, number, OscillatorType]> = {
@@ -145,19 +147,11 @@ export function playSound(sound: Sound) {
 }
 
 export function shutdownAudio() {
-  if (!context) return;
-  drones.forEach((osc) => {
-    try {
-      osc.stop();
-      osc.disconnect();
-    } catch {
-      /* Already stopped. */
-    }
-  });
-  drones = [];
-  void context.close();
+  soundtrack?.pause();
+  soundtrack?.remove();
+  soundtrack = null;
+  if (context) void context.close();
   context = null;
   master = null;
-  music = null;
   sfx = null;
 }

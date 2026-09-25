@@ -152,7 +152,12 @@ export function SettingsMenu() {
             onChange={(value) => update("mouseSensitivity", value)}
           />
           <label className="setting-row quality-row">
-            <span>Quality</span>
+            <span>
+              Quality
+              <small className="quality-mobile-note">
+                Mobile capped at Low
+              </small>
+            </span>
             <select
               value={settings.quality}
               onChange={(event) =>

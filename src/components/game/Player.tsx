@@ -77,7 +77,10 @@ export function Player({
   nodes,
 }: PlayerProps) {
   const visual = useRef<THREE.Group>(null);
+  const fins = useRef<Array<THREE.Group | null>>([]);
   const trail = useRef<THREE.Group>(null);
+  const trailSparks = useRef<THREE.InstancedMesh>(null);
+  const trailSpark = useRef(new THREE.Object3D());
   const core = useRef<THREE.Mesh>(null);
   const fin = useMemo(() => createFin(), []);
   const shellGeometry = useMemo(() => createPacketShell(), []);
@@ -245,6 +248,22 @@ export function Player({
         delta,
       ),
     );
+    fins.current.forEach((finGroup, index) => {
+      if (!finGroup) return;
+      const flare = boosting ? (index % 2 ? -0.23 : 0.23) : 0;
+      finGroup.rotation.z = THREE.MathUtils.damp(
+        finGroup.rotation.z,
+        (index * Math.PI) / 2 + flare,
+        7,
+        delta,
+      );
+      finGroup.position.z = THREE.MathUtils.damp(
+        finGroup.position.z,
+        boosting ? -0.32 : 0,
+        7,
+        delta,
+      );
+    });
     if (trail.current) {
       const trailScale = boosting
         ? 1.75
@@ -263,10 +282,27 @@ export function Player({
         !struck &&
         (battery.current > 0.035 || Math.sin(clock.elapsedTime * 17) > 0);
     }
+    if (trailSparks.current) {
+      for (let index = 0; index < 12; index++) {
+        const phase =
+          (clock.elapsedTime * (boosting ? 11 : 6) + index * 1.71) % 9;
+        const spark = trailSpark.current;
+        spark.position.set(
+          Math.sin(index * 11.7) * (0.2 + phase * 0.045),
+          Math.cos(index * 8.3) * (0.15 + phase * 0.045),
+          1.1 + phase,
+        );
+        spark.rotation.set(0, phase * 0.2, phase * 0.35);
+        spark.scale.setScalar((boosting ? 0.28 : 0.19) * (1 - phase / 10));
+        spark.updateMatrix();
+        trailSparks.current.setMatrixAt(index, spark.matrix);
+      }
+      trailSparks.current.instanceMatrix.needsUpdate = true;
+    }
     if (core.current) {
       const pulse = battery.current < 0.15 ? 0.78 : 1;
       core.current.scale.setScalar(
-        pulse + Math.sin(clock.elapsedTime * 7) * 0.05,
+        pulse + (boosting ? 0.16 : 0) + Math.sin(clock.elapsedTime * 7) * 0.07,
       );
     }
 
@@ -453,7 +489,13 @@ export function Player({
           <octahedronGeometry args={[0.48, 0]} />
         </mesh>
         {[0, 1, 2, 3].map((index) => (
-          <group key={index} rotation={[0, 0, (index * Math.PI) / 2]}>
+          <group
+            key={index}
+            ref={(group) => {
+              fins.current[index] = group;
+            }}
+            rotation={[0, 0, (index * Math.PI) / 2]}
+          >
             <mesh geometry={fin} material={materials.plate} />
             <mesh position={[0, 1.43, 0.04]}>
               <boxGeometry args={[0.1, 0.43, 0.08]} />
@@ -491,17 +533,16 @@ export function Player({
             />
           </mesh>
         ))}
-        {[1.3, 2.3, 3.6, 5.2, 7].map((z, index) => (
-          <mesh key={z} position={[0, 0, z]} scale={1 - index * 0.15}>
-            <octahedronGeometry args={[0.22, 0]} />
-            <meshBasicMaterial
-              color={index < 2 ? "#82f3ff" : "#2786bb"}
-              transparent
-              opacity={0.52 - index * 0.07}
-              toneMapped={false}
-            />
-          </mesh>
-        ))}
+        <instancedMesh ref={trailSparks} args={[undefined, undefined, 12]}>
+          <octahedronGeometry args={[1, 0]} />
+          <meshBasicMaterial
+            color="#83eaff"
+            transparent
+            opacity={0.52}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </instancedMesh>
       </group>
       <pointLight color="#a2e9ff" intensity={17} distance={25} decay={2} />
     </group>

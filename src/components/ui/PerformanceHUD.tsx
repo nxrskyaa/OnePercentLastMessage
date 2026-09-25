@@ -6,7 +6,6 @@ import { renderMetrics, type RenderMetrics } from "@/rendering/metrics";
 export function PerformanceHUD() {
   const [metrics, setMetrics] = useState<RenderMetrics | null>(null);
   useEffect(() => {
-    if (process.env.NODE_ENV !== "development") return;
     if (new URLSearchParams(window.location.search).get("perf") !== "1") return;
     const interval = window.setInterval(
       () => setMetrics({ ...renderMetrics }),
@@ -16,7 +15,7 @@ export function PerformanceHUD() {
   }, []);
   if (!metrics) return null;
   return (
-    <aside className="perf-hud" aria-label="Development performance metrics">
+    <aside className="perf-hud" aria-label="Performance metrics">
       <b>RENDER / {metrics.backend.toUpperCase()}</b>
       <span>
         {metrics.fps.toFixed(0)} FPS · {metrics.frameMs.toFixed(1)} MS

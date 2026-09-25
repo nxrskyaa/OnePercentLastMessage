@@ -16,7 +16,7 @@ export function QualityMonitor() {
   const { setDpr } = useThree();
   useFrame(({ gl }, delta) => {
     if (document.hidden) return;
-    seconds.current += Math.min(delta, 0.25);
+    seconds.current += Math.min(delta, 0.5);
     frames.current += 1;
     if (seconds.current < 1.5) return;
     const fps = frames.current / seconds.current;
@@ -34,8 +34,9 @@ export function QualityMonitor() {
           ? 520
           : 1050;
     const playing = useGameStore.getState().phase === "playing";
-    if (fps < 50) scale.current = Math.max(0.65, scale.current - 0.2);
-    else if (fps > 68) scale.current = Math.min(1, scale.current + 0.05);
+    if (fps < 50) scale.current = Math.max(0.55, scale.current - 0.2);
+    else if (fps > 68 && !playing)
+      scale.current = Math.min(1, scale.current + 0.05);
     if (settings.quality === "auto" && playing) {
       if (
         fps < 48 &&
@@ -58,7 +59,7 @@ export function QualityMonitor() {
     } else slowWindows.current = 0;
     const base =
       settings.runtimeQuality === "low"
-        ? 0.9
+        ? 0.8
         : settings.runtimeQuality === "medium"
           ? 1
           : 1.25;

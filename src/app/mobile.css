@@ -4,6 +4,25 @@
 }
 
 @media (max-width: 900px) {
+  .quality-row > span {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  .quality-mobile-note {
+    display: block;
+    color: #83aab2;
+    font:
+      9px/1.3 Consolas,
+      monospace;
+  }
+  .perf-hud {
+    top: 135px;
+    right: 8px;
+    bottom: auto;
+    padding: 6px 7px;
+    font-size: 8px;
+  }
   .desktop-instructions {
     display: none;
   }

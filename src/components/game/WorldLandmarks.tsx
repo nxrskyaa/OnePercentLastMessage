@@ -3,7 +3,8 @@
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { dataSurface, energySurface } from "@/rendering/materials";
+import { energySurface, physicalSurface } from "@/rendering/materials";
+import { useSettingsStore } from "@/store/settingsStore";
 
 const ZONES = [
   { z: -100, x: 56, y: 0, color: "#5bbbd4", intensity: 55 },
@@ -34,13 +35,38 @@ function createSpire() {
 }
 
 export function WorldLandmarks() {
+  const low = useSettingsStore((state) => state.runtimeQuality === "low");
   const spire = useMemo(() => createSpire(), []);
   const array = useRef<THREE.Group>(null);
+  const carrier = useRef<THREE.Group>(null);
+  const returnMast = useRef<THREE.Group>(null);
+  const foundry = useRef<THREE.Group>(null);
+  const vault = useRef<THREE.Group>(null);
+  const watcher = useRef<THREE.Group>(null);
+  const foundryDrums = useRef<Array<THREE.Group | null>>([]);
   const zoneLight = useRef<THREE.PointLight>(null);
   const zoneIndex = useRef(-1);
   useFrame(({ camera, clock }) => {
+    for (const [group, z] of [
+      [array, -100],
+      [carrier, -91],
+      [returnMast, -118],
+      [foundry, -292],
+      [vault, -420],
+      [watcher, -545],
+    ] as const) {
+      if (!group.current) continue;
+      const ahead = camera.position.z - z;
+      group.current.visible = ahead > -95 && ahead < 330;
+    }
     if (array.current)
       array.current.rotation.y = Math.sin(clock.elapsedTime * 0.36) * 0.035;
+    if (carrier.current)
+      carrier.current.position.x = Math.sin(clock.elapsedTime * 0.7) * 15;
+    foundryDrums.current.forEach((drum, index) => {
+      if (drum)
+        drum.rotation.z = clock.elapsedTime * (index % 2 ? -0.17 : 0.14);
+    });
     const light = zoneLight.current;
     if (!light) return;
     let closest = 0;
@@ -57,25 +83,27 @@ export function WorldLandmarks() {
     light.color.set(zone.color);
     light.intensity = zone.intensity;
   });
-  const materials = useMemo(
-    () => ({
-      graphite: dataSurface("#2a3c49", "#26576a"),
-      warm: dataSurface("#3f3536", "#7f5a3f"),
-      violet: dataSurface("#302d43", "#5e4a81"),
-      danger: dataSurface("#422d33", "#8e3e48"),
-      cyan: energySurface("#84d7e8", 1.6),
-      amber: energySurface("#e4a66a", 1.9),
-      purple: energySurface("#a68dde", 1.3),
-      coral: energySurface("#f18179", 2.4),
-    }),
-    [],
-  );
+  const materials = useMemo(() => {
+    const signal = (color: string, speed: number) =>
+      low
+        ? new THREE.MeshBasicMaterial({ color, toneMapped: false })
+        : energySurface(color, speed);
+    return {
+      graphite: physicalSurface("#2a3c49", "#26576a", low),
+      warm: physicalSurface("#3f3536", "#7f5a3f", low),
+      violet: physicalSurface("#302d43", "#5e4a81", low),
+      danger: physicalSurface("#422d33", "#8e3e48", low),
+      cyan: signal("#84d7e8", 1.6),
+      amber: signal("#e4a66a", 1.9),
+      purple: signal("#a68dde", 1.3),
+      coral: signal("#f18179", 2.4),
+    };
+  }, [low]);
+  useEffect(() => () => spire.dispose(), [spire]);
   useEffect(
-    () => () => {
-      spire.dispose();
-      Object.values(materials).forEach((material) => material.dispose());
-    },
-    [spire, materials],
+    () => () =>
+      Object.values(materials).forEach((material) => material.dispose()),
+    [materials],
   );
   return (
     <>
@@ -99,8 +127,28 @@ export function WorldLandmarks() {
         ))}
       </group>
 
+      {/* A moving transfer carrier gives the first corridor a machine rhythm. */}
+      <group ref={carrier} position={[0, 25, -91]}>
+        <mesh material={materials.graphite}>
+          <boxGeometry args={[28, 4, 5]} />
+        </mesh>
+        <mesh position={[0, -2.1, 2.6]} material={materials.cyan}>
+          <boxGeometry args={[17, 0.32, 0.26]} />
+        </mesh>
+        <mesh position={[0, -8, 1.6]} material={materials.graphite}>
+          <boxGeometry args={[1.4, 12, 2]} />
+        </mesh>
+        <mesh position={[0, -13.6, 2.7]} material={materials.amber}>
+          <boxGeometry args={[4.5, 0.35, 0.24]} />
+        </mesh>
+      </group>
+
       {/* The near-side return mast gives the opening a warm counterweight. */}
-      <group position={[-59, 0, -118]} rotation={[0, -0.12, 0.1]}>
+      <group
+        ref={returnMast}
+        position={[-59, 0, -118]}
+        rotation={[0, -0.12, 0.1]}
+      >
         <mesh
           geometry={spire}
           scale={[1.65, 1.18, 1.7]}
@@ -115,9 +163,15 @@ export function WorldLandmarks() {
       </group>
 
       {/* THE FOUNDRY: polygonal drums and amber transfer bars mark the public split. */}
-      <group position={[-57, 7, -292]}>
+      <group ref={foundry} position={[-57, 7, -292]}>
         {[0, 1, 2].map((index) => (
-          <group key={index} position={[index * -10, index * 12, -index * 17]}>
+          <group
+            key={index}
+            ref={(group) => {
+              foundryDrums.current[index] = group;
+            }}
+            position={[index * -10, index * 12, -index * 17]}
+          >
             <mesh rotation={[Math.PI / 2, 0, 0]} material={materials.warm}>
               <cylinderGeometry args={[16 - index * 2, 16 - index * 2, 9, 8]} />
             </mesh>
@@ -145,7 +199,7 @@ export function WorldLandmarks() {
       </group>
 
       {/* THE VAULT: a single, heavy cipher chamber instead of repeated hoops. */}
-      <group position={[0, 0, -420]}>
+      <group ref={vault} position={[0, 0, -420]}>
         {[-1, 1].map((side) => (
           <group key={side}>
             <mesh position={[side * 28, 7, 0]} material={materials.violet}>
@@ -180,7 +234,7 @@ export function WorldLandmarks() {
       </group>
 
       {/* THE WATCHER: an asymmetric surveillance mast with a contained red eye. */}
-      <group position={[61, 12, -545]}>
+      <group ref={watcher} position={[61, 12, -545]}>
         <mesh
           geometry={spire}
           scale={[1.7, 1.7, 1.4]}

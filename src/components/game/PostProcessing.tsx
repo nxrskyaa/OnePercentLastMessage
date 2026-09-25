@@ -15,32 +15,33 @@ export function PostProcessing() {
   const quality = useSettingsStore((state) => state.runtimeQuality);
   const pipelineRef = useRef<ReturnType<typeof createPipeline> | null>(null);
   const bloomActive = useRef(false);
+  const enabled = bloomEnabled && screenEffects && quality !== "low";
 
   useEffect(() => {
+    if (!enabled) {
+      bloomActive.current = false;
+      return;
+    }
     const pipeline = createPipeline(
       gl as unknown as WebGPURenderer,
       scene,
       camera,
     );
     pipelineRef.current = pipeline;
+    bloomActive.current = true;
     return () => {
+      bloomActive.current = false;
       pipelineRef.current = null;
       pipeline.glow.dispose();
       pipeline.renderPipeline.dispose();
     };
-  }, [gl, scene, camera]);
+  }, [gl, scene, camera, enabled]);
 
   useEffect(() => {
     const pipeline = pipelineRef.current;
     if (!pipeline) return;
-    const enabled = bloomEnabled && screenEffects && quality !== "low";
-    bloomActive.current = enabled;
     pipeline.glow.strength.value = quality === "high" ? 0.24 : 0.15;
-    pipeline.renderPipeline.outputNode = enabled
-      ? pipeline.sceneColor.add(pipeline.glow)
-      : pipeline.sceneColor;
-    pipeline.renderPipeline.needsUpdate = true;
-  }, [bloomEnabled, screenEffects, quality]);
+  }, [quality]);
 
   useFrame(() => {
     if (bloomActive.current && pipelineRef.current)
@@ -63,5 +64,6 @@ function createPipeline(
   const sceneColor = scenePass.getTextureNode("output");
   const glow = bloom(sceneColor, 0.22, 0.25, 1.15);
   glow.setResolutionScale(0.5);
+  renderPipeline.outputNode = sceneColor.add(glow);
   return { renderPipeline, sceneColor, glow };
 }

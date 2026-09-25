@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
+import { flowSurface } from "@/rendering/materials";
 
 function route(side: number) {
   return new THREE.CatmullRomCurve3([
@@ -75,7 +76,14 @@ export function RouteFork() {
   const geometry = useMemo(() => {
     const safe = route(-1);
     const publicRoute = route(1);
+    const approach = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0, -11.58, 25),
+      new THREE.Vector3(0, -11.58, -80),
+      new THREE.Vector3(0, -11.58, -155),
+      new THREE.Vector3(0, -11.58, -215),
+    ]);
     return {
+      approach: new THREE.TubeGeometry(approach, 48, 0.09, 4, false),
       safeDeck: deck(safe, 7.4),
       publicDeck: deck(publicRoute, 7.4),
       safeEdges: [edge(safe, -1), edge(safe, 1)],
@@ -96,19 +104,15 @@ export function RouteFork() {
         roughness: 0.66,
         side: THREE.DoubleSide,
       }),
-      safeEdge: new THREE.MeshBasicMaterial({
-        color: "#81d6df",
-        toneMapped: false,
-      }),
-      publicEdge: new THREE.MeshBasicMaterial({
-        color: "#dfab76",
-        toneMapped: false,
-      }),
+      approach: flowSurface("#c4f5f6"),
+      safeEdge: flowSurface("#81d6df"),
+      publicEdge: flowSurface("#dfab76"),
     }),
     [],
   );
   useEffect(
     () => () => {
+      geometry.approach.dispose();
       geometry.safeDeck.dispose();
       geometry.publicDeck.dispose();
       geometry.safeEdges.forEach((item) => item.dispose());
@@ -119,6 +123,7 @@ export function RouteFork() {
   );
   return (
     <>
+      <mesh geometry={geometry.approach} material={materials.approach} />
       <mesh geometry={geometry.safeDeck} material={materials.safeDeck} />
       <mesh geometry={geometry.publicDeck} material={materials.publicDeck} />
       {geometry.safeEdges.map((item, index) => (
