@@ -9,33 +9,12 @@ import {
 } from "three/tsl";
 import { signalState } from "@/rendering/signalState";
 
-/** Dark, light-reactive infrastructure with a slow signal moving along its length. */
+/** Dark physical infrastructure; animation stays on the embedded signal runs. */
 export function dataSurface(base = "#102434", pulse = "#337e9b") {
   const material = new MeshStandardNodeMaterial();
   material.colorNode = color(base).mul(signalState.failure.mul(-0.62).add(1));
   material.emissiveNode = color(pulse)
-    .mul(
-      sin(positionLocal.y.mul(1.7).sub(time.mul(1.3)))
-        .mul(0.5)
-        .add(0.5)
-        .mul(0.11),
-    )
-    .add(
-      color("#80dfff").mul(
-        smoothstep(
-          0,
-          4,
-          positionWorld
-            .sub(signalState.scanOrigin)
-            .length()
-            .sub(signalState.scanRadius)
-            .abs(),
-        )
-          .oneMinus()
-          .mul(signalState.scanStrength)
-          .mul(0.72),
-      ),
-    )
+    .mul(0.055)
     .add(color("#78d8f3").mul(signalState.success.mul(0.34)));
   material.roughness = 0.72;
   material.metalness = 0.38;
@@ -67,6 +46,19 @@ export function energySurface(tint = "#7bdff0", speed = 2.5, player = false) {
           .mul(signalState.boost.mul(0.55).add(1))
           .mul(signalState.critical.mul(-0.32).add(1))
       : pulse.mul(scanResponse),
+  );
+  material.toneMapped = false;
+  return material;
+}
+
+/** Small signal runs travel along cable jackets; the broad hull stays unlit. */
+export function flowSurface(tint: string) {
+  const material = new MeshBasicNodeMaterial();
+  const wave = sin(positionLocal.z.mul(0.18).add(time.mul(3.6)))
+    .mul(0.5)
+    .add(0.5);
+  material.colorNode = color(tint).mul(
+    smoothstep(0.75, 0.98, wave).mul(0.85).add(0.25),
   );
   material.toneMapped = false;
   return material;

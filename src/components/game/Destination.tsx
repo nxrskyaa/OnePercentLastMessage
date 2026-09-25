@@ -9,6 +9,21 @@ import { dataSurface, energySurface } from "@/rendering/materials";
 export function Destination() {
   const rotor = useRef<THREE.Group>(null);
   const core = useRef<THREE.Mesh>(null);
+  const beaconMaterial = useRef<THREE.LineBasicMaterial>(null);
+  const beacon = useMemo(() => {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(
+        [
+          0, 63, 18, 36, 0, 18, 36, 0, 18, 0, -63, 18, 0, -63, 18, -36, 0, 18,
+          -36, 0, 18, 0, 63, 18, -18, 0, 18, 18, 0, 18,
+        ],
+        3,
+      ),
+    );
+    return geometry;
+  }, []);
   const materials = useMemo(
     () => ({
       hull: dataSurface("#202f39", "#37687b"),
@@ -23,15 +38,38 @@ export function Destination() {
       Object.values(materials).forEach((material) => material.dispose()),
     [materials],
   );
-  useFrame(({ clock }, delta) => {
+  useEffect(
+    () => () => {
+      beacon.dispose();
+    },
+    [beacon],
+  );
+  useFrame(({ clock, camera }, delta) => {
     if (rotor.current) rotor.current.rotation.z += Math.min(delta, 0.05) * 0.17;
     if (core.current)
       core.current.scale.setScalar(
         1 + Math.sin(clock.elapsedTime * 2.5) * 0.08,
       );
+    const distance = camera.position.z - GAME_CONFIG.destination.z;
+    if (beaconMaterial.current)
+      beaconMaterial.current.opacity =
+        THREE.MathUtils.clamp((distance - 45) / 200, 0.06, 0.72) *
+        (0.82 + Math.sin(clock.elapsedTime * 1.7) * 0.18);
   });
   return (
     <group position={[0, 0, GAME_CONFIG.destination.z]}>
+      <lineSegments geometry={beacon}>
+        <lineBasicMaterial
+          ref={beaconMaterial}
+          color="#a9ebf5"
+          transparent
+          opacity={0.72}
+          depthWrite={false}
+          depthTest={false}
+          toneMapped={false}
+          fog={false}
+        />
+      </lineSegments>
       {/* Tall split monoliths give the receiver a recognizable outline at range. */}
       {[-1, 1].map((side) => (
         <group key={side}>

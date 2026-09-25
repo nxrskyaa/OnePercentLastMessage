@@ -75,7 +75,7 @@ export function GameApp() {
 
   return (
     <main
-      className={`game-shell ${screenEffects ? "game-shell--effects" : ""} ${reducedMotion ? "game-shell--reduced" : ""}`}
+      className={`game-shell game-shell--${phase} ${screenEffects ? "game-shell--effects" : ""} ${reducedMotion ? "game-shell--reduced" : ""}`}
     >
       <div className="scene-layer">
         <GameCanvas onReady={onCanvasReady} />

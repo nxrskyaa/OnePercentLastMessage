@@ -34,8 +34,8 @@ export function ChaseCamera({
         : 0;
     desired.current.set(
       player.position.x * 0.72 + orbit,
-      player.position.y + (menu ? 5.8 : 5),
-      player.position.z + (menu ? 16 : 13),
+      player.position.y + (menu ? 5.8 : 4.6),
+      player.position.z + (menu ? 16 : 11),
     );
     camera.position.lerp(
       desired.current,

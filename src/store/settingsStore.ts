@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { renderMetrics } from "@/rendering/metrics";
 
 export type Quality = "auto" | "low" | "medium" | "high";
 
@@ -17,6 +18,13 @@ export interface GameSettings {
 }
 
 const KEY = "last-message.settings.v1";
+function autoRuntimeQuality(): "low" | "medium" {
+  if (typeof window === "undefined") return "low";
+  return window.matchMedia("(max-width: 900px)").matches ||
+    renderMetrics.backend === "webgl2"
+    ? "low"
+    : "medium";
+}
 export const DEFAULT_SETTINGS: GameSettings = {
   version: 1,
   masterVolume: 0.72,
@@ -99,11 +107,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       ...settings,
       hydrated: true,
       runtimeQuality:
-        settings.quality === "auto"
-          ? window.matchMedia("(max-width: 900px)").matches
-            ? "low"
-            : "medium"
-          : settings.quality,
+        settings.quality === "auto" ? autoRuntimeQuality() : settings.quality,
     });
   },
   update: (patch) => {
@@ -112,11 +116,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({
       ...settings,
       runtimeQuality:
-        settings.quality === "auto"
-          ? window.matchMedia("(max-width: 900px)").matches
-            ? "low"
-            : "medium"
-          : settings.quality,
+        settings.quality === "auto" ? autoRuntimeQuality() : settings.quality,
     });
     try {
       window.localStorage.setItem(KEY, JSON.stringify(settings));

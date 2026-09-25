@@ -19,8 +19,10 @@ import { PacketTraffic } from "@/components/game/PacketTraffic";
 import { Player } from "@/components/game/Player";
 import { PostProcessing } from "@/components/game/PostProcessing";
 import { QualityMonitor } from "@/components/game/QualityMonitor";
+import { RouteFork } from "@/components/game/RouteFork";
 import { ScanPulse } from "@/components/game/ScanPulse";
 import { SignalStructures } from "@/components/game/SignalStructures";
+import { SignalLoom } from "@/components/game/SignalLoom";
 import { WorldLandmarks } from "@/components/game/WorldLandmarks";
 import { GAME_CONFIG } from "@/game/config";
 import { generateNodes } from "@/game/nodes";
@@ -36,20 +38,22 @@ function GameScene() {
 
   return (
     <>
-      <color attach="background" args={["#030911"]} />
-      <fogExp2 attach="fog" args={["#07101a", GAME_CONFIG.world.fogDensity]} />
-      <ambientLight color="#6a8498" intensity={0.62} />
+      <color attach="background" args={["#07121d"]} />
+      <fogExp2 attach="fog" args={["#0c1b29", GAME_CONFIG.world.fogDensity]} />
+      <ambientLight color="#7797a8" intensity={0.9} />
       <directionalLight
         color="#a5c8d3"
-        intensity={2.5}
+        intensity={2.8}
         position={[-15, 28, 20]}
       />
       <directionalLight
         color="#517b91"
-        intensity={0.8}
+        intensity={1.15}
         position={[30, -12, -35]}
       />
       <SignalStructures />
+      <SignalLoom />
+      <RouteFork />
       <WorldLandmarks />
       <NetworkWorld />
       <PacketTraffic />
@@ -112,11 +116,18 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
           "webgl2";
         const renderer = new WebGPURenderer({ ...options, forceWebGL });
         await renderer.init();
+        if (
+          useSettingsStore.getState().quality === "auto" &&
+          "isWebGPUBackend" in renderer.backend === false
+        )
+          useSettingsStore.getState().setRuntimeQuality("low");
         return renderer;
       } catch {
         try {
           const renderer = new WebGPURenderer({ ...options, forceWebGL: true });
           await renderer.init();
+          if (useSettingsStore.getState().quality === "auto")
+            useSettingsStore.getState().setRuntimeQuality("low");
           return renderer;
         } catch {
           setRendererError(true);
@@ -132,7 +143,7 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
       <Canvas
         className="game-canvas"
         shadows={{ enabled: false, type: THREE.PCFShadowMap }}
-        dpr={quality === "low" ? 1 : quality === "medium" ? 1.3 : 1.6}
+        dpr={quality === "low" ? 0.9 : quality === "medium" ? 1 : 1.25}
         camera={{
           fov: GAME_CONFIG.camera.baseFov,
           near: 0.1,

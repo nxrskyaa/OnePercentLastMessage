@@ -27,3 +27,15 @@
 5. Inspect real browser screenshots and telemetry, tune quality and correct regressions before release.
 
 No renderer rewrite or gameplay replacement is planned.
+
+## Performance recovery, 25 September
+
+The baseline above predates the WebGPU visual pass. A follow-up check reproduced the current complaint in the WebGL2 compatibility backend at 1280×720: the Medium preset ran around 41–52 FPS in the local browser, with 181 draw calls. Low reached roughly 65–74 FPS. These are observed development-browser readings on one machine, not device benchmarks.
+
+The expensive path was rendering through the offscreen post pipeline even when bloom was disabled, combined with animated fragment work on every large structural surface, several permanently active landmark lights, a high pixel ratio, and a slow four-second quality check. Relay frames also submitted many small meshes separately.
+
+The recovery pass renders directly when bloom is inactive, reserves animated shader work for the thin signal surfaces, uses one active zone light, merges each relay frame into two meshes, and starts Auto on Low for WebGL2 and narrow screens. Auto samples every 1.5 seconds, reduces resolution quickly, and does not upscale during a run. Manual presets also reduce resolution when needed, and switch to Low after sustained severe slowdown. Base DPR is 0.9 / 1.0 / 1.25 for Low / Medium / High.
+
+After these changes, the same local browser showed WebGL2 Auto/Low around 138 FPS at the start of desktop gameplay and 112–165 FPS in an emulated 360×800 portrait viewport. WebGPU Medium ranged roughly 103–131 FPS during the sampled desktop run. Values vary with scene position and browser focus. Physical Android/iOS hardware remains unverified.
+
+The art correction makes the receiver beacon readable at distance, adds physical cyan/amber branch decks and flowing cable conduits, improves the opening's warm/cool silhouette, and brings the packet closer to camera with a folded seal shape. These use a small number of additional meshes while the relay merge offsets their draw-call cost.

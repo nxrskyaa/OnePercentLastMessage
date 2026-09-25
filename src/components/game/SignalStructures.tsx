@@ -14,6 +14,7 @@ type Block = {
   sx: number;
   sy: number;
   sz: number;
+  ry?: number;
 };
 const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 
@@ -30,6 +31,7 @@ function buildKit(spacing: number) {
   const amber: Block[] = [];
   const purple: Block[] = [];
   const warning: Block[] = [];
+  const waymarks: Block[] = [];
   const end = GAME_CONFIG.destination.z + 25;
 
   // Suspended machine deck with open gaps between solid bulkheads.
@@ -227,6 +229,27 @@ function buildKit(spacing: number) {
       });
     }
   }
+  // Directional inlays on the suspended deck give motion a readable cadence.
+  for (let z = -8; z > end; z -= 24) {
+    waymarks.push({
+      x: -1.5,
+      y: -11.63,
+      z,
+      sx: 0.19,
+      sy: 0.045,
+      sz: 3.5,
+      ry: 0.48,
+    });
+    waymarks.push({
+      x: 1.5,
+      y: -11.63,
+      z,
+      sx: 0.19,
+      sy: 0.045,
+      sz: 3.5,
+      ry: -0.48,
+    });
+  }
   return {
     frame,
     braces,
@@ -240,6 +263,7 @@ function buildKit(spacing: number) {
     amber,
     purple,
     warning,
+    waymarks,
   };
 }
 
@@ -291,7 +315,7 @@ function BlockBatch({
     const helper = new THREE.Object3D();
     blocks.forEach((block, index) => {
       helper.position.set(block.x, block.y, block.z);
-      helper.rotation.set(0, 0, 0);
+      helper.rotation.set(0, block.ry ?? 0, 0);
       helper.scale.set(block.sx, block.sy, block.sz);
       helper.updateMatrix();
       mesh.current?.setMatrixAt(index, helper.matrix);
@@ -330,6 +354,10 @@ export function SignalStructures() {
       amber: energySurface("#aa7a48", 1.6),
       purple: energySurface("#8d77ba", 1.4),
       warning: energySurface("#984c48", 1.8),
+      waymark: new THREE.MeshBasicMaterial({
+        color: "#80b9c7",
+        toneMapped: false,
+      }),
     }),
     [],
   );
@@ -352,6 +380,7 @@ export function SignalStructures() {
       <BlockBatch blocks={kit.amber} material={materials.amber} />
       <BlockBatch blocks={kit.purple} material={materials.purple} />
       <BlockBatch blocks={kit.warning} material={materials.warning} />
+      <BlockBatch blocks={kit.waymarks} material={materials.waymark} />
     </>
   );
 }

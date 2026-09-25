@@ -14,6 +14,7 @@ export function PostProcessing() {
   const screenEffects = useSettingsStore((state) => state.screenEffects);
   const quality = useSettingsStore((state) => state.runtimeQuality);
   const pipelineRef = useRef<ReturnType<typeof createPipeline> | null>(null);
+  const bloomActive = useRef(false);
 
   useEffect(() => {
     const pipeline = createPipeline(
@@ -33,6 +34,7 @@ export function PostProcessing() {
     const pipeline = pipelineRef.current;
     if (!pipeline) return;
     const enabled = bloomEnabled && screenEffects && quality !== "low";
+    bloomActive.current = enabled;
     pipeline.glow.strength.value = quality === "high" ? 0.24 : 0.15;
     pipeline.renderPipeline.outputNode = enabled
       ? pipeline.sceneColor.add(pipeline.glow)
@@ -41,7 +43,9 @@ export function PostProcessing() {
   }, [bloomEnabled, screenEffects, quality]);
 
   useFrame(() => {
-    pipelineRef.current?.renderPipeline.render();
+    if (bloomActive.current && pipelineRef.current)
+      pipelineRef.current.renderPipeline.render();
+    else (gl as unknown as WebGPURenderer).render(scene, camera);
     const info = (gl as unknown as WebGPURenderer).info.render;
     renderMetrics.drawCalls = info.drawCalls;
     renderMetrics.triangles = info.triangles;

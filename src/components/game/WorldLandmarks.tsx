@@ -1,8 +1,16 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useFrame } from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { dataSurface, energySurface } from "@/rendering/materials";
+
+const ZONES = [
+  { z: -100, x: 56, y: 0, color: "#5bbbd4", intensity: 55 },
+  { z: -292, x: -57, y: 7, color: "#d89460", intensity: 70 },
+  { z: -420, x: 0, y: 0, color: "#806bb5", intensity: 65 },
+  { z: -545, x: 61, y: 12, color: "#e75f62", intensity: 75 },
+] as const;
 
 function createSpire() {
   const shape = new THREE.Shape();
@@ -27,6 +35,28 @@ function createSpire() {
 
 export function WorldLandmarks() {
   const spire = useMemo(() => createSpire(), []);
+  const array = useRef<THREE.Group>(null);
+  const zoneLight = useRef<THREE.PointLight>(null);
+  const zoneIndex = useRef(-1);
+  useFrame(({ camera, clock }) => {
+    if (array.current)
+      array.current.rotation.y = Math.sin(clock.elapsedTime * 0.36) * 0.035;
+    const light = zoneLight.current;
+    if (!light) return;
+    let closest = 0;
+    for (let i = 1; i < ZONES.length; i++)
+      if (
+        Math.abs(camera.position.z - ZONES[i].z) <
+        Math.abs(camera.position.z - ZONES[closest].z)
+      )
+        closest = i;
+    if (closest === zoneIndex.current) return;
+    zoneIndex.current = closest;
+    const zone = ZONES[closest];
+    light.position.set(zone.x, zone.y, zone.z);
+    light.color.set(zone.color);
+    light.intensity = zone.intensity;
+  });
   const materials = useMemo(
     () => ({
       graphite: dataSurface("#2a3c49", "#26576a"),
@@ -49,8 +79,9 @@ export function WorldLandmarks() {
   );
   return (
     <>
+      <pointLight ref={zoneLight} distance={115} decay={2} />
       {/* THE ARRAY: a fan of receiver blades high above the opening corridor. */}
-      <group position={[56, 0, -100]}>
+      <group ref={array} position={[56, 0, -100]}>
         {[0, 1, 2, 3].map((index) => (
           <group
             key={index}
@@ -66,7 +97,21 @@ export function WorldLandmarks() {
             </mesh>
           </group>
         ))}
-        <pointLight color="#5bbbd4" intensity={55} distance={115} />
+      </group>
+
+      {/* The near-side return mast gives the opening a warm counterweight. */}
+      <group position={[-59, 0, -118]} rotation={[0, -0.12, 0.1]}>
+        <mesh
+          geometry={spire}
+          scale={[1.65, 1.18, 1.7]}
+          material={materials.warm}
+        />
+        <mesh position={[0, 6, 18]} material={materials.amber}>
+          <boxGeometry args={[1.1, 52, 0.3]} />
+        </mesh>
+        <mesh position={[6, -15, 17.5]} material={materials.graphite}>
+          <boxGeometry args={[15, 4, 4]} />
+        </mesh>
       </group>
 
       {/* THE FOUNDRY: polygonal drums and amber transfer bars mark the public split. */}
@@ -97,7 +142,6 @@ export function WorldLandmarks() {
         <mesh position={[15, -24.8, -22]} material={materials.amber}>
           <boxGeometry args={[27, 0.24, 81]} />
         </mesh>
-        <pointLight color="#d89460" intensity={70} distance={95} />
       </group>
 
       {/* THE VAULT: a single, heavy cipher chamber instead of repeated hoops. */}
@@ -128,10 +172,11 @@ export function WorldLandmarks() {
         <mesh position={[0, 38, -7]} material={materials.violet}>
           <boxGeometry args={[48, 7, 65]} />
         </mesh>
-        <mesh position={[0, 33.8, -7]} material={materials.purple}>
-          <boxGeometry args={[21, 0.15, 58]} />
-        </mesh>
-        <pointLight color="#806bb5" intensity={65} distance={105} />
+        {[-24, 9].map((z) => (
+          <mesh key={z} position={[0, 33.8, z]} material={materials.purple}>
+            <boxGeometry args={[18, 0.15, 0.75]} />
+          </mesh>
+        ))}
       </group>
 
       {/* THE WATCHER: an asymmetric surveillance mast with a contained red eye. */}
@@ -160,7 +205,6 @@ export function WorldLandmarks() {
         <mesh position={[-2, -17, 16]} material={materials.coral}>
           <boxGeometry args={[1.2, 44, 0.25]} />
         </mesh>
-        <pointLight color="#e75f62" intensity={75} distance={110} />
       </group>
     </>
   );

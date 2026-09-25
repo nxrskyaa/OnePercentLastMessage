@@ -34,6 +34,41 @@ function createFin() {
   return geometry;
 }
 
+function createPacketShell() {
+  const shape = new THREE.Shape();
+  shape.moveTo(-1.18, 0);
+  shape.lineTo(-0.76, 0.57);
+  shape.lineTo(0, 0.87);
+  shape.lineTo(0.76, 0.57);
+  shape.lineTo(1.18, 0);
+  shape.lineTo(0.76, -0.57);
+  shape.lineTo(0, -0.87);
+  shape.lineTo(-0.76, -0.57);
+  shape.closePath();
+  return new THREE.ExtrudeGeometry(shape, {
+    depth: 0.34,
+    bevelEnabled: true,
+    bevelSize: 0.08,
+    bevelThickness: 0.08,
+    bevelSegments: 1,
+  });
+}
+
+function createSealLines() {
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(
+      [
+        -1.05, 0, 0.47, 0, -0.42, 0.47, 1.05, 0, 0.47, 0, -0.42, 0.47, -0.7,
+        0.49, 0.47, 0, 0.13, 0.47, 0.7, 0.49, 0.47, 0, 0.13, 0.47,
+      ],
+      3,
+    ),
+  );
+  return geometry;
+}
+
 export function Player({
   playerRef,
   keys,
@@ -45,6 +80,8 @@ export function Player({
   const trail = useRef<THREE.Group>(null);
   const core = useRef<THREE.Mesh>(null);
   const fin = useMemo(() => createFin(), []);
+  const shellGeometry = useMemo(() => createPacketShell(), []);
+  const sealLines = useMemo(() => createSealLines(), []);
   const materials = useMemo(() => {
     const shell = dataSurface("#344f60", "#4f91aa");
     const plate = dataSurface("#456274", "#4e86a5");
@@ -56,8 +93,10 @@ export function Player({
       materials.shell.dispose();
       materials.plate.dispose();
       fin.dispose();
+      shellGeometry.dispose();
+      sealLines.dispose();
     },
-    [fin, materials],
+    [fin, materials, shellGeometry, sealLines],
   );
   const speed = useRef<number>(GAME_CONFIG.movement.cruiseSpeed);
   const sideSpeed = useRef(0);
@@ -88,7 +127,7 @@ export function Player({
         model.scale.setScalar(
           THREE.MathUtils.damp(
             model.scale.x,
-            0.15,
+            0.2,
             4,
             Math.min(frameDelta, 0.05),
           ),
@@ -97,7 +136,7 @@ export function Player({
         model.scale.setScalar(
           THREE.MathUtils.damp(
             model.scale.x,
-            1.55,
+            1.85,
             3,
             Math.min(frameDelta, 0.05),
           ),
@@ -105,7 +144,12 @@ export function Player({
       } else if (state.phase !== "paused") {
         if (trail.current) trail.current.visible = true;
         model.scale.setScalar(
-          THREE.MathUtils.damp(model.scale.x, 1, 5, Math.min(frameDelta, 0.05)),
+          THREE.MathUtils.damp(
+            model.scale.x,
+            1.3,
+            5,
+            Math.min(frameDelta, 0.05),
+          ),
         );
       }
       if (
@@ -185,13 +229,18 @@ export function Player({
       6,
       delta,
     );
-    model.rotation.y += delta * (boosting ? 1.4 : 0.8);
+    model.rotation.y = THREE.MathUtils.damp(
+      model.rotation.y,
+      steer * 0.1 + Math.sin(clock.elapsedTime * 1.8) * 0.025,
+      5,
+      delta,
+    );
     const struck = elapsed.current < hitUntil.current;
     const relayPulse = elapsed.current < relayPulseUntil.current;
     model.scale.setScalar(
       THREE.MathUtils.damp(
         model.scale.x,
-        struck ? 1.33 : relayPulse ? 1.22 : boosting ? 1.17 : 1,
+        struck ? 1.7 : relayPulse ? 1.5 : boosting ? 1.48 : 1.3,
         7,
         delta,
       ),
@@ -391,9 +440,15 @@ export function Player({
   return (
     <group ref={playerRef}>
       <group ref={visual}>
-        <mesh material={materials.shell}>
-          <octahedronGeometry args={[0.77, 0]} />
-        </mesh>
+        <mesh geometry={shellGeometry} material={materials.shell} />
+        <lineSegments geometry={sealLines}>
+          <lineBasicMaterial
+            color="#9feeff"
+            transparent
+            opacity={0.82}
+            toneMapped={false}
+          />
+        </lineSegments>
         <mesh ref={core} position={[0, 0, 0.7]} material={materials.core}>
           <octahedronGeometry args={[0.48, 0]} />
         </mesh>
