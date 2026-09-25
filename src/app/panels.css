@@ -244,6 +244,95 @@ kbd {
   font-size: 13px;
   line-height: 1.55;
 }
+.dlicom-feature {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 210px;
+  margin-top: 24px;
+  overflow: hidden;
+  border: 1px solid #77bfd172;
+  background:
+    radial-gradient(circle at 86% 40%, #3242a370, transparent 36%),
+    linear-gradient(120deg, #07141f, #101a38 76%, #0c1831);
+}
+.dlicom-feature::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 35%,
+    #78d8ff10 48%,
+    #d9baff1d 50%,
+    transparent 63%
+  );
+}
+.dlicom-feature-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+  padding: 23px 25px;
+}
+.dlicom-feature-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.dlicom-feature-heading img {
+  object-fit: cover;
+  border: 1px solid #83d9e73d;
+}
+.dlicom-feature-heading strong,
+.dlicom-feature-heading span {
+  display: block;
+}
+.dlicom-feature-heading strong {
+  margin-top: 2px;
+  color: #effbff;
+  font-size: 27px;
+  letter-spacing: -0.055em;
+}
+.dlicom-feature-copy p {
+  max-width: 410px;
+  color: #c0d4df;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.dlicom-feature-copy a {
+  color: #b7f4ff;
+  font:
+    700 10px Consolas,
+    monospace;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  border-bottom: 1px solid #8bdfea81;
+  padding-bottom: 5px;
+}
+.dlicom-feature-mascot {
+  z-index: 1;
+  align-self: flex-end;
+  width: 180px;
+  height: auto;
+  max-height: 215px;
+  object-fit: contain;
+  object-position: bottom;
+  filter: drop-shadow(0 0 20px #70ccff51);
+}
+@media (max-width: 560px) {
+  .dlicom-feature-mascot {
+    width: 120px;
+    opacity: 0.72;
+  }
+  .dlicom-feature-copy {
+    padding: 17px;
+  }
+  .dlicom-feature-copy p {
+    max-width: 260px;
+  }
+}
 .creator-line {
   display: flex;
   align-items: baseline;

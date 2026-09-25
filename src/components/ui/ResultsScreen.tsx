@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { GameButton } from "@/components/ui/GameButton";
+import { ResultCardDialog } from "@/components/ui/ResultCardDialog";
 import { MISSIONS } from "@/game/missions";
 import { privacyRank } from "@/game/scoring";
 import { formatTime } from "@/lib/format";
@@ -27,8 +28,31 @@ export function ResultsScreen() {
   const openBriefing = useGameStore((state) => state.openBriefing);
   const goMenu = useGameStore((state) => state.goMenu);
   const [copyStatus, setCopyStatus] = useState("COPY RESULT");
+  const [cardOpen, setCardOpen] = useState(false);
   const success = phase === "success";
   const mission = MISSIONS[missionIndex];
+  const cardData = useMemo(
+    () => ({
+      success,
+      receiver: mission.receiver,
+      elapsed,
+      battery,
+      privacy,
+      score,
+      trackerHits,
+      tipsCollected,
+    }),
+    [
+      success,
+      mission.receiver,
+      elapsed,
+      battery,
+      privacy,
+      score,
+      trackerHits,
+      tipsCollected,
+    ],
+  );
   const resultText = `${success ? "MESSAGE DELIVERED" : "SIGNAL LOST"}.\nTo: ${mission.receiver}\nBattery left: ${battery.toFixed(2)}%\nPrivacy: ${Math.round(privacy)}%\nScore: ${score.toLocaleString()}\n\n1% — Last Message\nBuilt by @nxrskyaa\n#LastMessage #DlicomGameJam`;
   const copyResult = async () => {
     try {
@@ -131,6 +155,9 @@ export function ResultsScreen() {
           </div>
         )}
         <div className="result-actions">
+          <GameButton variant="primary" onClick={() => setCardOpen(true)}>
+            DOWNLOAD RESULT CARD <span aria-hidden="true">↓</span>
+          </GameButton>
           <GameButton variant="primary" onClick={retry}>
             RETRY <span aria-hidden="true">↗</span>
           </GameButton>
@@ -148,6 +175,9 @@ export function ResultsScreen() {
       <footer className="result-footer">
         1% — LAST MESSAGE <span>BUILT BY NXR</span>
       </footer>
+      {cardOpen && (
+        <ResultCardDialog data={cardData} onClose={() => setCardOpen(false)} />
+      )}
     </section>
   );
 }

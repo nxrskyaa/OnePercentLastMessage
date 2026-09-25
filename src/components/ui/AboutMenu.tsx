@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { GameButton } from "@/components/ui/GameButton";
 import { useGameStore } from "@/store/gameStore";
 
@@ -29,6 +30,43 @@ export function AboutMenu() {
         1% — Last Message is a short 3D network survival game created for the
         Dlicom AI Game Jam. An independent game jam project.
       </p>
+      <div className="dlicom-feature">
+        <div className="dlicom-feature-copy">
+          <div className="dlicom-feature-heading">
+            <Image
+              src="/brand/dlicom-mark-reference.jpg"
+              alt="Dlicom mark"
+              width={68}
+              height={68}
+              unoptimized
+            />
+            <div>
+              <span className="micro-label">GAME JAM ORIGIN</span>
+              <strong>DLICOM</strong>
+            </div>
+          </div>
+          <p>
+            Dlicom brings messages, communities, creator tips, and a
+            self-custody wallet together. This game turns one last encrypted
+            message into a playable race.
+          </p>
+          <a
+            href="https://www.dlicom.ai/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            EXPLORE DLICOM ↗
+          </a>
+        </div>
+        <Image
+          className="dlicom-feature-mascot"
+          src="/brand/dili-blue-cutout.png"
+          alt="Blue Dili mascot in a bubble helmet"
+          width={202}
+          height={303}
+          unoptimized
+        />
+      </div>
       <div className="creator-line">
         <span className="micro-label">CREATED BY</span>
         <strong>NXR</strong>
