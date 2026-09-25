@@ -81,7 +81,7 @@ export function FirstRunTutorial() {
         </div>
         <div className="tutorial-chips touch-instructions">
           {current.touchChips.map(([key, label]) => (
-            <div key={label}>
+            <div key={`${key}-${label}`}>
               <kbd>{key}</kbd>
               <span>{label}</span>
             </div>
