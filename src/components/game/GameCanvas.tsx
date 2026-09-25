@@ -21,6 +21,7 @@ import { PostProcessing } from "@/components/game/PostProcessing";
 import { QualityMonitor } from "@/components/game/QualityMonitor";
 import { ScanPulse } from "@/components/game/ScanPulse";
 import { SignalStructures } from "@/components/game/SignalStructures";
+import { WorldLandmarks } from "@/components/game/WorldLandmarks";
 import { GAME_CONFIG } from "@/game/config";
 import { generateNodes } from "@/game/nodes";
 import { useKeyboard } from "@/hooks/useKeyboard";
@@ -49,6 +50,7 @@ function GameScene() {
         position={[30, -12, -35]}
       />
       <SignalStructures />
+      <WorldLandmarks />
       <NetworkWorld />
       <PacketTraffic />
       <NodeManager nodes={nodes} playerRef={playerRef} />

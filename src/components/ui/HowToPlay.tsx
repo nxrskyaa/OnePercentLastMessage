@@ -30,7 +30,7 @@ export function HowToPlay() {
         Deliver your last message before the battery reaches zero.
       </p>
       <div className="guide-grid">
-        <div className="guide-section">
+        <div className="guide-section desktop-instructions">
           <span className="micro-label">CONTROLS</span>
           <div className="guide-control">
             <kbd>W / ↑</kbd>
@@ -55,6 +55,33 @@ export function HowToPlay() {
           <div className="guide-control">
             <kbd>ESC</kbd>
             <span>Pause</span>
+          </div>
+        </div>
+        <div className="guide-section touch-instructions">
+          <span className="micro-label">TOUCH CONTROLS</span>
+          <div className="guide-control">
+            <kbd>◀ ▶</kbd>
+            <span>Steer</span>
+          </div>
+          <div className="guide-control">
+            <kbd>THRUST</kbd>
+            <span>Accelerate</span>
+          </div>
+          <div className="guide-control">
+            <kbd>BRAKE</kbd>
+            <span>Slow down</span>
+          </div>
+          <div className="guide-control">
+            <kbd>BOOST</kbd>
+            <span>Hold for speed · costly</span>
+          </div>
+          <div className="guide-control">
+            <kbd>SCAN</kbd>
+            <span>Tap to reveal the network</span>
+          </div>
+          <div className="guide-control">
+            <kbd>PAUSE</kbd>
+            <span>Tap the top-right button</span>
           </div>
         </div>
         <div className="guide-section">

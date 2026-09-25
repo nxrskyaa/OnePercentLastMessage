@@ -22,61 +22,78 @@ function buildKit(spacing: number) {
   const braces: Beam[] = [];
   const far: Beam[] = [];
   const panels: Block[] = [];
+  const warmPanels: Block[] = [];
+  const violetPanels: Block[] = [];
+  const dangerPanels: Block[] = [];
   const seams: Block[] = [];
   const conduits: Block[] = [];
   const amber: Block[] = [];
+  const purple: Block[] = [];
   const warning: Block[] = [];
   const end = GAME_CONFIG.destination.z + 25;
 
   // Suspended machine deck with open gaps between solid bulkheads.
   for (let z = 20, index = 0; z > end; z -= spacing, index++) {
     const heavy = index % 3 === 0;
+    const dominantSide = index % 2 === 0 ? 1 : -1;
+    const zonePanels =
+      z < -500
+        ? dangerPanels
+        : z < -355
+          ? violetPanels
+          : z < -180
+            ? warmPanels
+            : panels;
     for (const side of [-1, 1]) {
+      const dominant = side === dominantSide;
       const x = side * (24 + (index % 4 === 2 ? 5 : 0));
-      const outer = x + side * (heavy ? 13 : 8);
+      const outer = x + side * (dominant && heavy ? 13 : 8);
       frame.push({
         a: v(x, -12, z),
-        b: v(x, 19 + (heavy ? 7 : 0), z),
-        width: heavy ? 3.8 : 2.5,
+        b: v(x, dominant ? 19 + (heavy ? 7 : 0) : 7, z),
+        width: dominant ? (heavy ? 3.8 : 2.5) : 1.8,
       });
-      if (heavy)
+      if (heavy && dominant)
         frame.push({
           a: v(x, 26, z),
           b: v(side * 12, 34, z - 3),
           width: 2.6,
         });
-      else if (index % 3 === 2)
+      else if (index % 3 === 2 && dominant)
         frame.push({
           a: v(x, 19, z),
           b: v(x + side * 14, 37, z - spacing * 0.25),
           width: 1.6,
         });
-      braces.push({
-        a: v(x, -8, z),
-        b: v(outer, 11, z - spacing * 0.42),
-        width: 1.45,
-      });
-      braces.push({
-        a: v(outer, 11, z - spacing * 0.42),
-        b: v(x, 22, z - spacing * 0.8),
-        width: 1.2,
-      });
-      panels.push({
+      if (dominant) {
+        braces.push({
+          a: v(x, -8, z),
+          b: v(outer, 11, z - spacing * 0.42),
+          width: 1.45,
+        });
+        braces.push({
+          a: v(outer, 11, z - spacing * 0.42),
+          b: v(x, 22, z - spacing * 0.8),
+          width: 1.2,
+        });
+      }
+      const panelWidth = dominant && heavy ? 8 : dominant ? 5 : 3.5;
+      zonePanels.push({
         x: outer,
-        y: 5,
+        y: dominant ? 5 : -1,
         z: z - spacing * 0.45,
-        sx: heavy ? 8 : 5,
-        sy: heavy ? 21 : 15,
-        sz: heavy ? 14 : 9,
+        sx: panelWidth,
+        sy: dominant ? (heavy ? 21 : 15) : 10,
+        sz: dominant && heavy ? 14 : 9,
       });
-      for (const y of [0, 6, 12]) {
+      for (const y of dominant ? [0, 6, 12] : [0]) {
         seams.push({
-          x: outer - side * (heavy ? 4.07 : 2.57),
+          x: outer - side * (panelWidth / 2 + 0.07),
           y,
           z: z - spacing * 0.45,
           sx: 0.14,
           sy: 0.22,
-          sz: heavy ? 12 : 7,
+          sz: dominant && heavy ? 12 : 7,
         });
       }
       panels.push({
@@ -95,7 +112,7 @@ function buildKit(spacing: number) {
         sy: 0.1,
         sz: spacing * 0.73,
       });
-      if (heavy)
+      if (heavy && dominant)
         panels.push({
           x: outer + side * 2,
           y: 11,
@@ -104,10 +121,32 @@ function buildKit(spacing: number) {
           sy: 11,
           sz: 8,
         });
+      if (dominant && z < -180) {
+        const signal = z < -500 ? warning : z < -355 ? purple : amber;
+        signal.push({
+          x: outer - side * (panelWidth / 2 + 0.16),
+          y: 8,
+          z: z - spacing * 0.45,
+          sx: 0.13,
+          sy: 6,
+          sz: 0.22,
+        });
+      }
     }
-    if (heavy) {
-      frame.push({ a: v(-12, 34, z - 3), b: v(12, 34, z - 3), width: 2.8 });
-      panels.push({ x: 0, y: 35.8, z: z - 3, sx: 13, sy: 1.1, sz: 5 });
+    if (heavy && index % 2 === 0) {
+      frame.push({
+        a: v(dominantSide * 12, 34, z - 3),
+        b: v(-dominantSide * 4, 34, z - 3),
+        width: 2.8,
+      });
+      panels.push({
+        x: dominantSide * 4,
+        y: 35.8,
+        z: z - 3,
+        sx: 11,
+        sy: 1.1,
+        sz: 5,
+      });
     }
     panels.push({
       x: 0,
@@ -188,7 +227,20 @@ function buildKit(spacing: number) {
       });
     }
   }
-  return { frame, braces, far, panels, seams, conduits, amber, warning };
+  return {
+    frame,
+    braces,
+    far,
+    panels,
+    warmPanels,
+    violetPanels,
+    dangerPanels,
+    seams,
+    conduits,
+    amber,
+    purple,
+    warning,
+  };
 }
 
 function BeamBatch({
@@ -268,11 +320,15 @@ export function SignalStructures() {
     () => ({
       frame: dataSurface("#344752", "#20455b"),
       panel: dataSurface("#24343e", "#193143"),
+      warmPanel: dataSurface("#42383a", "#79563f"),
+      violetPanel: dataSurface("#373247", "#614b80"),
+      dangerPanel: dataSurface("#402e37", "#7d424d"),
       seam: dataSurface("#0b1720", "#193143"),
       brace: dataSurface("#40515a", "#244a59"),
       far: dataSurface("#1c2b34", "#152835"),
       cyan: energySurface("#317f9a", 1.7),
       amber: energySurface("#aa7a48", 1.6),
+      purple: energySurface("#8d77ba", 1.4),
       warning: energySurface("#984c48", 1.8),
     }),
     [],
@@ -288,9 +344,13 @@ export function SignalStructures() {
       <BeamBatch beams={kit.frame} material={materials.frame} />
       <BeamBatch beams={kit.braces} material={materials.brace} />
       <BlockBatch blocks={kit.panels} material={materials.panel} />
+      <BlockBatch blocks={kit.warmPanels} material={materials.warmPanel} />
+      <BlockBatch blocks={kit.violetPanels} material={materials.violetPanel} />
+      <BlockBatch blocks={kit.dangerPanels} material={materials.dangerPanel} />
       <BlockBatch blocks={kit.seams} material={materials.seam} />
       <BlockBatch blocks={kit.conduits} material={materials.cyan} />
       <BlockBatch blocks={kit.amber} material={materials.amber} />
+      <BlockBatch blocks={kit.purple} material={materials.purple} />
       <BlockBatch blocks={kit.warning} material={materials.warning} />
     </>
   );

@@ -14,6 +14,11 @@ const STEPS = [
       ["A D / ← →", "STEER"],
       ["S / ↓", "BRAKE"],
     ],
+    touchChips: [
+      ["THRUST", "ACCELERATE"],
+      ["◀ ▶", "STEER"],
+      ["BRAKE", "SLOW DOWN"],
+    ],
   },
   {
     count: "02 / 03",
@@ -21,6 +26,11 @@ const STEPS = [
     body: "Your battery is dying. Boost is fast but expensive. Cyan boosters restore a little power; red trackers drain power and privacy.",
     chips: [
       ["SHIFT", "BOOST"],
+      ["CYAN", "POWER"],
+      ["RED", "DANGER"],
+    ],
+    touchChips: [
+      ["BOOST", "HOLD"],
       ["CYAN", "POWER"],
       ["RED", "DANGER"],
     ],
@@ -33,6 +43,11 @@ const STEPS = [
       ["SPACE", "SCAN"],
       ["CENTER", "PERFECT RELAY"],
       ["ESC", "PAUSE"],
+    ],
+    touchChips: [
+      ["SCAN", "TAP"],
+      ["CENTER", "PERFECT RELAY"],
+      ["PAUSE", "TAP"],
     ],
   },
 ] as const;
@@ -56,8 +71,16 @@ export function FirstRunTutorial() {
         </span>
         <h2>{current.title}</h2>
         <p>{current.body}</p>
-        <div className="tutorial-chips">
+        <div className="tutorial-chips desktop-instructions">
           {current.chips.map(([key, label]) => (
+            <div key={label}>
+              <kbd>{key}</kbd>
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+        <div className="tutorial-chips touch-instructions">
+          {current.touchChips.map(([key, label]) => (
             <div key={label}>
               <kbd>{key}</kbd>
               <span>{label}</span>

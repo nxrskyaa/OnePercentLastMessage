@@ -28,10 +28,10 @@ export function QualityMonitor() {
     renderMetrics.quality = settings.runtimeQuality;
     renderMetrics.trafficPackets =
       settings.runtimeQuality === "low"
-        ? 600
+        ? 220
         : settings.runtimeQuality === "medium"
-          ? 1600
-          : 3600;
+          ? 520
+          : 1050;
     if (
       settings.quality === "auto" &&
       useGameStore.getState().phase === "playing"
@@ -52,7 +52,12 @@ export function QualityMonitor() {
         settings.runtimeQuality === "medium"
       )
         settings.setRuntimeQuality("low");
-      else if (fastWindows.current >= 3 && settings.runtimeQuality !== "high") {
+      else if (
+        fastWindows.current >= 3 &&
+        settings.runtimeQuality !== "high" &&
+        (!window.matchMedia("(max-width: 900px)").matches ||
+          settings.runtimeQuality === "low")
+      ) {
         settings.setRuntimeQuality(
           settings.runtimeQuality === "low" ? "medium" : "high",
         );

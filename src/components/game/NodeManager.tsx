@@ -71,19 +71,13 @@ function TrackerScanner() {
   });
   return (
     <group ref={sweep}>
-      <mesh position={[0, 1.55, 0.38]}>
-        <boxGeometry args={[0.1, 3, 0.07]} />
+      <mesh position={[0, 0, 0.38]}>
+        <boxGeometry args={[0.12, 5.1, 0.07]} />
         <meshBasicMaterial color="#ff9282" toneMapped={false} />
       </mesh>
-      <mesh position={[0, 0, 0.3]}>
-        <planeGeometry args={[2.1, 5.4]} />
-        <meshBasicMaterial
-          color="#ec665b"
-          transparent
-          opacity={0.09}
-          depthWrite={false}
-          side={THREE.DoubleSide}
-        />
+      <mesh position={[0, 0, 0.45]}>
+        <torusGeometry args={[2.7, 0.065, 4, 8]} />
+        <meshBasicMaterial color="#e56d61" toneMapped={false} />
       </mesh>
     </group>
   );
@@ -117,21 +111,12 @@ function NodeVisual({ node }: { node: GameNode }) {
   if (node.type === "tracker")
     return (
       <group position={[node.x, 0, node.z]}>
-        <mesh position={[-3, -0.1, 0]} material={dark}>
-          <boxGeometry args={[1, 7.8, 2.1]} />
+        <PolygonFrame radius={3.65} sides={8} color={color} />
+        <mesh position={[0, 4.15, 0]} material={dark}>
+          <boxGeometry args={[3.5, 0.65, 1.8]} />
         </mesh>
-        <mesh position={[3, -0.1, 0]} material={dark}>
-          <boxGeometry args={[1, 7.8, 2.1]} />
-        </mesh>
-        <mesh position={[0, 4.1, 0]} material={hull}>
-          <boxGeometry args={[7.6, 1.2, 2.4]} />
-        </mesh>
-        <mesh position={[0, 3.25, 0.5]} material={energy}>
-          <boxGeometry args={[1.5, 0.32, 0.2]} />
-        </mesh>
-        <mesh position={[-3, -0.1, 1.08]}>
-          <boxGeometry args={[0.13, 4.8, 0.06]} />
-          <meshBasicMaterial color="#a84742" toneMapped={false} />
+        <mesh position={[0, 4.17, 1.02]} material={energy}>
+          <boxGeometry args={[1.2, 0.16, 0.08]} />
         </mesh>
         <TrackerScanner />
         <pointLight color="#f06e60" intensity={6} distance={17} />
@@ -146,21 +131,11 @@ function NodeVisual({ node }: { node: GameNode }) {
         sides={node.type === "booster" ? 8 : 6}
         color={color}
       />
-      <mesh position={[0, 0, 0.42]} material={dark}>
-        <torusGeometry args={[radius - 0.65, 0.18, 5, 48]} />
+      <mesh position={[0, radius - 0.72, 0.58]} material={energy}>
+        <boxGeometry args={[radius * 0.7, 0.12, 0.12]} />
       </mesh>
-      <mesh position={[0, 0, 0.5]} material={energy}>
-        <torusGeometry args={[radius - 0.72, 0.075, 4, 48]} />
-      </mesh>
-      <mesh position={[0, 0, 0.2]}>
-        <circleGeometry args={[radius - 0.78, 32]} />
-        <meshBasicMaterial
-          color={color}
-          transparent
-          opacity={node.type === "booster" ? 0.07 : 0.025}
-          depthWrite={false}
-          side={THREE.DoubleSide}
-        />
+      <mesh position={[0, -radius + 0.72, 0.58]} material={energy}>
+        <boxGeometry args={[radius * 0.7, 0.12, 0.12]} />
       </mesh>
       {node.type === "booster" && (
         <>

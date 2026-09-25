@@ -98,7 +98,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({
       ...settings,
       hydrated: true,
-      runtimeQuality: settings.quality === "auto" ? "medium" : settings.quality,
+      runtimeQuality:
+        settings.quality === "auto"
+          ? window.matchMedia("(max-width: 900px)").matches
+            ? "low"
+            : "medium"
+          : settings.quality,
     });
   },
   update: (patch) => {
@@ -106,7 +111,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const settings = validate({ ...current, ...patch, version: 1 });
     set({
       ...settings,
-      runtimeQuality: settings.quality === "auto" ? "medium" : settings.quality,
+      runtimeQuality:
+        settings.quality === "auto"
+          ? window.matchMedia("(max-width: 900px)").matches
+            ? "low"
+            : "medium"
+          : settings.quality,
     });
     try {
       window.localStorage.setItem(KEY, JSON.stringify(settings));

@@ -620,36 +620,3 @@
     top: 22px;
   }
 }
-
-.desktop-recommendation {
-  display: none;
-}
-@media (max-width: 760px) {
-  .desktop-recommendation {
-    position: absolute;
-    z-index: 20;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 9vw;
-    background: #030b16f7;
-  }
-  .desktop-recommendation h2 {
-    max-width: 520px;
-    margin: 25px 0 10px;
-    font-size: clamp(36px, 9vw, 65px);
-    line-height: 1;
-    letter-spacing: -0.06em;
-  }
-  .desktop-recommendation p {
-    max-width: 430px;
-    color: #a6c2ca;
-    line-height: 1.5;
-    margin-bottom: 26px;
-  }
-  .desktop-recommendation .game-button {
-    width: min(100%, 390px);
-  }
-}

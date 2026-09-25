@@ -20,6 +20,8 @@ The first run includes a three-step field guide. Later runs skip it. The game wo
 | Space                 | Scan the nearby network (cooldown) |
 | Escape                | Pause / resume                     |
 
+On phones and small tablets, use the on-screen **Left**, **Right**, **Thrust**, **Brake**, **Boost**, and **Scan** controls. Hold flight buttons to move and tap Scan or Pause. Touch controls support simultaneous steering and thrust/boost.
+
 ## Features
 
 - One continuous procedural network scene with reusable relay, tracker, booster, tip, and route nodes.
@@ -44,7 +46,7 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:3000> in a modern desktop browser. A viewport of 1280×720 or larger is recommended.
+Open <http://localhost:3000> in a modern browser. Desktop offers the widest view; portrait and landscape mobile layouts include touch flight controls and start at a lighter render preset.
 
 The renderer uses WebGPU when available and falls back to the Three.js WebGL2 backend. Add `?renderer=webgl2` to force the compatibility backend for QA. In development, `?perf=1` displays FPS, frame time, backend, draw calls, triangles, packet count, render scale, and quality. The panel is absent from production builds.
 

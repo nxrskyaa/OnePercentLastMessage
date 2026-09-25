@@ -4,6 +4,7 @@ import "./shell.css";
 import "./panels.css";
 import "./hud.css";
 import "./results.css";
+import "./mobile.css";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??

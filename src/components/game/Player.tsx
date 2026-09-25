@@ -20,6 +20,20 @@ interface PlayerProps {
   nodes: GameNode[];
 }
 
+function createFin() {
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(
+      [-0.36, 0.45, 0.22, 0.36, 0.45, 0.22, 0, 1.8, -0.08, 0, 0.72, -0.72],
+      3,
+    ),
+  );
+  geometry.setIndex([0, 1, 2, 0, 3, 1, 1, 3, 2, 2, 3, 0]);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
 export function Player({
   playerRef,
   keys,
@@ -30,12 +44,10 @@ export function Player({
   const visual = useRef<THREE.Group>(null);
   const trail = useRef<THREE.Group>(null);
   const core = useRef<THREE.Mesh>(null);
+  const fin = useMemo(() => createFin(), []);
   const materials = useMemo(() => {
-    const shell = dataSurface("#304451", "#4f91aa");
-    shell.transparent = true;
-    shell.opacity = 0.68;
-    shell.depthWrite = false;
-    const plate = dataSurface("#172936", "#32627a");
+    const shell = dataSurface("#344f60", "#4f91aa");
+    const plate = dataSurface("#456274", "#4e86a5");
     return { core: energySurface("#e5ffff", 5.4, true), shell, plate };
   }, []);
   useEffect(
@@ -43,8 +55,9 @@ export function Player({
       materials.core.dispose();
       materials.shell.dispose();
       materials.plate.dispose();
+      fin.dispose();
     },
-    [materials],
+    [fin, materials],
   );
   const speed = useRef<number>(GAME_CONFIG.movement.cruiseSpeed);
   const sideSpeed = useRef(0);
@@ -172,7 +185,7 @@ export function Player({
       6,
       delta,
     );
-    model.rotation.y += delta * (boosting ? 2.1 : 1.3);
+    model.rotation.y += delta * (boosting ? 1.4 : 0.8);
     const struck = elapsed.current < hitUntil.current;
     const relayPulse = elapsed.current < relayPulseUntil.current;
     model.scale.setScalar(
@@ -378,33 +391,17 @@ export function Player({
   return (
     <group ref={playerRef}>
       <group ref={visual}>
-        <mesh ref={core} material={materials.core}>
-          <octahedronGeometry args={[0.52, 0]} />
-        </mesh>
         <mesh material={materials.shell}>
-          <octahedronGeometry args={[0.92, 0]} />
+          <octahedronGeometry args={[0.77, 0]} />
         </mesh>
-        <mesh>
-          <icosahedronGeometry args={[1.05, 1]} />
-          <meshBasicMaterial
-            color="#60b4d3"
-            transparent
-            opacity={0.085}
-            depthWrite={false}
-            side={THREE.BackSide}
-          />
+        <mesh ref={core} position={[0, 0, 0.7]} material={materials.core}>
+          <octahedronGeometry args={[0.48, 0]} />
         </mesh>
         {[0, 1, 2, 3].map((index) => (
           <group key={index} rotation={[0, 0, (index * Math.PI) / 2]}>
-            <mesh
-              position={[0, 0.94, 0]}
-              rotation={[0, 0, Math.PI / 4]}
-              material={materials.plate}
-            >
-              <boxGeometry args={[0.45, 0.45, 0.72]} />
-            </mesh>
-            <mesh position={[0, 1.14, -0.31]}>
-              <boxGeometry args={[0.12, 0.32, 0.08]} />
+            <mesh geometry={fin} material={materials.plate} />
+            <mesh position={[0, 1.43, 0.04]}>
+              <boxGeometry args={[0.1, 0.43, 0.08]} />
               <meshBasicMaterial color="#a8edfa" toneMapped={false} />
             </mesh>
           </group>
@@ -422,6 +419,23 @@ export function Player({
             toneMapped={false}
           />
         </mesh>
+        {[-1, 1].map((side) => (
+          <mesh
+            key={side}
+            position={[side * 0.34, 0, 2.4]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <coneGeometry args={[0.045, 3.7, 4, 1, true]} />
+            <meshBasicMaterial
+              color="#9aeaf9"
+              transparent
+              opacity={0.42}
+              depthWrite={false}
+              side={THREE.DoubleSide}
+              toneMapped={false}
+            />
+          </mesh>
+        ))}
         {[1.3, 2.3, 3.6, 5.2, 7].map((z, index) => (
           <mesh key={z} position={[0, 0, z]} scale={1 - index * 0.15}>
             <octahedronGeometry args={[0.22, 0]} />

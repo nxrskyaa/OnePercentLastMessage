@@ -1,16 +1,16 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { AboutMenu } from "@/components/ui/AboutMenu";
 import { BootSequence } from "@/components/ui/BootSequence";
 import { Countdown } from "@/components/ui/Countdown";
 import { FirstRunTutorial } from "@/components/ui/FirstRunTutorial";
-import { GameButton } from "@/components/ui/GameButton";
 import { HowToPlay } from "@/components/ui/HowToPlay";
 import { HUD } from "@/components/ui/HUD";
 import { MainMenu } from "@/components/ui/MainMenu";
 import { MissionBriefing } from "@/components/ui/MissionBriefing";
+import { MobileControls } from "@/components/ui/MobileControls";
 import { PauseMenu } from "@/components/ui/PauseMenu";
 import { PerformanceHUD } from "@/components/ui/PerformanceHUD";
 import { ResultsScreen } from "@/components/ui/ResultsScreen";
@@ -25,7 +25,6 @@ const GameCanvas = dynamic(() => import("@/components/game/GameCanvas"), {
 });
 
 export function GameApp() {
-  const [mobileWarningDismissed, setMobileWarningDismissed] = useState(false);
   const phase = useGameStore((state) => state.phase);
   const panel = useGameStore((state) => state.panel);
   const screenEffects = useSettingsStore((state) => state.screenEffects);
@@ -93,6 +92,7 @@ export function GameApp() {
       {phase === "tutorial" && <FirstRunTutorial />}
       {phase === "countdown" && <Countdown />}
       {(phase === "playing" || phase === "paused") && <HUD />}
+      {phase === "playing" && <MobileControls />}
       {phase === "paused" && panel === "none" && <PauseMenu />}
       {(phase === "success" || phase === "failed") && <ResultsScreen />}
       {panel !== "none" && (
@@ -104,25 +104,6 @@ export function GameApp() {
       )}
       <div className="screen-noise" aria-hidden="true" />
       <PerformanceHUD />
-      {!mobileWarningDismissed && (
-        <section
-          className="desktop-recommendation"
-          aria-label="Desktop recommendation"
-        >
-          <span className="micro-label">NXR // DISPLAY NOTICE</span>
-          <h2>DESKTOP TRANSMISSION RECOMMENDED.</h2>
-          <p>
-            This signal is tuned for a desktop browser and keyboard. You can
-            still continue here.
-          </p>
-          <GameButton
-            variant="primary"
-            onClick={() => setMobileWarningDismissed(true)}
-          >
-            CONTINUE ANYWAY ↗
-          </GameButton>
-        </section>
-      )}
     </main>
   );
 }

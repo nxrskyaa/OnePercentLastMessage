@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { gameInput } from "@/game/input";
 import { useGameStore } from "@/store/gameStore";
 
 export function useKeyboard() {
-  const pressed = useRef(new Set<string>());
-  const mouseX = useRef(0);
-  const scanQueuedRef = useRef(false);
-
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
@@ -29,21 +26,25 @@ export function useKeyboard() {
         !event.repeat &&
         useGameStore.getState().phase === "playing"
       )
-        scanQueuedRef.current = true;
-      pressed.current.add(key);
+        gameInput.scanQueuedRef.current = true;
+      gameInput.pressed.current.add(key);
     };
     const up = (event: KeyboardEvent) =>
-      pressed.current.delete(event.key.toLowerCase());
+      gameInput.pressed.current.delete(event.key.toLowerCase());
     const move = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse") return;
+      if (
+        event.target instanceof Element &&
+        event.target.closest(".mobile-controls")
+      )
+        return;
       if (useGameStore.getState().phase === "playing")
-        mouseX.current = (event.clientX / window.innerWidth - 0.5) * 2;
-      else mouseX.current = 0;
+        gameInput.mouseX.current =
+          (event.clientX / window.innerWidth - 0.5) * 2;
+      else gameInput.mouseX.current = 0;
     };
-    const clear = () => {
-      pressed.current.clear();
-      mouseX.current = 0;
-      scanQueuedRef.current = false;
-    };
+    const clear = () => gameInput.clear();
+    gameInput.clear();
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     window.addEventListener("blur", clear);
@@ -56,5 +57,5 @@ export function useKeyboard() {
     };
   }, []);
 
-  return { pressed, mouseX, scanQueuedRef };
+  return gameInput;
 }
