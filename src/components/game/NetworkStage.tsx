@@ -85,6 +85,69 @@ function makeFoldedChannel() {
   return geometry;
 }
 
+function wallPoint(side: number, t: number, z: number, lift = 0) {
+  const fold = Math.sin(((35 - z) / 10) * 0.71 + 36) * 1.7;
+  return [
+    side * (36 + 9 * t + fold - lift),
+    -3 + 22 * t + channelHeight(z),
+    z,
+  ] as const;
+}
+
+function makeWallRelief() {
+  const positions: number[] = [];
+  const colors: number[] = [];
+  const indices: number[] = [];
+  const dark = new THREE.Color("#3f63ae");
+  const light = new THREE.Color("#7b9bd3");
+  const lilac = new THREE.Color("#9c91c8");
+  const tint = new THREE.Color();
+  const add = (
+    point: readonly [number, number, number],
+    color: THREE.Color,
+  ) => {
+    positions.push(...point);
+    colors.push(color.r, color.g, color.b);
+  };
+  for (const side of [-1, 1]) {
+    for (let section = 0; section < 17; section++) {
+      const z = -25 - section * 40;
+      const start = positions.length / 3;
+      tint.copy(section > 8 ? lilac : light);
+      const accent = section % 4 === 0 ? 0.26 : 0.13;
+      const base = tint.clone().lerp(dark, accent);
+      add(wallPoint(side, 0.18, z + 15, 0.3), base);
+      add(wallPoint(side, 0.8, z + 9, 0.34), tint);
+      add(wallPoint(side, 0.88, z - 10, 0.4), base);
+      add(wallPoint(side, 0.36, z - 16, 0.37), dark);
+      add(wallPoint(side, 0.52, z, 1.2), tint);
+      indices.push(
+        start,
+        start + 1,
+        start + 4,
+        start + 1,
+        start + 2,
+        start + 4,
+        start + 2,
+        start + 3,
+        start + 4,
+        start + 3,
+        start,
+        start + 4,
+      );
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(positions, 3),
+  );
+  geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
 function makeCurrent() {
   const geometry = new THREE.PlaneGeometry(40, 720, 20, 180);
   geometry.rotateX(-Math.PI / 2);
@@ -171,6 +234,38 @@ function makeCrossings() {
   return geometry;
 }
 
+function makeCrossingLight() {
+  const stops = [-80, -242, -436, -574];
+  const parts = stops.map((zBase, section) => {
+    const points: THREE.Vector3[] = [];
+    for (let i = 0; i <= 24; i++) {
+      const x = -43 + (i / 24) * 86;
+      const reach = Math.max(0, 1 - Math.pow(Math.abs(x) / 43, 1.8));
+      points.push(
+        new THREE.Vector3(
+          x,
+          -13 + 44 * Math.pow(reach, 0.68) + 2.7,
+          zBase + Math.sin(x * 0.07) * 5 + 1.5,
+        ),
+      );
+    }
+    return colorize(
+      new THREE.TubeGeometry(
+        new THREE.CatmullRomCurve3(points),
+        72,
+        0.12,
+        3,
+        false,
+      ),
+      section % 2 ? "#ddc8ff" : "#dbfcff",
+    );
+  });
+  const merged = mergeGeometries(parts);
+  parts.forEach((part) => part.dispose());
+  if (!merged) throw new Error("Crossing lights could not be generated");
+  return merged;
+}
+
 function makeRibbon(x: number, y: number) {
   const points: THREE.Vector3[] = [];
   for (let i = 0; i <= 40; i++) {
@@ -197,10 +292,10 @@ function makeSail() {
   return new THREE.ExtrudeGeometry(shape, {
     depth: 3.2,
     bevelEnabled: true,
-    bevelSegments: 1,
+    bevelSegments: 2,
     bevelSize: 0.65,
     bevelThickness: 0.65,
-    curveSegments: 5,
+    curveSegments: 12,
   });
 }
 
@@ -277,8 +372,10 @@ export function NetworkStage() {
     if (!mergedRibbon) throw new Error("Signal ribbon could not be generated");
     return {
       channel: makeFoldedChannel(),
+      relief: makeWallRelief(),
       current: makeCurrent(),
       crossings: makeCrossings(),
+      crossingLight: makeCrossingLight(),
       sails: makeRelaySails(low),
       ribbon: mergedRibbon,
       sky: makeSky(),
@@ -324,6 +421,14 @@ export function NetworkStage() {
           side={THREE.DoubleSide}
         />
       </mesh>
+      <mesh geometry={world.relief} frustumCulled={false}>
+        <meshStandardMaterial
+          vertexColors
+          side={THREE.DoubleSide}
+          roughness={0.52}
+          metalness={0.09}
+        />
+      </mesh>
       <mesh geometry={world.crossings} frustumCulled={false}>
         <meshStandardMaterial
           ref={crossingMaterial}
@@ -332,6 +437,9 @@ export function NetworkStage() {
           roughness={0.3}
           metalness={0.12}
         />
+      </mesh>
+      <mesh geometry={world.crossingLight} frustumCulled={false}>
+        <meshBasicMaterial vertexColors toneMapped={false} />
       </mesh>
       <mesh geometry={world.sails} frustumCulled={false}>
         <meshStandardMaterial

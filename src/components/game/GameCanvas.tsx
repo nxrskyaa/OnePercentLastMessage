@@ -92,23 +92,29 @@ class RendererBoundary extends Component<
 
 export default function GameCanvas({ onReady }: { onReady?: () => void }) {
   const quality = useSettingsStore((state) => state.runtimeQuality);
+  const antialias = useRef(
+    quality !== "low" && window.innerWidth >= 700,
+  ).current;
   const [rendererError, setRendererError] = useState(false);
-  const createRenderer = useCallback(({ canvas }: { canvas: EventTarget }) => {
-    const options = {
-      canvas: canvas as HTMLCanvasElement,
-      antialias: false,
-      alpha: false,
-    };
-    try {
-      return new THREE.WebGLRenderer({
-        ...options,
-        powerPreference: "high-performance",
-      });
-    } catch {
-      setRendererError(true);
-      throw new Error("No compatible graphics renderer is available.");
-    }
-  }, []);
+  const createRenderer = useCallback(
+    ({ canvas }: { canvas: EventTarget }) => {
+      const options = {
+        canvas: canvas as HTMLCanvasElement,
+        antialias,
+        alpha: false,
+      };
+      try {
+        return new THREE.WebGLRenderer({
+          ...options,
+          powerPreference: "high-performance",
+        });
+      } catch {
+        setRendererError(true);
+        throw new Error("No compatible graphics renderer is available.");
+      }
+    },
+    [antialias],
+  );
   if (rendererError) return <RendererUnavailable />;
   return (
     <RendererBoundary>

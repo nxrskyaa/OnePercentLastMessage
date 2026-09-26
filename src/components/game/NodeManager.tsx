@@ -10,14 +10,14 @@ import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
 
 const hull = new THREE.MeshStandardMaterial({
-  color: "#44545d",
-  metalness: 0.55,
-  roughness: 0.61,
+  color: "#526ba0",
+  metalness: 0.25,
+  roughness: 0.46,
 });
 const dark = new THREE.MeshStandardMaterial({
-  color: "#26343e",
-  metalness: 0.46,
-  roughness: 0.77,
+  color: "#344d80",
+  metalness: 0.16,
+  roughness: 0.68,
 });
 
 const frameCache = new Map<
