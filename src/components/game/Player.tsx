@@ -23,7 +23,7 @@ interface PlayerProps {
 }
 
 function createPacketShell() {
-  return createChatGeometry(2.7, 1.8, 1.35);
+  return createChatGeometry(1.75, 1.15, 0.7);
 }
 
 export function Player({
@@ -42,7 +42,7 @@ export function Player({
   const signalBlade = useMemo(() => createSignalBlade(), []);
   const materials = useMemo(() => {
     const shell = new THREE.MeshPhysicalMaterial({
-      color: "#276a9d",
+      color: "#287dad",
       metalness: 0.12,
       roughness: 0.24,
       clearcoat: 1,
@@ -421,41 +421,60 @@ export function Player({
   return (
     <group ref={playerRef}>
       <group ref={visual}>
-        <mesh position={[0, 0, -2]} scale={[1.05, 0.58, 0.7]}>
+        <mesh position={[0, 0, -0.8]} scale={[1.1, 0.66, 1.4]}>
           <icosahedronGeometry args={[1.6, 1]} />
           <meshPhysicalMaterial
-            color="#102e47"
-            metalness={0.48}
-            roughness={0.26}
+            color="#296d92"
+            metalness={0.21}
+            roughness={0.31}
             clearcoat={1}
+            emissive="#174a6c"
+            emissiveIntensity={0.22}
             flatShading
           />
         </mesh>
-        <mesh geometry={shellGeometry} material={materials.shell} />
+        <mesh position={[0, 0.66, -0.74]} scale={[0.72, 0.24, 1.05]}>
+          <icosahedronGeometry args={[1.25, 0]} />
+          <meshStandardMaterial
+            color="#65b6cf"
+            metalness={0.2}
+            roughness={0.3}
+            flatShading
+          />
+        </mesh>
+        <mesh
+          position={[0, 0, 1.72]}
+          geometry={shellGeometry}
+          material={materials.shell}
+        />
+        <mesh position={[0, 0.98, -0.75]}>
+          <boxGeometry args={[0.14, 0.08, 2.5]} />
+          <meshBasicMaterial color="#86d6e7" toneMapped={false} />
+        </mesh>
         {[-1, 1].map((side) => (
           <group
             key={side}
-            position={[side * 1.55, -0.23, 0.25]}
-            rotation={[0, side * 0.32, side * -0.25]}
+            position={[side * 1.5, -0.18, 0.18]}
+            rotation={[0, side * 0.34, side * -0.22]}
           >
-            <mesh scale={[0.35, 0.18, 1.22]}>
+            <mesh scale={[0.6, 0.29, 1.8]}>
               <icosahedronGeometry args={[1, 0]} />
               <meshStandardMaterial
-                color="#6dc5dc"
-                metalness={0.38}
-                roughness={0.25}
-                emissive="#32778b"
-                emissiveIntensity={0.3}
+                color="#3d91b6"
+                metalness={0.25}
+                roughness={0.3}
+                emissive="#246781"
+                emissiveIntensity={0.22}
                 flatShading
               />
             </mesh>
-            <mesh position={[0, 0, 0.95]}>
-              <sphereGeometry args={[0.18, 8, 6]} />
+            <mesh position={[0, 0, 1.35]}>
+              <sphereGeometry args={[0.2, 8, 6]} />
               <meshBasicMaterial color="#c7f7ff" toneMapped={false} />
             </mesh>
           </group>
         ))}
-        <mesh geometry={signalBlade} position={[0, 0.14, 0.9]} scale={0.032}>
+        <mesh geometry={signalBlade} position={[0, 0.085, 2.16]} scale={0.021}>
           <meshStandardMaterial
             color="#b9e6ef"
             emissive="#396b83"
@@ -465,9 +484,9 @@ export function Player({
         </mesh>
         <mesh
           geometry={signalBlade}
-          position={[0, -0.14, 0.9]}
+          position={[0, -0.085, 2.16]}
           rotation={[0, 0, Math.PI]}
-          scale={0.032}
+          scale={0.021}
         >
           <meshStandardMaterial
             color="#b9e6ef"
@@ -476,8 +495,8 @@ export function Player({
             roughness={0.25}
           />
         </mesh>
-        <mesh ref={core} position={[0, -0.02, 1.12]} material={materials.core}>
-          <octahedronGeometry args={[0.24, 0]} />
+        <mesh ref={core} position={[0, -0.02, 2.3]} material={materials.core}>
+          <octahedronGeometry args={[0.18, 0]} />
         </mesh>
       </group>
       <group ref={trail}>
