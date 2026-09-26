@@ -76,7 +76,6 @@ export function Destination() {
           <meshBasicMaterial color="#c9faff" toneMapped={false} />
         </mesh>
       </group>
-      <pointLight color="#a1eeff" intensity={50} distance={155} decay={2} />
     </group>
   );
 }

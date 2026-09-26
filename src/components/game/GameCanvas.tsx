@@ -10,14 +10,11 @@ import {
   useState,
 } from "react";
 import * as THREE from "three";
-import { WebGPURenderer } from "three/webgpu";
 import { ChaseCamera } from "@/components/game/ChaseCamera";
 import { Destination } from "@/components/game/Destination";
 import { NetworkStage } from "@/components/game/NetworkStage";
 import { NodeManager } from "@/components/game/NodeManager";
-import { PacketTraffic } from "@/components/game/PacketTraffic";
 import { Player } from "@/components/game/Player";
-import { PostProcessing } from "@/components/game/PostProcessing";
 import { QualityMonitor } from "@/components/game/QualityMonitor";
 import { RouteFork } from "@/components/game/RouteFork";
 import { ScanPulse } from "@/components/game/ScanPulse";
@@ -36,22 +33,21 @@ function GameScene() {
 
   return (
     <>
-      <color attach="background" args={["#07121d"]} />
-      <fogExp2 attach="fog" args={["#0c1b29", GAME_CONFIG.world.fogDensity]} />
-      <ambientLight color="#789eb2" intensity={0.62} />
+      <color attach="background" args={["#5572a2"]} />
+      <fogExp2 attach="fog" args={["#657da8", GAME_CONFIG.world.fogDensity]} />
+      <ambientLight color="#a4bcf2" intensity={1.35} />
       <directionalLight
-        color="#a5c8d3"
-        intensity={2.15}
+        color="#eef4fa"
+        intensity={2.5}
         position={[-15, 28, 20]}
       />
       <directionalLight
-        color="#677eac"
-        intensity={1.05}
+        color="#be9af0"
+        intensity={1.25}
         position={[30, -12, -35]}
       />
       <NetworkStage />
       <RouteFork />
-      <PacketTraffic />
       <NodeManager nodes={nodes} playerRef={playerRef} />
       <Destination />
       <Player
@@ -64,7 +60,6 @@ function GameScene() {
       />
       <ScanPulse playerRef={playerRef} />
       <ChaseCamera key={`camera-${runId}`} playerRef={playerRef} />
-      <PostProcessing />
       <QualityMonitor />
     </>
   );
@@ -98,50 +93,22 @@ class RendererBoundary extends Component<
 export default function GameCanvas({ onReady }: { onReady?: () => void }) {
   const quality = useSettingsStore((state) => state.runtimeQuality);
   const [rendererError, setRendererError] = useState(false);
-  const createRenderer = useCallback(
-    async ({ canvas }: { canvas: EventTarget }) => {
-      const constrained = window.matchMedia(
-        "(max-width: 900px), (pointer: coarse)",
-      ).matches;
-      const options = {
-        canvas: canvas as HTMLCanvasElement,
-        antialias: false,
-        alpha: false,
-      };
-      try {
-        if (
-          new URLSearchParams(window.location.search).get("renderer") !==
-          "webgpu"
-        ) {
-          const renderer = new THREE.WebGLRenderer({
-            ...options,
-            powerPreference: "high-performance",
-          });
-          return renderer;
-        }
-        const renderer = new WebGPURenderer({
-          ...options,
-          antialias: !constrained,
-        });
-        await renderer.init();
-        if (
-          useSettingsStore.getState().quality === "auto" &&
-          !("isWebGPUBackend" in renderer.backend)
-        )
-          useSettingsStore.getState().setRuntimeQuality("low");
-        return renderer;
-      } catch {
-        try {
-          const renderer = new THREE.WebGLRenderer(options);
-          return renderer;
-        } catch {
-          setRendererError(true);
-          throw new Error("No compatible graphics renderer is available.");
-        }
-      }
-    },
-    [],
-  );
+  const createRenderer = useCallback(({ canvas }: { canvas: EventTarget }) => {
+    const options = {
+      canvas: canvas as HTMLCanvasElement,
+      antialias: false,
+      alpha: false,
+    };
+    try {
+      return new THREE.WebGLRenderer({
+        ...options,
+        powerPreference: "high-performance",
+      });
+    } catch {
+      setRendererError(true);
+      throw new Error("No compatible graphics renderer is available.");
+    }
+  }, []);
   if (rendererError) return <RendererUnavailable />;
   return (
     <RendererBoundary>
@@ -157,9 +124,7 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
         }}
         gl={createRenderer}
         onCreated={({ gl }) => {
-          const backend = (gl as unknown as WebGPURenderer).backend;
-          gl.domElement.dataset.rendererBackend =
-            backend && "isWebGPUBackend" in backend ? "webgpu" : "webgl2";
+          gl.domElement.dataset.rendererBackend = "webgl2";
           onReady?.();
         }}
       >

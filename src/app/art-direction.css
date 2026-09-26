@@ -1,0 +1,292 @@
+/* Flight instruments sit in the same cobalt world as the relay architecture. */
+.game-shell {
+  background: #45659b;
+}
+
+.world-vignette,
+.game-shell--playing .world-vignette,
+.game-shell--paused .world-vignette {
+  background: radial-gradient(
+    ellipse at 49% 45%,
+    transparent 42%,
+    #14265b0d 71%,
+    #121b472d 100%
+  );
+}
+
+.game-shell--effects .screen-noise {
+  opacity: 0;
+}
+
+.main-menu {
+  background: linear-gradient(
+    96deg,
+    #1c396eea 0%,
+    #1b3974c7 32%,
+    #1e3d8088 51%,
+    #2144820a 75%
+  );
+}
+
+.main-menu::before {
+  content: "";
+  position: absolute;
+  left: -9vw;
+  top: 17%;
+  width: 58vw;
+  height: 68%;
+  border: 1px solid #aad4ff38;
+  clip-path: polygon(0 0, 84% 0, 100% 47%, 85% 100%, 0 100%);
+  background: linear-gradient(102deg, #4270ab31, #99bdf014 72%, transparent);
+  pointer-events: none;
+}
+
+.menu-main {
+  width: min(470px, 100%);
+}
+
+.game-title > span {
+  color: #f3fcff;
+  text-shadow: 0 10px 38px #10265542;
+}
+
+.game-title em {
+  color: #ffd99e;
+}
+
+.game-title small {
+  letter-spacing: -0.015em;
+  font-weight: 750;
+}
+
+.menu-kicker {
+  color: #c5e8ff;
+}
+
+.menu-subtitle {
+  color: #d5e6f4;
+}
+
+.menu-actions > .game-button--primary,
+.briefing-card .game-button--primary,
+.result-actions .game-button--primary {
+  min-height: 56px;
+  background: #f4e6c9;
+  border: 0;
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);
+  color: #193560;
+  font-weight: 800;
+  box-shadow: none;
+}
+
+.menu-actions > .game-button--primary:hover,
+.briefing-card .game-button--primary:hover,
+.result-actions .game-button--primary:hover {
+  background: #fff5dd;
+  box-shadow: none;
+}
+
+.menu-secondary .game-button {
+  color: #e0eaf8;
+  font-size: 11px;
+}
+
+.menu-footer,
+.footer-stats,
+.top-signature {
+  color: #d2e0f2;
+}
+
+.menu-mascot-orbit {
+  border-color: #c9deff7b;
+  box-shadow:
+    0 0 0 42px #b1ccff18,
+    0 0 0 104px #a5bbfa0c;
+}
+
+.briefing-screen,
+.tutorial-screen,
+.result-screen {
+  background: linear-gradient(96deg, #1c376fef, #234b85be 50%, #23457e27);
+}
+
+.briefing-card,
+.panel-screen,
+.pause-card {
+  background: #213f76e8;
+  border-color: #b3d4f355;
+  border-top-color: #f1e4c5;
+  box-shadow: 0 26px 70px #10224b55;
+}
+
+.game-hud {
+  color: #f1f9ff;
+}
+
+.hud-primary {
+  left: 2.2vw;
+  right: 2.2vw;
+  top: 16px;
+}
+
+.hud-energy {
+  width: min(218px, 25vw);
+  padding: 12px 22px 12px 15px;
+  border-left: 3px solid #ffdda6;
+  background: linear-gradient(105deg, #1c3e7abc, #345a96a6 74%, transparent);
+  clip-path: polygon(0 0, calc(100% - 19px) 0, 100% 19px, 100% 100%, 0 100%);
+}
+
+.hud-caption,
+.hud-privacy,
+.hud-destination div > span,
+.scan-indicator small {
+  color: #d2e4f4;
+}
+
+.hud-energy strong {
+  margin: 7px 0 10px;
+  font-size: clamp(35px, 3.8vw, 52px);
+  letter-spacing: -0.12em;
+  text-shadow: none;
+}
+
+.hud-energy-track {
+  height: 5px;
+  transform: none;
+  background: #afcff045;
+}
+
+.hud-energy-track span {
+  background: #f4dfa9;
+  box-shadow: none;
+}
+
+.hud-privacy {
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.hud-destination {
+  justify-self: center;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px 11px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #2347849c 25%,
+    #2347849c 75%,
+    transparent
+  );
+  border-bottom: 1px solid #d2e7fa89;
+}
+
+.hud-destination-icon {
+  border: 0;
+  box-shadow: none;
+  color: #f6dfa9 !important;
+  font-size: 32px !important;
+}
+
+.hud-clock {
+  justify-self: end;
+  padding: 8px 11px 8px 18px;
+  background: #254883a8;
+  border-right: 3px solid #9bcff1;
+}
+
+.hud-clock button,
+.scan-indicator > span {
+  border: 1px solid #d5e9f3b0;
+  border-radius: 0;
+  background: #aacbe626;
+  box-shadow: none;
+}
+
+.hud-reticle {
+  width: 17px;
+  height: 17px;
+  border: 1px solid #f3e2bb;
+  border-radius: 0;
+  rotate: 45deg;
+  box-shadow: 0 0 0 6px #f1e7d518;
+}
+
+.hud-reticle::before,
+.hud-reticle::after {
+  background: #f3e2bb;
+}
+
+.scan-indicator > span {
+  width: 39px;
+  height: 32px;
+  transform: skewX(-14deg);
+  color: #f0e5c8;
+}
+
+.scan-indicator.ready > span {
+  box-shadow: 0 0 0 4px #b5d1ed20;
+}
+
+.dili-hint,
+.route-choice > div {
+  background: #294a83e8;
+  border-color: #b6d9f08a;
+  box-shadow: 0 10px 25px #11245155;
+}
+
+.event-feedback strong {
+  color: #f9e9c9;
+  text-shadow: 0 0 20px #d6cfa9;
+}
+
+@media (max-width: 900px) {
+  .hud-primary {
+    left: 9px;
+    right: 9px;
+    top: 8px;
+  }
+  .hud-energy {
+    width: 104px;
+    padding: 8px 10px;
+  }
+  .hud-energy strong {
+    font-size: 30px;
+  }
+  .hud-destination {
+    padding: 6px 8px;
+  }
+  .hud-clock {
+    padding: 5px;
+  }
+  .main-menu {
+    background: linear-gradient(105deg, #1d3e79f0, #1d3e79a8 70%, #29478553);
+  }
+  .main-menu::before {
+    width: 100vw;
+    height: 64%;
+    opacity: 0.6;
+  }
+}
+
+@media (max-width: 600px) {
+  .hud-energy {
+    width: 88px;
+  }
+  .hud-energy strong {
+    font-size: 25px;
+  }
+  .hud-privacy {
+    gap: 2px;
+  }
+  .hud-destination {
+    background: #2548838c;
+  }
+  .hud-clock strong {
+    font-size: 12px;
+  }
+  .menu-mascot {
+    opacity: 0.57;
+  }
+}

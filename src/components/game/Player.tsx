@@ -11,7 +11,6 @@ import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { energySurface } from "@/rendering/materials";
 import { createChatGeometry } from "@/rendering/chatGeometry";
-import { createSignalBlade } from "@/rendering/signalBlade";
 import { signalState } from "@/rendering/signalState";
 
 interface PlayerProps {
@@ -35,20 +34,17 @@ export function Player({
 }: PlayerProps) {
   const visual = useRef<THREE.Group>(null);
   const trail = useRef<THREE.Group>(null);
-  const trailSparks = useRef<THREE.InstancedMesh>(null);
-  const trailSpark = useRef(new THREE.Object3D());
   const core = useRef<THREE.Mesh>(null);
   const shellGeometry = useMemo(() => createPacketShell(), []);
-  const signalBlade = useMemo(() => createSignalBlade(), []);
   const materials = useMemo(() => {
     const shell = new THREE.MeshPhysicalMaterial({
-      color: "#287dad",
+      color: "#5277cb",
       metalness: 0.12,
       roughness: 0.24,
       clearcoat: 1,
       clearcoatRoughness: 0.08,
-      emissive: "#348bb5",
-      emissiveIntensity: 0.3,
+      emissive: "#3158af",
+      emissiveIntensity: 0.18,
     });
     return { core: energySurface("#d6f5ff", 3.2, true), shell };
   }, []);
@@ -57,9 +53,8 @@ export function Player({
       materials.core.dispose();
       materials.shell.dispose();
       shellGeometry.dispose();
-      signalBlade.dispose();
     },
-    [materials, shellGeometry, signalBlade],
+    [materials, shellGeometry],
   );
   const speed = useRef<number>(GAME_CONFIG.movement.cruiseSpeed);
   const sideSpeed = useRef(0);
@@ -225,23 +220,6 @@ export function Player({
       trail.current.visible =
         !struck &&
         (battery.current > 0.035 || Math.sin(clock.elapsedTime * 17) > 0);
-    }
-    if (trailSparks.current) {
-      for (let index = 0; index < 12; index++) {
-        const phase =
-          (clock.elapsedTime * (boosting ? 11 : 6) + index * 1.71) % 9;
-        const spark = trailSpark.current;
-        spark.position.set(
-          Math.sin(index * 11.7) * (0.2 + phase * 0.045),
-          Math.cos(index * 8.3) * (0.15 + phase * 0.045),
-          1.1 + phase,
-        );
-        spark.rotation.set(0, phase * 0.2, phase * 0.35);
-        spark.scale.setScalar((boosting ? 0.28 : 0.19) * (1 - phase / 10));
-        spark.updateMatrix();
-        trailSparks.current.setMatrixAt(index, spark.matrix);
-      }
-      trailSparks.current.instanceMatrix.needsUpdate = true;
     }
     if (core.current) {
       const pulse = battery.current < 0.15 ? 0.78 : 1;
@@ -424,19 +402,19 @@ export function Player({
         <mesh position={[0, 0, -0.8]} scale={[1.1, 0.66, 1.4]}>
           <icosahedronGeometry args={[1.6, 1]} />
           <meshPhysicalMaterial
-            color="#296d92"
-            metalness={0.21}
-            roughness={0.31}
+            color="#c2e1f4"
+            metalness={0.12}
+            roughness={0.28}
             clearcoat={1}
-            emissive="#174a6c"
-            emissiveIntensity={0.22}
+            emissive="#6b9ed0"
+            emissiveIntensity={0.1}
             flatShading
           />
         </mesh>
         <mesh position={[0, 0.66, -0.74]} scale={[0.72, 0.24, 1.05]}>
           <icosahedronGeometry args={[1.25, 0]} />
           <meshStandardMaterial
-            color="#65b6cf"
+            color="#ecf7ff"
             metalness={0.2}
             roughness={0.3}
             flatShading
@@ -447,9 +425,21 @@ export function Player({
           geometry={shellGeometry}
           material={materials.shell}
         />
+        <mesh position={[0, 0, 0.25]}>
+          <sphereGeometry args={[2.05, 20, 14]} />
+          <meshPhysicalMaterial
+            color="#bde9ff"
+            metalness={0.05}
+            roughness={0.12}
+            clearcoat={1}
+            transparent
+            opacity={0.11}
+            depthWrite={false}
+          />
+        </mesh>
         <mesh position={[0, 0.98, -0.75]}>
           <boxGeometry args={[0.14, 0.08, 2.5]} />
-          <meshBasicMaterial color="#86d6e7" toneMapped={false} />
+          <meshBasicMaterial color="#ffdfa9" toneMapped={false} />
         </mesh>
         {[-1, 1].map((side) => (
           <group
@@ -460,40 +450,39 @@ export function Player({
             <mesh scale={[0.6, 0.29, 1.8]}>
               <icosahedronGeometry args={[1, 0]} />
               <meshStandardMaterial
-                color="#3d91b6"
+                color="#83bee5"
                 metalness={0.25}
                 roughness={0.3}
-                emissive="#246781"
-                emissiveIntensity={0.22}
+                emissive="#356b9c"
+                emissiveIntensity={0.13}
                 flatShading
               />
             </mesh>
             <mesh position={[0, 0, 1.35]}>
               <sphereGeometry args={[0.2, 8, 6]} />
-              <meshBasicMaterial color="#c7f7ff" toneMapped={false} />
+              <meshBasicMaterial color="#fff1d4" toneMapped={false} />
             </mesh>
           </group>
         ))}
-        <mesh geometry={signalBlade} position={[0, 0.085, 2.16]} scale={0.021}>
-          <meshStandardMaterial
-            color="#b9e6ef"
-            emissive="#396b83"
-            emissiveIntensity={0.25}
-            roughness={0.25}
-          />
-        </mesh>
-        <mesh
-          geometry={signalBlade}
-          position={[0, -0.085, 2.16]}
-          rotation={[0, 0, Math.PI]}
-          scale={0.021}
-        >
-          <meshStandardMaterial
-            color="#b9e6ef"
-            emissive="#396b83"
-            emissiveIntensity={0.25}
-            roughness={0.25}
-          />
+        {[-1, 1].map((side) => (
+          <group
+            key={`eye-${side}`}
+            position={[side * 0.52, 0.16, 2.15]}
+            rotation={[0, 0, side * -0.52]}
+          >
+            <mesh>
+              <boxGeometry args={[0.29, 0.42, 0.08]} />
+              <meshBasicMaterial color="#f8f9ed" toneMapped={false} />
+            </mesh>
+            <mesh position={[side * 0.035, 0, 0.052]}>
+              <boxGeometry args={[0.13, 0.27, 0.05]} />
+              <meshBasicMaterial color="#19365c" />
+            </mesh>
+          </group>
+        ))}
+        <mesh position={[0, -0.25, 2.19]} rotation={[0, 0, Math.PI]}>
+          <torusGeometry args={[0.17, 0.035, 4, 12, Math.PI]} />
+          <meshBasicMaterial color="#19365c" />
         </mesh>
         <mesh ref={core} position={[0, -0.02, 2.3]} material={materials.core}>
           <octahedronGeometry args={[0.18, 0]} />
@@ -528,16 +517,6 @@ export function Player({
             />
           </mesh>
         ))}
-        <instancedMesh ref={trailSparks} args={[undefined, undefined, 12]}>
-          <octahedronGeometry args={[1, 0]} />
-          <meshBasicMaterial
-            color="#83eaff"
-            transparent
-            opacity={0.52}
-            depthWrite={false}
-            toneMapped={false}
-          />
-        </instancedMesh>
       </group>
       <pointLight color="#a2e9ff" intensity={17} distance={25} decay={2} />
     </group>

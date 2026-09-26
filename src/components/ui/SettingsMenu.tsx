@@ -137,11 +137,6 @@ export function SettingsMenu() {
             onChange={(value) => update("screenEffects", value)}
           />
           <Toggle
-            label="Bloom"
-            checked={settings.bloom}
-            onChange={(value) => update("bloom", value)}
-          />
-          <Toggle
             label="Reduced motion"
             checked={settings.reducedMotion}
             onChange={(value) => update("reducedMotion", value)}

@@ -144,7 +144,6 @@ function NodeVisual({ node, low }: { node: GameNode; low: boolean }) {
         <mesh rotation={[0.35, 0.6, 0]} material={energy}>
           <octahedronGeometry args={[1.1, 0]} />
         </mesh>
-        {!low && <pointLight color={color} intensity={4} distance={12} />}
       </group>
     );
   if (node.type === "tracker")
@@ -157,7 +156,6 @@ function NodeVisual({ node, low }: { node: GameNode; low: boolean }) {
           </mesh>
         )}
         <TrackerScanner />
-        {!low && <pointLight color="#f06e60" intensity={6} distance={17} />}
       </group>
     );
   const radius =
@@ -174,7 +172,6 @@ function NodeVisual({ node, low }: { node: GameNode; low: boolean }) {
           <mesh material={energy}>
             <octahedronGeometry args={[0.82, 0]} />
           </mesh>
-          {!low && <pointLight color={color} intensity={9} distance={22} />}
         </>
       )}
       {!low && (

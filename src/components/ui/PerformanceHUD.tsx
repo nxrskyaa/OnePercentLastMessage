@@ -22,11 +22,10 @@ export function PerformanceHUD() {
       </span>
       <span>
         {metrics.drawCalls === null || metrics.triangles === null
-          ? "POST FX ACTIVE"
+          ? "RENDER ACTIVE"
           : `${metrics.drawCalls} DRAWS · ${metrics.triangles.toLocaleString()} TRI`}
       </span>
       <span>
-        {metrics.trafficPackets.toLocaleString()} PACKETS ·{" "}
         {metrics.quality.toUpperCase()} ·{" "}
         {Math.round(metrics.renderScale * 100)}%
       </span>

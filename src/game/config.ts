@@ -18,7 +18,7 @@ export const GAME_CONFIG = {
     bankAmount: 0.18,
   },
   camera: { baseFov: 70, boostFov: 79, followResponse: 3.8, lookAhead: 22 },
-  world: { fogDensity: 0.00115, ringCount: 22, particleCount: 240 },
+  world: { fogDensity: 0.00115 },
   scan: { cooldown: 5 },
   nodes: {
     trackerPrivacyDamage: 12,

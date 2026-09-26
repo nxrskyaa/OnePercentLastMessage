@@ -4,7 +4,6 @@ export interface RenderMetrics {
   backend: "webgpu" | "webgl2" | "unknown";
   drawCalls: number | null;
   triangles: number | null;
-  trafficPackets: number;
   renderScale: number;
   quality: "low" | "medium" | "high";
 }
@@ -15,7 +14,6 @@ export const renderMetrics: RenderMetrics = {
   backend: "unknown",
   drawCalls: 0,
   triangles: 0,
-  trafficPackets: 0,
   renderScale: 1,
   quality: "high",
 };

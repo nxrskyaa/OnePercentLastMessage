@@ -2,7 +2,6 @@
 
 import { useFrame, useThree } from "@react-three/fiber";
 import { useRef } from "react";
-import { WebGPURenderer } from "three/webgpu";
 import { renderMetrics } from "@/rendering/metrics";
 import { budgetedDpr } from "@/rendering/resolution";
 import { useGameStore } from "@/store/gameStore";
@@ -36,20 +35,12 @@ export function QualityMonitor() {
     if (seconds.current < 1.5) return;
     const fps = frames.current / seconds.current;
     const settings = useSettingsStore.getState();
-    const renderer = gl as unknown as WebGPURenderer;
     renderMetrics.fps = fps;
     renderMetrics.frameMs = 1000 / Math.max(1, fps);
-    renderMetrics.backend =
-      renderer.backend && "isWebGPUBackend" in renderer.backend
-        ? "webgpu"
-        : "webgl2";
+    renderMetrics.backend = "webgl2";
     renderMetrics.quality = settings.runtimeQuality;
-    renderMetrics.trafficPackets =
-      settings.runtimeQuality === "low"
-        ? 90
-        : settings.runtimeQuality === "medium"
-          ? 150
-          : 240;
+    renderMetrics.drawCalls = gl.info.render.calls;
+    renderMetrics.triangles = gl.info.render.triangles;
     // Shader compilation and first-run asset upload are not sustained load.
     const warmedUp = activeSeconds.current > 4;
     slowWindows.current = warmedUp && fps < 45 ? slowWindows.current + 1 : 0;

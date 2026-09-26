@@ -10,7 +10,6 @@ export interface GameSettings {
   mute: boolean;
   cameraShake: boolean;
   screenEffects: boolean;
-  bloom: boolean;
   reducedMotion: boolean;
   mouseSensitivity: number;
   quality: Quality;
@@ -39,7 +38,6 @@ export const DEFAULT_SETTINGS: GameSettings = {
   mute: false,
   cameraShake: true,
   screenEffects: true,
-  bloom: true,
   reducedMotion: false,
   mouseSensitivity: 0.35,
   quality: "auto",
@@ -74,7 +72,6 @@ function validate(input: unknown): GameSettings {
       typeof raw.screenEffects === "boolean"
         ? raw.screenEffects
         : DEFAULT_SETTINGS.screenEffects,
-    bloom: typeof raw.bloom === "boolean" ? raw.bloom : DEFAULT_SETTINGS.bloom,
     reducedMotion:
       typeof raw.reducedMotion === "boolean"
         ? raw.reducedMotion

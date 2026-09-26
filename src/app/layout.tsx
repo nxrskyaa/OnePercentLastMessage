@@ -6,6 +6,7 @@ import "./hud.css";
 import "./results.css";
 import "./mobile.css";
 import "./brand.css";
+import "./art-direction.css";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
