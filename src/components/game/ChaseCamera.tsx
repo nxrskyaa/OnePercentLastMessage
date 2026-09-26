@@ -33,18 +33,18 @@ export function ChaseCamera({
         ? Math.sin(clock.elapsedTime * 0.17) * 2.4
         : 0;
     desired.current.set(
-      player.position.x * 0.72 + orbit,
-      player.position.y + (menu ? 5.8 : 4.6),
-      player.position.z + (menu ? 16 : 11),
+      player.position.x * 0.72 + (menu ? -10 : 0) + orbit,
+      player.position.y + (menu ? 8.2 : 4.6),
+      player.position.z + (menu ? 19 : 11),
     );
     camera.position.lerp(
       desired.current,
       1 - Math.exp(-GAME_CONFIG.camera.followResponse * delta),
     );
     desired.current.set(
-      player.position.x * 0.82,
+      player.position.x * 0.82 + (menu ? 3 : 0),
       player.position.y + 0.3,
-      player.position.z - GAME_CONFIG.camera.lookAhead,
+      player.position.z - (menu ? 34 : GAME_CONFIG.camera.lookAhead),
     );
     lookTarget.current.lerp(desired.current, 1 - Math.exp(-4.5 * delta));
     if (state.damagePulse !== lastDamage.current) {

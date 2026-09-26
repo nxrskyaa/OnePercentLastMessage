@@ -169,11 +169,24 @@
 .result-actions .game-button--menu {
   border: 1px solid #6da7b253;
 }
-.copy-button {
+.result-secondary {
   grid-column: 1 / -1;
-  justify-self: start;
-  margin-bottom: 5px;
-  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.result-secondary .game-button {
+  padding: 7px 0;
+  border: 0;
+  background: transparent;
+  color: #a9c9d1;
+  font:
+    700 10px/1 Consolas,
+    monospace;
+  letter-spacing: 0.08em;
+}
+.result-secondary .game-button:hover {
+  color: #e9fcfe;
 }
 .result-card-overlay {
   position: fixed;
@@ -323,7 +336,10 @@
     gap: 0 11px;
   }
   .result-actions {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+  }
+  .result-actions .game-button:last-child {
+    grid-column: 1 / -1;
   }
   .result-heading .micro-label:last-child {
     display: none;

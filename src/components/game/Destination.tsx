@@ -1,6 +1,5 @@
 "use client";
 
-import { useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -34,7 +33,7 @@ function receiverGeometry() {
         [-70, 38],
         [-51, 23],
       ],
-      4,
+      13,
     ),
     polygon(
       [
@@ -46,7 +45,7 @@ function receiverGeometry() {
         [70, 38],
         [51, 23],
       ],
-      4,
+      13,
     ),
     polygon(
       [
@@ -57,7 +56,7 @@ function receiverGeometry() {
         [22, 54],
         [0, 82],
       ],
-      3,
+      10,
     ),
     polygon(
       [
@@ -68,7 +67,7 @@ function receiverGeometry() {
         [22, -54],
         [0, -82],
       ],
-      3,
+      10,
     ),
   ];
   const insets = [
@@ -111,7 +110,6 @@ function receiverGeometry() {
 
 export function Destination() {
   const geometry = useMemo(() => receiverGeometry(), []);
-  const mark = useTexture("/brand/dlicom-mark-reference.jpg");
   const core = useRef<THREE.Group>(null);
   const pulse = useRef<THREE.Mesh>(null);
   useEffect(
@@ -131,38 +129,46 @@ export function Destination() {
   });
   return (
     <group position={[0, 0, GAME_CONFIG.destination.z]}>
-      <mesh position={[0, 0, -74]}>
-        <sphereGeometry args={[74, 24, 16]} />
+      <mesh position={[0, 0, -58]} rotation={[0.25, -0.15, 0.45]}>
+        <torusGeometry args={[76, 2, 5, 72, Math.PI * 1.38]} />
         <meshStandardMaterial
-          color="#0a2840"
-          emissive="#0a314b"
-          emissiveIntensity={0.85}
-          metalness={0.1}
-          roughness={0.9}
+          color="#3b8ca8"
+          emissive="#51b8d0"
+          emissiveIntensity={0.9}
+          metalness={0.45}
+          roughness={0.3}
         />
       </mesh>
-      <mesh position={[0, 0, -58]} rotation={[0, 0, 0.48]}>
-        <torusGeometry args={[79, 1.5, 4, 80, Math.PI * 1.22]} />
-        <meshBasicMaterial
-          color="#6cbedc"
-          transparent
-          opacity={0.7}
-          toneMapped={false}
+      <mesh position={[0, 0, -35]} rotation={[-0.23, 0.22, Math.PI * 1.1]}>
+        <torusGeometry args={[58, 1.2, 4, 62, Math.PI * 1.28]} />
+        <meshBasicMaterial color="#91e8ed" toneMapped={false} />
+      </mesh>
+      <mesh position={[0, 0, -62]} rotation={[0, 0, Math.PI / 4]}>
+        <octahedronGeometry args={[38, 0]} />
+        <meshStandardMaterial
+          color="#124462"
+          emissive="#0b5d80"
+          emissiveIntensity={1.15}
+          metalness={0.48}
+          roughness={0.38}
+          flatShading
         />
       </mesh>
       <group position={[0, 0, -8]}>
         {geometry.wings.map((wing, index) => (
           <mesh key={index} geometry={wing}>
             <meshStandardMaterial
-              color={index < 2 ? "#17364d" : "#22516b"}
-              metalness={0.6}
-              roughness={0.4}
+              color={index < 2 ? "#31566a" : "#376c7f"}
+              emissive="#0c354b"
+              emissiveIntensity={0.55}
+              metalness={0.67}
+              roughness={0.3}
               side={THREE.DoubleSide}
             />
           </mesh>
         ))}
         {geometry.insets.map((inset, index) => (
-          <mesh key={index} geometry={inset} position={[0, 0, 4.2]}>
+          <mesh key={index} geometry={inset} position={[0, 0, 13.2]}>
             <meshBasicMaterial
               color="#407e9a"
               toneMapped={false}
@@ -170,7 +176,7 @@ export function Destination() {
             />
           </mesh>
         ))}
-        <lineSegments geometry={geometry.lines} position={[0, 0, 6]}>
+        <lineSegments geometry={geometry.lines} position={[0, 0, 15]}>
           <lineBasicMaterial
             color="#a1e9ff"
             transparent
@@ -195,15 +201,9 @@ export function Destination() {
         <octahedronGeometry args={[16, 0]} />
         <meshBasicMaterial color="#e8fcff" toneMapped={false} />
       </mesh>
-      <mesh position={[0, 0, 24]}>
-        <planeGeometry args={[19, 19]} />
-        <meshBasicMaterial
-          map={mark}
-          transparent
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-          toneMapped={false}
-        />
+      <mesh position={[0, 0, 16]} rotation={[0, 0, Math.PI / 4]}>
+        <torusGeometry args={[23, 1.4, 4, 4]} />
+        <meshBasicMaterial color="#c7ffff" toneMapped={false} />
       </mesh>
       <pointLight color="#8cdfff" intensity={50} distance={125} decay={2} />
     </group>

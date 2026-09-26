@@ -620,3 +620,85 @@
     top: 22px;
   }
 }
+
+.briefing-card {
+  position: relative;
+  width: min(540px, 100%);
+  padding: clamp(28px, 4vw, 48px);
+  border: 1px solid #75b6c157;
+  border-left: 3px solid #95edf0;
+  background: linear-gradient(130deg, #07192be8, #061322ca);
+  box-shadow: 0 25px 90px #0009;
+}
+.briefing-card .micro-label {
+  color: #9fe8eb;
+}
+.briefing-card .briefing-message {
+  margin: 25px 0 13px;
+  font-size: clamp(32px, 4.4vw, 60px);
+  line-height: 1.03;
+  letter-spacing: -0.045em;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.briefing-objective {
+  max-width: 400px;
+  margin: 0;
+  color: #b5d0d6;
+  font-size: 16px;
+  line-height: 1.4;
+}
+.briefing-charge {
+  display: flex;
+  align-items: baseline;
+  gap: 17px;
+  position: relative;
+  margin: 33px 0 24px;
+  padding-bottom: 11px;
+}
+.briefing-charge strong {
+  font:
+    500 45px/0.9 Consolas,
+    monospace;
+  letter-spacing: -0.08em;
+  color: #d9fcfd;
+}
+.briefing-charge strong small {
+  font-size: 0.48em;
+}
+.briefing-charge span {
+  font:
+    700 10px/1 Consolas,
+    monospace;
+  letter-spacing: 0.14em;
+  color: #95bac1;
+}
+.briefing-charge i {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #a4eff0;
+  box-shadow: 0 0 18px #84e8ed;
+}
+@media (max-width: 600px) {
+  .briefing-card {
+    padding: 24px;
+  }
+  .briefing-card .briefing-message {
+    font-size: clamp(32px, 9vw, 46px);
+  }
+  .briefing-charge {
+    margin: 25px 0 20px;
+  }
+}
+@media (max-height: 500px) {
+  .briefing-card .briefing-message {
+    margin: 10px 0;
+    font-size: 31px;
+  }
+  .briefing-charge {
+    margin: 15px 0;
+  }
+}

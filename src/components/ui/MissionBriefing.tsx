@@ -14,43 +14,19 @@ export function MissionBriefing() {
   return (
     <section className="briefing-screen" aria-label="Mission briefing">
       <div className="briefing-index">
-        <span className="live-dot" /> INCOMING TRANSMISSION{" "}
+        <span className="live-dot" /> INCOMING{" "}
         <span>#{String(missionIndex + 1).padStart(2, "0")}</span>
       </div>
       <div className="briefing-card">
-        <span className="micro-label">PRIORITY / FINAL DELIVERY</span>
-        <h2>
-          ONE MESSAGE
-          <br />
-          <em>LEFT.</em>
-        </h2>
-        <div className="briefing-details">
-          <div>
-            <span>SOURCE</span>
-            <strong>{mission.source}</strong>
-          </div>
-          <div>
-            <span>MESSAGE</span>
-            <strong>“{mission.message}”</strong>
-          </div>
-          <div>
-            <span>OBJECTIVE</span>
-            <strong>{mission.objective}</strong>
-          </div>
-        </div>
-        <div className="briefing-resources">
-          <div>
-            <span>BATTERY</span>
-            <strong>1.00%</strong>
-          </div>
-          <div>
-            <span>PRIVACY</span>
-            <strong>100%</strong>
-          </div>
-          <div>
-            <span>RECEIVER</span>
-            <strong>{mission.receiver}</strong>
-          </div>
+        <span className="micro-label">FROM {mission.source}</span>
+        <h2 className="briefing-message">“{mission.message}”</h2>
+        <p className="briefing-objective">{mission.objective}</p>
+        <div className="briefing-charge">
+          <strong>
+            1.00<small>%</small>
+          </strong>
+          <span>POWER REMAINING</span>
+          <i />
         </div>
         <GameButton
           variant="primary"
@@ -58,13 +34,12 @@ export function MissionBriefing() {
             tutorialCompleted ? beginCountdown() : openTutorial("countdown")
           }
         >
-          BEGIN TRANSMISSION <span aria-hidden="true">↗</span>
+          TRANSMIT <span aria-hidden="true">↗</span>
         </GameButton>
         <GameButton className="briefing-back" onClick={goMenu}>
           ← MAIN MENU
         </GameButton>
       </div>
-      <div className="briefing-ghost">NXR://SIGNAL</div>
     </section>
   );
 }

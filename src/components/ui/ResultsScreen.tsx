@@ -18,12 +18,8 @@ export function ResultsScreen() {
   const score = useGameStore((state) => state.score);
   const newBest = useGameStore((state) => state.newBest);
   const awards = useGameStore((state) => state.awards);
-  const perfectRelays = useGameStore((state) => state.perfectRelays);
-  const nearMisses = useGameStore((state) => state.nearMisses);
   const trackerHits = useGameStore((state) => state.trackerHits);
-  const boostersUsed = useGameStore((state) => state.boostersUsed);
   const tipsCollected = useGameStore((state) => state.tipsCollected);
-  const maxTipCombo = useGameStore((state) => state.maxTipCombo);
   const retry = useGameStore((state) => state.retry);
   const openBriefing = useGameStore((state) => state.openBriefing);
   const goMenu = useGameStore((state) => state.goMenu);
@@ -68,10 +64,7 @@ export function ResultsScreen() {
       aria-label="Run result"
     >
       <div className="result-heading">
-        <span className="micro-label">
-          TRANSMISSION / {success ? "COMPLETE" : "INTERRUPTED"}
-        </span>
-        <span className="micro-label">NXR // LAST MESSAGE</span>
+        <span className="micro-label">1% / LAST MESSAGE</span>
       </div>
       <div className="result-body">
         <div className="result-intro">
@@ -105,9 +98,9 @@ export function ResultsScreen() {
           </div>
         </div>
         <div className="result-score">
-          <span>FINAL SCORE</span>
+          <span>SCORE</span>
           <strong>{score.toLocaleString()}</strong>
-          <small>{privacyRank(privacy)} / PRIVACY RANK</small>
+          <small>{privacyRank(privacy)}</small>
         </div>
         <div className="result-grid">
           <div>
@@ -123,28 +116,8 @@ export function ResultsScreen() {
             <strong>{Math.round(privacy)}%</strong>
           </div>
           <div>
-            <span>PERFECT RELAYS</span>
-            <strong>{perfectRelays}</strong>
-          </div>
-          <div>
-            <span>NEAR MISSES</span>
-            <strong>{nearMisses}</strong>
-          </div>
-          <div>
-            <span>TRACKERS HIT</span>
+            <span>TRACKERS</span>
             <strong>{trackerHits}</strong>
-          </div>
-          <div>
-            <span>BOOSTERS</span>
-            <strong>{boostersUsed}</strong>
-          </div>
-          <div>
-            <span>TIPS</span>
-            <strong>{tipsCollected}</strong>
-          </div>
-          <div>
-            <span>BEST TIP COMBO</span>
-            <strong>×{maxTipCombo}</strong>
           </div>
         </div>
         {awards.length > 0 && (
@@ -155,26 +128,21 @@ export function ResultsScreen() {
           </div>
         )}
         <div className="result-actions">
-          <GameButton variant="primary" onClick={() => setCardOpen(true)}>
-            DOWNLOAD RESULT CARD <span aria-hidden="true">↓</span>
-          </GameButton>
           <GameButton variant="primary" onClick={retry}>
             RETRY <span aria-hidden="true">↗</span>
+          </GameButton>
+          <GameButton variant="primary" onClick={() => setCardOpen(true)}>
+            DOWNLOAD CARD <span aria-hidden="true">↓</span>
           </GameButton>
           <GameButton variant="menu" onClick={() => openBriefing(true)}>
             NEW MESSAGE <span aria-hidden="true">→</span>
           </GameButton>
-          <GameButton variant="menu" onClick={goMenu}>
-            MAIN MENU <span aria-hidden="true">→</span>
-          </GameButton>
         </div>
-        <GameButton className="copy-button" onClick={copyResult}>
-          {copyStatus}
-        </GameButton>
+        <div className="result-secondary">
+          <GameButton onClick={goMenu}>MAIN MENU</GameButton>
+          <GameButton onClick={copyResult}>{copyStatus}</GameButton>
+        </div>
       </div>
-      <footer className="result-footer">
-        1% — LAST MESSAGE <span>BUILT BY NXR</span>
-      </footer>
       {cardOpen && (
         <ResultCardDialog data={cardData} onClose={() => setCardOpen(false)} />
       )}

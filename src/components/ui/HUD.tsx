@@ -1,12 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { GameButton } from "@/components/ui/GameButton";
 import { GAME_CONFIG } from "@/game/config";
 import { MISSIONS } from "@/game/missions";
 import { formatTime } from "@/lib/format";
 import { useGameStore } from "@/store/gameStore";
-import { useSettingsStore } from "@/store/settingsStore";
 
 export function HUD() {
   const battery = useGameStore((state) => state.battery);
@@ -14,91 +12,72 @@ export function HUD() {
   const distance = useGameStore((state) => state.distance);
   const elapsed = useGameStore((state) => state.elapsed);
   const boosting = useGameStore((state) => state.boosting);
-  const eventScore = useGameStore((state) => state.eventScore);
   const scanCooldown = useGameStore((state) => state.scanCooldown);
   const feedback = useGameStore((state) => state.feedback);
   const advisor = useGameStore((state) => state.advisor);
   const missionIndex = useGameStore((state) => state.missionIndex);
   const pause = useGameStore((state) => state.pause);
-  const mute = useSettingsStore((state) => state.mute);
-  const updateSettings = useSettingsStore((state) => state.update);
   const critical = battery < 0.1;
   return (
     <div
       className={`game-hud ${critical ? "game-hud--critical" : ""}`}
       aria-live="off"
     >
-      <div className="hud-topline">
-        <span className="hud-brand">
-          <Image
-            src="/brand/dlicom-mark-reference.jpg"
-            width={22}
-            height={22}
-            alt="Dlicom logo"
-            unoptimized
-          />{" "}
-          DLICOM <i>{"//"}</i> SECURE CHANNEL
-        </span>
-        <span>TRANSMISSION ACTIVE</span>
-        <span>ENCRYPTED PACKET / 001</span>
-      </div>
-      <header className="hud-stats">
-        <div className="hud-resource">
-          <span className="micro-label">BATTERY</span>
+      <header className="hud-primary">
+        <div
+          className="hud-energy"
+          aria-label={`Battery ${battery.toFixed(2)} percent, privacy ${Math.round(privacy)} percent`}
+        >
+          <span className="hud-caption">BATTERY</span>
           <strong>
             {battery.toFixed(2)}
             <small>%</small>
           </strong>
-          <div className="resource-track">
+          <div className="hud-energy-track">
             <span style={{ width: `${battery * 100}%` }} />
           </div>
-          <div className="privacy-line">
+          <div className="hud-privacy">
             <span>PRIVACY</span>
             <b>{Math.round(privacy)}%</b>
-          </div>
-          <div className="hud-companion">
-            <Image
-              src="/brand/dili-blue-cutout.png"
-              width={31}
-              height={31}
-              alt="DILI mascot"
-              unoptimized
-            />
-            <span>DILI ONLINE</span>
+            <i style={{ width: `${privacy}%` }} />
           </div>
         </div>
-        <div className="hud-target">
-          <span className="micro-label">
-            TARGET / {MISSIONS[missionIndex].receiver}
+        <div
+          className="hud-destination"
+          aria-label={`${Math.ceil(distance)} metres to ${MISSIONS[missionIndex].receiver}`}
+        >
+          <span className="hud-destination-icon" aria-hidden="true">
+            ◇
           </span>
-          <strong>
-            {Math.ceil(distance)}
-            <small>m</small>
-          </strong>
-          <span>TO RECEIVER</span>
+          <div>
+            <strong>
+              {Math.ceil(distance)}
+              <small>m</small>
+            </strong>
+            <span>{MISSIONS[missionIndex].receiver}</span>
+          </div>
         </div>
-        <div className="hud-time">
-          <span className="micro-label">ELAPSED</span>
+        <div className="hud-clock">
           <strong>{formatTime(elapsed)}</strong>
-          <span>SCORE {Math.max(0, eventScore).toLocaleString()}</span>
+          <button type="button" onClick={pause} aria-label="Pause game">
+            Ⅱ
+          </button>
         </div>
       </header>
       <div className="hud-reticle" aria-hidden="true">
         <span />
       </div>
       {distance < 440 && distance > 300 && (
-        <div className="route-choice">
+        <div className="route-choice" role="status">
           <div>
-            <span>← LEFT GATE</span>
-            <strong>SECURE ROUTE</strong>
-            <small>PRIVACY PRESERVED</small>
+            <span>←</span>
+            <strong>SAFE</strong>
+            <small>100% PRIVATE</small>
           </div>
           <div>
-            <span>RIGHT GATE →</span>
-            <strong>PUBLIC RELAY</strong>
-            <small>
-              FASTER / -{GAME_CONFIG.nodes.publicPrivacyDamage}% PRIVACY
-            </small>
+            <strong>FAST</strong>
+            <small>−{GAME_CONFIG.nodes.publicPrivacyDamage}% PRIVACY</small>
+            <span>→</span>
           </div>
         </div>
       )}
@@ -109,55 +88,40 @@ export function HUD() {
           role="status"
         >
           <strong>{feedback.title}</strong>
-          <span>{feedback.detail}</span>
         </div>
       )}
       {advisor && (
-        <div key={`advisor-${advisor.id}`} className="dili-hint">
+        <div key={`advisor-${advisor.id}`} className="dili-hint" role="status">
           <Image
-            className="dili-avatar"
             src="/brand/dili-blue-cutout.png"
-            width={52}
-            height={52}
+            width={42}
+            height={42}
             alt="DILI"
             unoptimized
           />
-          <div>
-            <small>DILI // NETWORK INTELLIGENCE</small>
-            <strong>{advisor.text}</strong>
-          </div>
+          <span>{advisor.text}</span>
         </div>
       )}
-      {battery < 0.1 && (
-        <div className="critical-alert">
-          {battery < 0.05 ? "SIGNAL FAILURE IMMINENT" : "CRITICAL POWER"}
+      {critical && (
+        <div className="critical-alert" role="alert">
+          LOW POWER
         </div>
       )}
       <footer className="hud-footer">
-        <div className="hud-keys">
-          <kbd>W</kbd> THRUST <kbd>A</kbd>
-          <kbd>D</kbd> STEER <kbd>SHIFT</kbd> BOOST
-        </div>
-        <div className="scan-indicator">
-          <span className={scanCooldown <= 0 ? "scan-ring ready" : "scan-ring"}>
-            ◉
-          </span>
-          <strong>SCAN</strong>
+        <div
+          className={`scan-indicator ${scanCooldown <= 0 ? "ready" : ""}`}
+          aria-label={
+            scanCooldown <= 0
+              ? "Scan ready. Press Space."
+              : `Scan ready in ${scanCooldown.toFixed(1)} seconds`
+          }
+        >
+          <span>⌁</span>
           <small>
-            {scanCooldown <= 0
-              ? "SPACE / READY"
-              : `${scanCooldown.toFixed(1)}s`}
+            {scanCooldown <= 0 ? "SPACE · SCAN" : `${scanCooldown.toFixed(1)}s`}
           </small>
         </div>
-        <div className="hud-actions">
-          <span className={boosting ? "boost-active" : ""}>
-            BOOST {boosting ? "ACTIVE" : "READY"}
-          </span>
-          <GameButton onClick={() => updateSettings({ mute: !mute })}>
-            {mute ? "UNMUTE" : "MUTE"}
-          </GameButton>
-          <GameButton onClick={pause}>ESC / PAUSE</GameButton>
-        </div>
+        {boosting && <span className="boost-active">BOOSTING</span>}
       </footer>
     </div>
   );

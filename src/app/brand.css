@@ -15,10 +15,10 @@
 }
 .menu-mascot {
   position: absolute;
-  right: 6vw;
+  right: 4vw;
   top: 50%;
-  width: min(42vw, 620px);
-  height: min(42vw, 620px);
+  width: min(33vw, 490px);
+  height: min(33vw, 490px);
   aspect-ratio: 1;
   transform: translateY(-52%);
   display: grid;
@@ -91,10 +91,10 @@
 .main-menu {
   background: linear-gradient(
     90deg,
-    #020817f5 0%,
-    #030b1ce8 35%,
-    #060b1d5c 70%,
-    #030817bf 100%
+    #020817ef 0%,
+    #030b1cc7 35%,
+    #060b1d38 70%,
+    #03081764 100%
   );
 }
 .menu-main {
@@ -136,6 +136,32 @@
 .menu-mission-line span:first-child,
 .menu-mission-line span:last-child {
   color: #81eeff;
+}
+.menu-secondary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 5px;
+}
+.menu-secondary .game-button {
+  padding: 9px 0;
+  border: 0;
+  background: transparent;
+  color: #b9d0d8;
+  font:
+    700 10px/1 Consolas,
+    monospace;
+  letter-spacing: 0.08em;
+}
+.menu-secondary .game-button:hover {
+  color: #e9fcfe;
+}
+.menu-actions > .game-button--primary {
+  margin-bottom: 0;
+}
+.menu-subtitle {
+  margin: 19px 0 22px;
+  max-width: 330px;
 }
 .boot-screen {
   background: radial-gradient(
