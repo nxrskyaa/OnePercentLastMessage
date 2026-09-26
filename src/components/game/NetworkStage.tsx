@@ -1,193 +1,267 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useSettingsStore } from "@/store/settingsStore";
 
-type Bar = [number, number, number, number, number, number, number?];
+// Folded signal sheets give each stretch of the transmission its own silhouette.
+function makeWorld(low: boolean) {
+  const facets: number[] = [];
+  const colors: number[] = [];
+  const seams: number[] = [];
+  const current: number[] = [];
+  const echoes: number[] = [];
+  const glints: number[] = [];
+  const palette = ["#244868", "#315c7b", "#335875", "#4d5076"];
+  const triangle = (
+    a: number[],
+    b: number[],
+    c: number[],
+    color: THREE.Color,
+  ) => {
+    facets.push(...a, ...b, ...c);
+    for (let i = 0; i < 3; i++) colors.push(color.r, color.g, color.b);
+  };
+  const line = (target: number[], a: number[], b: number[]) =>
+    target.push(...a, ...b);
 
-function StageBatch({
-  bars,
-  color,
-  opacity = 1,
-}: {
-  bars: Bar[];
-  color: string;
-  opacity?: number;
-}) {
-  const ref = useRef<THREE.InstancedMesh>(null);
-  useLayoutEffect(() => {
-    const mesh = ref.current;
-    if (!mesh) return;
-    const dummy = new THREE.Object3D();
-    bars.forEach(([x, y, z, sx, sy, sz, angle = 0], index) => {
-      dummy.position.set(x, y, z);
-      dummy.rotation.set(0, 0, angle);
-      dummy.scale.set(sx, sy, sz);
-      dummy.updateMatrix();
-      mesh.setMatrixAt(index, dummy.matrix);
-    });
-    mesh.instanceMatrix.needsUpdate = true;
-    mesh.computeBoundingSphere();
-  }, [bars]);
-  return (
-    <instancedMesh ref={ref} args={[undefined, undefined, bars.length]}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshBasicMaterial
-        color={color}
-        transparent={opacity < 1}
-        opacity={opacity}
-        toneMapped={false}
-        depthWrite={opacity === 1}
-      />
-    </instancedMesh>
-  );
-}
+  const landmarks = [
+    [-1, -30, -155, 37, 28],
+    [1, -108, -266, 59, 43],
+    [-1, -226, -367, 64, 47],
+    [1, -337, -483, 51, 36],
+    [-1, -447, -578, 54, 39],
+    [1, -528, -655, 58, 42],
+  ] as const;
+  landmarks.forEach(([side, front, back, height, reach], i) => {
+    const baseX = 27 + (i % 2) * 4;
+    const point = (t: number, u: number) => {
+      const arch = Math.pow(Math.sin(Math.PI * t), 0.7);
+      const billow = Math.sin(Math.PI * t * 2 + i * 0.65) * 3.5;
+      return [
+        side * (baseX + u * reach * arch + billow * u),
+        -17 + u * height * arch + Math.sin(t * Math.PI * 3) * u * 2,
+        front + (back - front) * t - u * (6 + (i % 3)),
+      ];
+    };
+    for (let t = 0; t < 8; t++) {
+      for (let u = 0; u < 3; u++) {
+        const a = point(t / 8, u / 3);
+        const b = point((t + 1) / 8, u / 3);
+        const c = point((t + 1) / 8, (u + 1) / 3);
+        const d = point(t / 8, (u + 1) / 3);
+        const shade = new THREE.Color(
+          palette[i % palette.length],
+        ).multiplyScalar(0.55 + u * 0.23 + (t % 2) * 0.045);
+        triangle(a, b, c, shade);
+        triangle(a, c, d, shade);
+      }
+      line(seams, point(t / 8, 1), point((t + 1) / 8, 1));
+      for (const layer of [0.35, 0.68])
+        line(seams, point(t / 8, layer), point((t + 1) / 8, layer));
+      if (t % 2 === 0) line(seams, point(t / 8, 0.35), point(t / 8, 0.68));
+    }
+  });
 
-function SegmentLines({
-  positions,
-  color,
-  opacity,
-}: {
-  positions: Float32Array;
-  color: string;
-  opacity: number;
-}) {
-  return (
-    <lineSegments>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <lineBasicMaterial
-        color={color}
-        transparent
-        opacity={opacity}
-        depthWrite={false}
-        toneMapped={false}
-      />
-    </lineSegments>
-  );
-}
+  // The player's route flows over a dark current, broken by message-like ripples.
+  for (let step = 0; step < 54; step++) {
+    const z = 28 - step * 12.5;
+    const width = 25 + Math.sin(step * 0.24) * 3;
+    const a = [-width, -19.2, z];
+    const b = [width, -19.2, z];
+    const c = [width, -19.2, z - 12.5];
+    const d = [-width, -19.2, z - 12.5];
+    const shade = new THREE.Color("#091d30");
+    triangle(a, b, c, shade);
+    triangle(a, c, d, shade);
+    if (step % 4 === 0)
+      line(current, [-width * 0.7, -19, z], [width * 0.7, -19, z]);
+  }
+  // Broken conversation echoes make the space feel like a message network.
+  [
+    [-1, -176, 11, 0],
+    [1, -324, 18, 1],
+    [-1, -494, 6, 2],
+  ].forEach(([side, z, y, index]) => {
+    const x = side * (46 + index * 3);
+    const a = [x - 10, y + 6, z];
+    const b = [x + 10, y + 6, z];
+    const c = [x + 10, y - 5, z];
+    const d = [x - 3, y - 5, z];
+    const tail = [x - 8, y - 10, z];
+    const e = [x - 9, y - 5, z];
+    line(echoes, a, b);
+    line(echoes, b, c);
+    line(echoes, c, d);
+    line(echoes, d, tail);
+    line(echoes, tail, e);
+    line(echoes, e, a);
+    for (let row = 0; row < 3; row++)
+      line(
+        echoes,
+        [x - 6, y + 3 - row * 2.5, z],
+        [x + 3 + ((row + index) % 3) * 2, y + 3 - row * 2.5, z],
+      );
+  });
 
-function SignalHalos() {
-  const ref = useRef<THREE.InstancedMesh>(null);
-  useLayoutEffect(() => {
-    if (!ref.current) return;
-    const dummy = new THREE.Object3D();
-    [-95, -217, -347, -477, -590].forEach((z, index) => {
-      dummy.position.set(index % 2 ? 4 : -4, 3, z);
-      dummy.rotation.z = index * 0.83;
-      dummy.scale.set(1, 0.8, 1);
-      dummy.updateMatrix();
-      ref.current?.setMatrixAt(index, dummy.matrix);
-    });
-    ref.current.instanceMatrix.needsUpdate = true;
-    ref.current.computeBoundingSphere();
-  }, []);
-  return (
-    <instancedMesh ref={ref} args={[undefined, undefined, 5]}>
-      <torusGeometry args={[27, 0.16, 4, 54, Math.PI * 1.48]} />
-      <meshBasicMaterial
-        color="#78c9fa"
-        transparent
-        opacity={0.44}
-        depthWrite={false}
-        toneMapped={false}
-      />
-    </instancedMesh>
-  );
+  // A broad, sparse current suggests a giant connected data plane below flight.
+  for (let lane = -8; lane <= 8; lane++) {
+    if (lane === 0) continue;
+    const x = lane * 6.5;
+    for (let step = 0; step < 56; step++) {
+      const z = 28 - step * 12.4;
+      const wave = (p: number) => -19 + Math.sin(p * 0.026 + lane * 0.64) * 1.6;
+      const bend = (p: number) =>
+        x + Math.sin(p * 0.014 + lane * 0.4) * (Math.abs(lane) + 1);
+      line(
+        current,
+        [bend(z), wave(z), z],
+        [bend(z - 12.4), wave(z - 12.4), z - 12.4],
+      );
+    }
+  }
+  for (let i = 0; i < (low ? 120 : 240); i++) {
+    const a = Math.sin(i * 127.13 + 4.7) * 43758.5453;
+    const fraction = a - Math.floor(a);
+    glints.push(
+      (i % 2 ? 1 : -1) * (25 + fraction * 100),
+      -8 + ((i * 19.73) % 75),
+      30 - ((i * 53.71) % 720),
+    );
+  }
+  const geometry = (positions: number[]) => {
+    const result = new THREE.BufferGeometry();
+    result.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(positions, 3),
+    );
+    return result;
+  };
+  const sheets = geometry(facets);
+  sheets.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+  sheets.computeVertexNormals();
+  const sky = new THREE.SphereGeometry(880, 28, 16);
+  const skyColors: number[] = [];
+  const vertices = sky.getAttribute("position");
+  for (let i = 0; i < vertices.count; i++) {
+    const x = vertices.getX(i) / 880;
+    const y = vertices.getY(i) / 880;
+    const horizon = Math.exp(-Math.pow((y + 0.05) * 4.4, 2));
+    const tint = new THREE.Color("#091a2a").lerp(
+      new THREE.Color(x < -0.2 ? "#273b59" : "#1d536e"),
+      horizon * 0.78,
+    );
+    skyColors.push(tint.r, tint.g, tint.b);
+  }
+  sky.setAttribute("color", new THREE.Float32BufferAttribute(skyColors, 3));
+  return {
+    sheets,
+    seams: geometry(seams),
+    current: geometry(current),
+    echoes: geometry(echoes),
+    stars: geometry(glints),
+    sky,
+  };
 }
 
 export function NetworkStage() {
   const low = useSettingsStore((state) => state.runtimeQuality === "low");
-  const logo = useTexture("/brand/dlicom-mark-reference.jpg");
-  const geometry = useMemo(() => {
-    const frames: Bar[] = [];
-    const edges: Bar[] = [];
-    const blue: number[] = [];
-    const violet: number[] = [];
-    const stars: number[] = [];
-    const line = (target: number[], a: number[], b: number[]) =>
-      target.push(...a, ...b);
-
-    // A sequence of open, asymmetric relay gates gives speed and depth without solid walls.
-    for (let i = 0; i < 19; i++) {
-      const z = 10 - i * 36;
-      const emphasis = i % 4 === 0;
-      for (const s of [-1, 1]) {
-        frames.push([
-          s * 21,
-          1,
-          z,
-          emphasis ? 2.1 : 1.1,
-          emphasis ? 31 : 22,
-          emphasis ? 4 : 2,
-        ]);
-        frames.push([s * 16, 21, z, 1.1, 12, 2, -s * 0.78]);
-        edges.push([s * 19.7, 0, z + 2, 0.22, emphasis ? 27 : 18, 0.24]);
-        line(blue, [s * 19, -9, z], [s * 19, -9, z - 26]);
-        if (emphasis) line(blue, [s * 21, 17, z], [s * 7, 28, z]);
-      }
-      if (i > 4 && i % 3 === 0) {
-        line(violet, [-30, -4, z], [-42, 14, z - 24]);
-        line(violet, [30, -4, z], [42, 14, z - 24]);
-      }
-      line(blue, [-7, -12, z], [7, -12, z]);
-      line(blue, [0, -11.8, z], [0, -11.8, z - 17]);
+  const world = useMemo(() => makeWorld(low), [low]);
+  const dili = useTexture("/brand/dili-blue-cutout.png");
+  const guide = useRef<THREE.Group>(null);
+  useFrame(({ clock, camera }) => {
+    if (guide.current) {
+      guide.current.position.y = 9 + Math.sin(clock.elapsedTime * 1.25) * 0.75;
+      const ahead = camera.position.z + 116;
+      guide.current.visible = ahead > 55 && ahead < 200;
     }
-    for (let i = 0; i < (low ? 90 : 170); i++) {
-      const seed = Math.sin(i * 127.1 + 4.8) * 43758.5453;
-      const r = seed - Math.floor(seed);
-      const x = Math.sin(i * 29.3) * (28 + r * 100);
-      const y = Math.cos(i * 17.4) * (10 + r * 65);
-      stars.push(x, y, 35 - ((i * 47.3) % 750));
-    }
-    return {
-      frames,
-      edges,
-      blue: new Float32Array(blue),
-      violet: new Float32Array(violet),
-      stars: new Float32Array(stars),
-    };
-  }, [low]);
+  });
+  useEffect(
+    () => () => Object.values(world).forEach((item) => item.dispose()),
+    [world],
+  );
   return (
     <>
-      <StageBatch bars={geometry.frames} color="#1b3658" />
-      <StageBatch bars={geometry.edges} color="#67d8ff" opacity={0.86} />
-      <SegmentLines positions={geometry.blue} color="#80e5ff" opacity={0.76} />
-      <SegmentLines
-        positions={geometry.violet}
-        color="#a990e7"
-        opacity={0.34}
-      />
-      <SignalHalos />
-      <group position={[-26, 10, -55]} rotation={[0, 0.18, 0]}>
+      <mesh geometry={world.sky} position={[0, 0, -320]} renderOrder={-10}>
+        <meshBasicMaterial
+          vertexColors
+          side={THREE.BackSide}
+          depthWrite={false}
+          fog={false}
+          toneMapped={false}
+        />
+      </mesh>
+      <mesh geometry={world.sheets}>
+        <meshBasicMaterial
+          vertexColors
+          side={THREE.DoubleSide}
+          transparent
+          opacity={0.88}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+      <lineSegments geometry={world.seams}>
+        <lineBasicMaterial
+          color="#8fd7f2"
+          transparent
+          opacity={0.68}
+          toneMapped={false}
+        />
+      </lineSegments>
+      <lineSegments geometry={world.current}>
+        <lineBasicMaterial
+          color="#428eb4"
+          transparent
+          opacity={0.37}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </lineSegments>
+      <lineSegments geometry={world.echoes}>
+        <lineBasicMaterial
+          color="#90bce1"
+          transparent
+          opacity={0.45}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </lineSegments>
+      <points geometry={world.stars}>
+        <pointsMaterial
+          color="#d7ecfa"
+          size={0.55}
+          transparent
+          opacity={0.7}
+          sizeAttenuation
+          depthWrite={false}
+        />
+      </points>
+      <group ref={guide} position={[-32, 9, -116]} rotation={[0, 0.18, 0]}>
         <mesh>
-          <planeGeometry args={[8, 8]} />
+          <planeGeometry args={[6.5, 8]} />
           <meshBasicMaterial
-            map={logo}
+            map={dili}
+            transparent
+            alphaTest={0.08}
+            depthWrite={false}
+            side={THREE.DoubleSide}
+            toneMapped={false}
+          />
+        </mesh>
+        <mesh position={[0, -5.5, -0.5]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[2.5, 2.65, 24]} />
+          <meshBasicMaterial
+            color="#72d6ec"
+            transparent
+            opacity={0.64}
             toneMapped={false}
             side={THREE.DoubleSide}
           />
         </mesh>
       </group>
-      <points>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[geometry.stars, 3]}
-          />
-        </bufferGeometry>
-        <pointsMaterial
-          color="#b8eaff"
-          size={0.38}
-          transparent
-          opacity={0.54}
-          sizeAttenuation
-          depthWrite={false}
-        />
-      </points>
     </>
   );
 }

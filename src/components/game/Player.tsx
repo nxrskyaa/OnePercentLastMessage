@@ -56,12 +56,50 @@ function createPacketShell() {
 
 function createSealLines() {
   const geometry = new THREE.BufferGeometry();
+  const outline = [
+    [-1.18, 0],
+    [-0.76, 0.57],
+    [0, 0.87],
+    [0.76, 0.57],
+    [1.18, 0],
+    [0.76, -0.57],
+    [0, -0.87],
+    [-0.76, -0.57],
+  ];
+  const rim: number[] = [];
+  outline.forEach(([x, y], index) => {
+    const [nextX, nextY] = outline[(index + 1) % outline.length];
+    rim.push(x, y, 0.53, nextX, nextY, 0.53);
+  });
   geometry.setAttribute(
     "position",
     new THREE.Float32BufferAttribute(
       [
-        -1.05, 0, 0.47, 0, -0.42, 0.47, 1.05, 0, 0.47, 0, -0.42, 0.47, -0.7,
-        0.49, 0.47, 0, 0.13, 0.47, 0.7, 0.49, 0.47, 0, 0.13, 0.47,
+        -1.05,
+        0,
+        0.47,
+        0,
+        -0.42,
+        0.47,
+        1.05,
+        0,
+        0.47,
+        0,
+        -0.42,
+        0.47,
+        -0.7,
+        0.49,
+        0.47,
+        0,
+        0.13,
+        0.47,
+        0.7,
+        0.49,
+        0.47,
+        0,
+        0.13,
+        0.47,
+        ...rim,
       ],
       3,
     ),
@@ -86,8 +124,8 @@ export function Player({
   const shellGeometry = useMemo(() => createPacketShell(), []);
   const sealLines = useMemo(() => createSealLines(), []);
   const materials = useMemo(() => {
-    const shell = dataSurface("#344f60", "#4f91aa");
-    const plate = dataSurface("#456274", "#4e86a5");
+    const shell = dataSurface("#436e87", "#67bdd8");
+    const plate = dataSurface("#4c8297", "#79cbe2");
     return { core: energySurface("#e5ffff", 5.4, true), shell, plate };
   }, []);
   useEffect(
