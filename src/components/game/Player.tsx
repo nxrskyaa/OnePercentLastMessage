@@ -9,7 +9,8 @@ import type { GameNode } from "@/game/nodes";
 import { playSound, setAudioIntensity } from "@/lib/audio";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
-import { dataSurface, energySurface } from "@/rendering/materials";
+import { energySurface } from "@/rendering/materials";
+import { createChatGeometry } from "@/rendering/chatGeometry";
 import { signalState } from "@/rendering/signalState";
 
 interface PlayerProps {
@@ -20,86 +21,18 @@ interface PlayerProps {
   nodes: GameNode[];
 }
 
-function createFin() {
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(
-      [-0.36, 0.45, 0.22, 0.36, 0.45, 0.22, 0, 1.8, -0.08, 0, 0.72, -0.72],
-      3,
-    ),
-  );
-  geometry.setIndex([0, 1, 2, 0, 3, 1, 1, 3, 2, 2, 3, 0]);
-  geometry.computeVertexNormals();
-  return geometry;
-}
-
 function createPacketShell() {
-  const shape = new THREE.Shape();
-  shape.moveTo(-1.18, 0);
-  shape.lineTo(-0.76, 0.57);
-  shape.lineTo(0, 0.87);
-  shape.lineTo(0.76, 0.57);
-  shape.lineTo(1.18, 0);
-  shape.lineTo(0.76, -0.57);
-  shape.lineTo(0, -0.87);
-  shape.lineTo(-0.76, -0.57);
-  shape.closePath();
-  return new THREE.ExtrudeGeometry(shape, {
-    depth: 0.34,
-    bevelEnabled: true,
-    bevelSize: 0.08,
-    bevelThickness: 0.08,
-    bevelSegments: 1,
-  });
+  return createChatGeometry(2.7, 1.8, 0.42);
 }
 
 function createSealLines() {
   const geometry = new THREE.BufferGeometry();
-  const outline = [
-    [-1.18, 0],
-    [-0.76, 0.57],
-    [0, 0.87],
-    [0.76, 0.57],
-    [1.18, 0],
-    [0.76, -0.57],
-    [0, -0.87],
-    [-0.76, -0.57],
-  ];
-  const rim: number[] = [];
-  outline.forEach(([x, y], index) => {
-    const [nextX, nextY] = outline[(index + 1) % outline.length];
-    rim.push(x, y, 0.53, nextX, nextY, 0.53);
-  });
   geometry.setAttribute(
     "position",
     new THREE.Float32BufferAttribute(
       [
-        -1.05,
-        0,
-        0.47,
-        0,
-        -0.42,
-        0.47,
-        1.05,
-        0,
-        0.47,
-        0,
-        -0.42,
-        0.47,
-        -0.7,
-        0.49,
-        0.47,
-        0,
-        0.13,
-        0.47,
-        0.7,
-        0.49,
-        0.47,
-        0,
-        0.13,
-        0.47,
-        ...rim,
+        -1.08, 0.42, 0.31, 0, -0.2, 0.31, 0, -0.2, 0.31, 1.06, 0.42, 0.31,
+        -1.08, -0.55, 0.31, 0, 0.08, 0.31, 0, 0.08, 0.31, 1.06, -0.55, 0.31,
       ],
       3,
     ),
@@ -115,29 +48,32 @@ export function Player({
   nodes,
 }: PlayerProps) {
   const visual = useRef<THREE.Group>(null);
-  const fins = useRef<Array<THREE.Group | null>>([]);
   const trail = useRef<THREE.Group>(null);
   const trailSparks = useRef<THREE.InstancedMesh>(null);
   const trailSpark = useRef(new THREE.Object3D());
   const core = useRef<THREE.Mesh>(null);
-  const fin = useMemo(() => createFin(), []);
   const shellGeometry = useMemo(() => createPacketShell(), []);
   const sealLines = useMemo(() => createSealLines(), []);
   const materials = useMemo(() => {
-    const shell = dataSurface("#436e87", "#67bdd8");
-    const plate = dataSurface("#4c8297", "#79cbe2");
-    return { core: energySurface("#e5ffff", 5.4, true), shell, plate };
+    const shell = new THREE.MeshPhysicalMaterial({
+      color: "#298dbe",
+      metalness: 0.12,
+      roughness: 0.24,
+      clearcoat: 1,
+      clearcoatRoughness: 0.08,
+      emissive: "#2da6d1",
+      emissiveIntensity: 0.58,
+    });
+    return { core: energySurface("#e5ffff", 5.4, true), shell };
   }, []);
   useEffect(
     () => () => {
       materials.core.dispose();
       materials.shell.dispose();
-      materials.plate.dispose();
-      fin.dispose();
       shellGeometry.dispose();
       sealLines.dispose();
     },
-    [fin, materials, shellGeometry, sealLines],
+    [materials, shellGeometry, sealLines],
   );
   const speed = useRef<number>(GAME_CONFIG.movement.cruiseSpeed);
   const sideSpeed = useRef(0);
@@ -286,22 +222,6 @@ export function Player({
         delta,
       ),
     );
-    fins.current.forEach((finGroup, index) => {
-      if (!finGroup) return;
-      const flare = boosting ? (index % 2 ? -0.23 : 0.23) : 0;
-      finGroup.rotation.z = THREE.MathUtils.damp(
-        finGroup.rotation.z,
-        (index * Math.PI) / 2 + flare,
-        7,
-        delta,
-      );
-      finGroup.position.z = THREE.MathUtils.damp(
-        finGroup.position.z,
-        boosting ? -0.32 : 0,
-        7,
-        delta,
-      );
-    });
     if (trail.current) {
       const trailScale = boosting
         ? 1.75
@@ -515,6 +435,29 @@ export function Player({
   return (
     <group ref={playerRef}>
       <group ref={visual}>
+        <mesh>
+          <sphereGeometry args={[2.15, 24, 16]} />
+          <meshPhysicalMaterial
+            color="#a8dfff"
+            transparent
+            opacity={0.15}
+            depthWrite={false}
+            roughness={0.09}
+            metalness={0.1}
+            clearcoat={1}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+        <mesh rotation={[0.24, 0.14, -0.24]}>
+          <torusGeometry args={[2.18, 0.055, 5, 48, Math.PI * 1.55]} />
+          <meshBasicMaterial
+            color="#c5f9ff"
+            transparent
+            opacity={0.8}
+            depthWrite={false}
+            toneMapped={false}
+          />
+        </mesh>
         <mesh geometry={shellGeometry} material={materials.shell} />
         <lineSegments geometry={sealLines}>
           <lineBasicMaterial
@@ -524,24 +467,9 @@ export function Player({
             toneMapped={false}
           />
         </lineSegments>
-        <mesh ref={core} position={[0, 0, 0.7]} material={materials.core}>
-          <octahedronGeometry args={[0.48, 0]} />
+        <mesh ref={core} position={[0, -0.02, 0.43]} material={materials.core}>
+          <octahedronGeometry args={[0.24, 0]} />
         </mesh>
-        {[0, 1, 2, 3].map((index) => (
-          <group
-            key={index}
-            ref={(group) => {
-              fins.current[index] = group;
-            }}
-            rotation={[0, 0, (index * Math.PI) / 2]}
-          >
-            <mesh geometry={fin} material={materials.plate} />
-            <mesh position={[0, 1.43, 0.04]}>
-              <boxGeometry args={[0.1, 0.43, 0.08]} />
-              <meshBasicMaterial color="#a8edfa" toneMapped={false} />
-            </mesh>
-          </group>
-        ))}
       </group>
       <group ref={trail}>
         <mesh position={[0, 0, 3]} rotation={[-Math.PI / 2, 0, 0]}>

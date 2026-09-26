@@ -4,208 +4,125 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { GAME_CONFIG } from "@/game/config";
-
-function polygon(points: Array<[number, number]>, depth: number) {
-  const shape = new THREE.Shape();
-  shape.moveTo(...points[0]);
-  points.slice(1).forEach(([x, y]) => shape.lineTo(x, y));
-  shape.closePath();
-  const geometry = new THREE.ExtrudeGeometry(shape, {
-    depth,
-    bevelEnabled: false,
-    curveSegments: 1,
-  });
-  geometry.computeVertexNormals();
-  return geometry;
-}
-
-function receiverGeometry() {
-  // Four split wings hold the receiving aperture. It reads as an arrival
-  // point from the beginning of the run without another circular gate.
-  const wings = [
-    polygon(
-      [
-        [-54, -47],
-        [-29, -16],
-        [-21, 11],
-        [-27, 45],
-        [-41, 67],
-        [-70, 38],
-        [-51, 23],
-      ],
-      13,
-    ),
-    polygon(
-      [
-        [54, -47],
-        [29, -16],
-        [21, 11],
-        [27, 45],
-        [41, 67],
-        [70, 38],
-        [51, 23],
-      ],
-      13,
-    ),
-    polygon(
-      [
-        [-22, 54],
-        [-9, 27],
-        [0, 20],
-        [9, 27],
-        [22, 54],
-        [0, 82],
-      ],
-      10,
-    ),
-    polygon(
-      [
-        [-22, -54],
-        [-9, -27],
-        [0, -20],
-        [9, -27],
-        [22, -54],
-        [0, -82],
-      ],
-      10,
-    ),
-  ];
-  const insets = [
-    polygon(
-      [
-        [-48, -29],
-        [-30, -6],
-        [-24, 12],
-        [-32, 39],
-        [-47, 44],
-        [-37, 12],
-      ],
-      0.3,
-    ),
-    polygon(
-      [
-        [48, -29],
-        [30, -6],
-        [24, 12],
-        [32, 39],
-        [47, 44],
-        [37, 12],
-      ],
-      0.3,
-    ),
-  ];
-  const lines = new THREE.BufferGeometry();
-  lines.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(
-      [
-        -78, 0, 0, -30, 0, 0, 78, 0, 0, 30, 0, 0, 0, 100, 0, 0, 26, 0, 0, -100,
-        0, 0, -26, 0, -33, -22, 6, -24, 11, 6, 33, -22, 6, 24, 11, 6,
-      ],
-      3,
-    ),
-  );
-  return { wings, insets, lines };
-}
+import { createChatGeometry } from "@/rendering/chatGeometry";
 
 export function Destination() {
-  const geometry = useMemo(() => receiverGeometry(), []);
+  const geometry = useMemo(
+    () => ({
+      aperture: createChatGeometry(124, 88, 14, 30),
+      inner: createChatGeometry(91, 65, 5, 25),
+      satellite: createChatGeometry(31, 19, 4),
+    }),
+    [],
+  );
   const core = useRef<THREE.Group>(null);
   const pulse = useRef<THREE.Mesh>(null);
   useEffect(
-    () => () => {
-      geometry.wings.forEach((item) => item.dispose());
-      geometry.insets.forEach((item) => item.dispose());
-      geometry.lines.dispose();
-    },
+    () => () => Object.values(geometry).forEach((item) => item.dispose()),
     [geometry],
   );
   useFrame(({ clock }, delta) => {
-    if (core.current) core.current.rotation.z += Math.min(delta, 0.05) * 0.16;
+    if (core.current) {
+      core.current.rotation.z += Math.min(delta, 0.05) * 0.18;
+      core.current.rotation.y = Math.sin(clock.elapsedTime * 0.45) * 0.14;
+    }
     if (pulse.current)
       pulse.current.scale.setScalar(
-        1 + Math.sin(clock.elapsedTime * 2.3) * 0.08,
+        1 + Math.sin(clock.elapsedTime * 2.2) * 0.08,
       );
   });
   return (
     <group position={[0, 0, GAME_CONFIG.destination.z]}>
-      <mesh position={[0, 0, -58]} rotation={[0.25, -0.15, 0.45]}>
-        <torusGeometry args={[76, 2, 5, 72, Math.PI * 1.38]} />
-        <meshStandardMaterial
-          color="#3b8ca8"
-          emissive="#51b8d0"
-          emissiveIntensity={0.9}
-          metalness={0.45}
-          roughness={0.3}
+      <mesh
+        geometry={geometry.aperture}
+        position={[0, 0, -18]}
+        rotation={[0, -0.1, -0.04]}
+      >
+        <meshPhysicalMaterial
+          color="#327cae"
+          metalness={0.2}
+          roughness={0.28}
+          clearcoat={0.9}
+          clearcoatRoughness={0.12}
+          emissive="#126a9b"
+          emissiveIntensity={0.72}
+          side={THREE.DoubleSide}
         />
       </mesh>
-      <mesh position={[0, 0, -35]} rotation={[-0.23, 0.22, Math.PI * 1.1]}>
-        <torusGeometry args={[58, 1.2, 4, 62, Math.PI * 1.28]} />
-        <meshBasicMaterial color="#91e8ed" toneMapped={false} />
-      </mesh>
-      <mesh position={[0, 0, -62]} rotation={[0, 0, Math.PI / 4]}>
-        <octahedronGeometry args={[38, 0]} />
-        <meshStandardMaterial
-          color="#124462"
-          emissive="#0b5d80"
-          emissiveIntensity={1.15}
-          metalness={0.48}
-          roughness={0.38}
-          flatShading
+      <mesh
+        geometry={geometry.inner}
+        position={[0, 0, -5]}
+        rotation={[0, 0.09, 0.04]}
+      >
+        <meshPhysicalMaterial
+          color="#68c6dd"
+          metalness={0.18}
+          roughness={0.23}
+          clearcoat={0.95}
+          clearcoatRoughness={0.12}
+          emissive="#4ab9d3"
+          emissiveIntensity={0.75}
+          side={THREE.DoubleSide}
         />
       </mesh>
-      <group position={[0, 0, -8]}>
-        {geometry.wings.map((wing, index) => (
-          <mesh key={index} geometry={wing}>
-            <meshStandardMaterial
-              color={index < 2 ? "#31566a" : "#376c7f"}
-              emissive="#0c354b"
-              emissiveIntensity={0.55}
-              metalness={0.67}
-              roughness={0.3}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-        ))}
-        {geometry.insets.map((inset, index) => (
-          <mesh key={index} geometry={inset} position={[0, 0, 13.2]}>
-            <meshBasicMaterial
-              color="#407e9a"
-              toneMapped={false}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-        ))}
-        <lineSegments geometry={geometry.lines} position={[0, 0, 15]}>
-          <lineBasicMaterial
-            color="#a1e9ff"
-            transparent
-            opacity={0.84}
-            toneMapped={false}
-          />
-        </lineSegments>
-      </group>
+      <mesh
+        geometry={geometry.satellite}
+        position={[-82, 39, -45]}
+        rotation={[0.12, -0.38, -0.23]}
+      >
+        <meshPhysicalMaterial
+          color="#78649f"
+          metalness={0.2}
+          roughness={0.28}
+          clearcoat={0.8}
+          emissive="#463e85"
+          emissiveIntensity={0.5}
+        />
+      </mesh>
+      <mesh
+        geometry={geometry.satellite}
+        position={[82, -31, -39]}
+        rotation={[-0.1, 0.49, 0.3]}
+        scale={0.9}
+      >
+        <meshPhysicalMaterial
+          color="#bb9062"
+          metalness={0.2}
+          roughness={0.28}
+          clearcoat={0.8}
+          emissive="#8e5731"
+          emissiveIntensity={0.5}
+        />
+      </mesh>
+      <mesh position={[0, 0, -28]}>
+        <circleGeometry args={[22, 48]} />
+        <meshBasicMaterial
+          color="#137da4"
+          transparent
+          opacity={0.12}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
       <group ref={core}>
-        {[0, 1, 2, 3].map((index) => (
-          <mesh
-            key={index}
-            rotation={[0, 0, (index * Math.PI) / 2]}
-            position={[0, 0, 1]}
-          >
-            <boxGeometry args={[1.2, 46, 1]} />
-            <meshBasicMaterial color="#91dff1" toneMapped={false} />
-          </mesh>
-        ))}
+        <mesh position={[0, 0, -13]} rotation={[0, 0, Math.PI / 4]}>
+          <icosahedronGeometry args={[14, 1]} />
+          <meshPhysicalMaterial
+            color="#4ea8d1"
+            metalness={0.15}
+            roughness={0.16}
+            clearcoat={1}
+            emissive="#4fb9e6"
+            emissiveIntensity={0.9}
+            flatShading
+          />
+        </mesh>
+        <mesh ref={pulse} position={[0, 0, 7]} rotation={[0, 0, Math.PI / 4]}>
+          <octahedronGeometry args={[4.5, 0]} />
+          <meshBasicMaterial color="#e8ffff" toneMapped={false} />
+        </mesh>
       </group>
-      <mesh ref={pulse} position={[0, 0, 7]} rotation={[0, 0, Math.PI / 4]}>
-        <octahedronGeometry args={[16, 0]} />
-        <meshBasicMaterial color="#e8fcff" toneMapped={false} />
-      </mesh>
-      <mesh position={[0, 0, 16]} rotation={[0, 0, Math.PI / 4]}>
-        <torusGeometry args={[23, 1.4, 4, 4]} />
-        <meshBasicMaterial color="#c7ffff" toneMapped={false} />
-      </mesh>
-      <pointLight color="#8cdfff" intensity={50} distance={125} decay={2} />
+      <pointLight color="#8fe9f7" intensity={42} distance={150} decay={2} />
     </group>
   );
 }

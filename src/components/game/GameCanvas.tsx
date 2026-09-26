@@ -14,6 +14,7 @@ import { WebGPURenderer } from "three/webgpu";
 import { ChaseCamera } from "@/components/game/ChaseCamera";
 import { Destination } from "@/components/game/Destination";
 import { NetworkStage } from "@/components/game/NetworkStage";
+import { NetworkBackdrop } from "@/components/game/NetworkBackdrop";
 import { NodeManager } from "@/components/game/NodeManager";
 import { PacketTraffic } from "@/components/game/PacketTraffic";
 import { Player } from "@/components/game/Player";
@@ -49,6 +50,7 @@ function GameScene() {
         intensity={1.15}
         position={[30, -12, -35]}
       />
+      <NetworkBackdrop />
       <NetworkStage />
       <RouteFork />
       <PacketTraffic />
