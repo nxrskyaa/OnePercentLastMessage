@@ -400,7 +400,7 @@ export function Player({
     <group ref={playerRef}>
       <group ref={visual}>
         <mesh position={[0, 0, -0.8]} scale={[1.1, 0.66, 1.4]}>
-          <icosahedronGeometry args={[1.6, 1]} />
+          <icosahedronGeometry args={[1.6, 2]} />
           <meshPhysicalMaterial
             color="#c2e1f4"
             metalness={0.12}
@@ -408,16 +408,14 @@ export function Player({
             clearcoat={1}
             emissive="#6b9ed0"
             emissiveIntensity={0.1}
-            flatShading
           />
         </mesh>
         <mesh position={[0, 0.66, -0.74]} scale={[0.72, 0.24, 1.05]}>
-          <icosahedronGeometry args={[1.25, 0]} />
+          <icosahedronGeometry args={[1.25, 1]} />
           <meshStandardMaterial
             color="#ecf7ff"
             metalness={0.2}
             roughness={0.3}
-            flatShading
           />
         </mesh>
         <mesh
@@ -448,14 +446,13 @@ export function Player({
             rotation={[0, side * 0.34, side * -0.22]}
           >
             <mesh scale={[0.6, 0.29, 1.8]}>
-              <icosahedronGeometry args={[1, 0]} />
+              <icosahedronGeometry args={[1, 1]} />
               <meshStandardMaterial
                 color="#83bee5"
                 metalness={0.25}
                 roughness={0.3}
                 emissive="#356b9c"
                 emissiveIntensity={0.13}
-                flatShading
               />
             </mesh>
             <mesh position={[0, 0, 1.35]}>

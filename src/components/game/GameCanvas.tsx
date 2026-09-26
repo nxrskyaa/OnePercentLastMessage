@@ -35,15 +35,15 @@ function GameScene() {
     <>
       <color attach="background" args={["#5572a2"]} />
       <fogExp2 attach="fog" args={["#657da8", GAME_CONFIG.world.fogDensity]} />
-      <ambientLight color="#a4bcf2" intensity={1.35} />
+      <ambientLight color="#a4bcf2" intensity={0.9} />
       <directionalLight
         color="#eef4fa"
-        intensity={2.5}
+        intensity={2.3}
         position={[-15, 28, 20]}
       />
       <directionalLight
         color="#be9af0"
-        intensity={1.25}
+        intensity={0.95}
         position={[30, -12, -35]}
       />
       <NetworkStage />
