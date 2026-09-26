@@ -15,6 +15,7 @@ import { ChaseCamera } from "@/components/game/ChaseCamera";
 import { Destination } from "@/components/game/Destination";
 import { NetworkStage } from "@/components/game/NetworkStage";
 import { NetworkBackdrop } from "@/components/game/NetworkBackdrop";
+import { SignalMonuments } from "@/components/game/SignalMonuments";
 import { NodeManager } from "@/components/game/NodeManager";
 import { PacketTraffic } from "@/components/game/PacketTraffic";
 import { Player } from "@/components/game/Player";
@@ -52,6 +53,7 @@ function GameScene() {
       />
       <NetworkBackdrop />
       <NetworkStage />
+      <SignalMonuments />
       <RouteFork />
       <PacketTraffic />
       <NodeManager nodes={nodes} playerRef={playerRef} />

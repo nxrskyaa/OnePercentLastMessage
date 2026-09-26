@@ -370,7 +370,7 @@ function DiliRelay() {
         11 + Math.sin(clock.elapsedTime * 1.35) * 0.35;
   });
   return (
-    <group position={[-35, 0, -105]} rotation={[0, 0.32, 0]}>
+    <group position={[-43, 0, -66]} rotation={[0, 0.32, 0]}>
       <mesh position={[0, -10, 0]}>
         <cylinderGeometry args={[5, 7, 4, 12]} />
         <meshStandardMaterial
@@ -428,8 +428,8 @@ export function NetworkStage() {
     () =>
       FORMS.filter((_, index) =>
         low
-          ? [0, 1, 4, 7, 9, 13, 17].includes(index)
-          : [0, 1, 4, 5, 7, 9, 11, 13, 15, 17].includes(index),
+          ? [1, 4, 7, 9, 13, 17].includes(index)
+          : [1, 4, 5, 7, 9, 11, 13, 15, 17].includes(index),
       ),
     [low],
   );
