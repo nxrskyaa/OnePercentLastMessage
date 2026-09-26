@@ -1,10 +1,9 @@
 "use client";
 
 import { useTexture } from "@react-three/drei";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { WebGPURenderer } from "three/webgpu";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { createChatGeometry } from "@/rendering/chatGeometry";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -265,45 +264,11 @@ function makeDust(low: boolean) {
 }
 
 function MessageSculptures({ forms }: { forms: MessageForm[] }) {
-  const { gl } = useThree();
-  const webgpu = gl instanceof WebGPURenderer;
   const body = useRef<THREE.InstancedMesh>(null);
   const inset = useRef<THREE.InstancedMesh>(null);
   const strokes = useRef<THREE.InstancedMesh>(null);
   const bubbles = useRef<THREE.InstancedMesh>(null);
   const geometry = useMemo(() => createChatGeometry(), []);
-  const glassMaterial = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        vertexShader: `
-          varying vec3 vNormal;
-          varying vec3 vEye;
-          varying vec3 vTint;
-          void main() {
-            vec4 positionView = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
-            vNormal = normalize(mat3(modelViewMatrix * instanceMatrix) * normal);
-            vEye = normalize(-positionView.xyz);
-            vTint = instanceColor;
-            gl_Position = projectionMatrix * positionView;
-          }
-        `,
-        fragmentShader: `
-          varying vec3 vNormal;
-          varying vec3 vEye;
-          varying vec3 vTint;
-          void main() {
-            float rim = pow(1.0 - abs(dot(normalize(vNormal), normalize(vEye))), 2.2);
-            float glint = pow(max(dot(normalize(vNormal), normalize(vec3(-0.45, 0.75, 0.4))), 0.0), 12.0);
-            vec3 color = mix(vTint * 1.45 + vec3(0.06, 0.1, 0.16), vec3(0.84, 0.96, 1.0), rim * 0.7 + glint * 0.3);
-            gl_FragColor = vec4(color, 0.22 + rim * 0.62 + glint * 0.12);
-          }
-        `,
-        transparent: true,
-        depthWrite: false,
-        side: THREE.FrontSide,
-      }),
-    [],
-  );
   useEffect(() => {
     const outer = body.current,
       inner = inset.current,
@@ -351,13 +316,7 @@ function MessageSculptures({ forms }: { forms: MessageForm[] }) {
     if (outer.instanceColor) outer.instanceColor.needsUpdate = true;
     if (glass.instanceColor) glass.instanceColor.needsUpdate = true;
   }, [forms]);
-  useEffect(
-    () => () => {
-      geometry.dispose();
-      glassMaterial.dispose();
-    },
-    [geometry, glassMaterial],
-  );
+  useEffect(() => () => geometry.dispose(), [geometry]);
   return (
     <>
       <instancedMesh ref={body} args={[geometry, undefined, forms.length]}>
@@ -371,24 +330,19 @@ function MessageSculptures({ forms }: { forms: MessageForm[] }) {
           emissiveIntensity={0.72}
         />
       </instancedMesh>
-      <instancedMesh
-        ref={bubbles}
-        args={[undefined, webgpu ? undefined : glassMaterial, forms.length]}
-      >
+      <instancedMesh ref={bubbles} args={[undefined, undefined, forms.length]}>
         <sphereGeometry args={[13.7, 22, 14]} />
-        {webgpu && (
-          <meshPhysicalMaterial
-            color="#9cc9ed"
-            metalness={0.06}
-            roughness={0.12}
-            clearcoat={1}
-            clearcoatRoughness={0.06}
-            transparent
-            opacity={0.22}
-            depthWrite={false}
-            side={THREE.DoubleSide}
-          />
-        )}
+        <meshPhysicalMaterial
+          color="#9cc9ed"
+          metalness={0.06}
+          roughness={0.12}
+          clearcoat={1}
+          clearcoatRoughness={0.06}
+          transparent
+          opacity={0.22}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+        />
       </instancedMesh>
       <instancedMesh ref={inset} args={[geometry, undefined, forms.length]}>
         <meshStandardMaterial
