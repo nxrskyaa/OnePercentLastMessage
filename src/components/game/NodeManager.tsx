@@ -41,6 +41,14 @@ function frameGeometry(radius: number, sides: number) {
     bar.rotateZ(rotation);
     bar.translate(x, y, 0);
     frame.push(bar);
+    const rear = bar.clone();
+    rear.translate(0, 0, -3.4);
+    frame.push(rear);
+    if (i % 2 === 0) {
+      const brace = new THREE.BoxGeometry(0.72, 0.72, 3.6);
+      brace.translate(x, y, -1.7);
+      frame.push(brace);
+    }
     if (i % 2 === 0) {
       const inset = new THREE.BoxGeometry(length * 0.46, 0.08, 0.1);
       inset.translate(0, 0.4, -0.12);

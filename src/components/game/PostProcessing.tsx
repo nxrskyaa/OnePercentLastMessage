@@ -96,8 +96,10 @@ function WebGlBloomRenderer({
   }, [gl, scene, camera, size.width, size.height, quality]);
   useFrame((_, delta) => {
     composerRef.current?.render(delta);
-    renderMetrics.drawCalls = gl.info.render.calls;
-    renderMetrics.triangles = gl.info.render.triangles;
+    // EffectComposer resets the WebGL counters for each pass, so the final
+    // values do not represent the scene's actual draw count.
+    renderMetrics.drawCalls = null;
+    renderMetrics.triangles = null;
   }, 1);
   return null;
 }

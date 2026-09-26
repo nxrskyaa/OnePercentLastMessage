@@ -21,7 +21,9 @@ export function PerformanceHUD() {
         {metrics.fps.toFixed(0)} FPS · {metrics.frameMs.toFixed(1)} MS
       </span>
       <span>
-        {metrics.drawCalls} DRAWS · {metrics.triangles.toLocaleString()} TRI
+        {metrics.drawCalls === null || metrics.triangles === null
+          ? "POST FX ACTIVE"
+          : `${metrics.drawCalls} DRAWS · ${metrics.triangles.toLocaleString()} TRI`}
       </span>
       <span>
         {metrics.trafficPackets.toLocaleString()} PACKETS ·{" "}

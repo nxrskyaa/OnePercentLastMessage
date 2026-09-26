@@ -14,8 +14,6 @@ import { WebGPURenderer } from "three/webgpu";
 import { ChaseCamera } from "@/components/game/ChaseCamera";
 import { Destination } from "@/components/game/Destination";
 import { NetworkStage } from "@/components/game/NetworkStage";
-import { NetworkBackdrop } from "@/components/game/NetworkBackdrop";
-import { SignalMonuments } from "@/components/game/SignalMonuments";
 import { NodeManager } from "@/components/game/NodeManager";
 import { PacketTraffic } from "@/components/game/PacketTraffic";
 import { Player } from "@/components/game/Player";
@@ -40,20 +38,18 @@ function GameScene() {
     <>
       <color attach="background" args={["#07121d"]} />
       <fogExp2 attach="fog" args={["#0c1b29", GAME_CONFIG.world.fogDensity]} />
-      <ambientLight color="#8baab9" intensity={1.1} />
+      <ambientLight color="#789eb2" intensity={0.62} />
       <directionalLight
         color="#a5c8d3"
-        intensity={2.8}
+        intensity={2.15}
         position={[-15, 28, 20]}
       />
       <directionalLight
-        color="#517b91"
-        intensity={1.15}
+        color="#677eac"
+        intensity={1.05}
         position={[30, -12, -35]}
       />
-      <NetworkBackdrop />
       <NetworkStage />
-      <SignalMonuments />
       <RouteFork />
       <PacketTraffic />
       <NodeManager nodes={nodes} playerRef={playerRef} />
@@ -121,8 +117,6 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
             ...options,
             powerPreference: "high-performance",
           });
-          if (useSettingsStore.getState().quality === "auto")
-            useSettingsStore.getState().setRuntimeQuality("low");
           return renderer;
         }
         const renderer = new WebGPURenderer({
@@ -139,8 +133,6 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
       } catch {
         try {
           const renderer = new THREE.WebGLRenderer(options);
-          if (useSettingsStore.getState().quality === "auto")
-            useSettingsStore.getState().setRuntimeQuality("low");
           return renderer;
         } catch {
           setRendererError(true);

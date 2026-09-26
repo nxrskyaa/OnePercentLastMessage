@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { renderMetrics } from "@/rendering/metrics";
 
 export type Quality = "auto" | "low" | "medium" | "high";
 
@@ -21,14 +20,12 @@ const KEY = "last-message.settings.v1";
 function compactDevice(): boolean {
   return (
     typeof window !== "undefined" &&
-    window.matchMedia("(max-width: 900px), (pointer: coarse)").matches
+    window.matchMedia("(max-width: 900px)").matches
   );
 }
 function autoRuntimeQuality(): "low" | "medium" {
   if (typeof window === "undefined") return "low";
-  return compactDevice() || renderMetrics.backend === "webgl2"
-    ? "low"
-    : "medium";
+  return compactDevice() ? "low" : "medium";
 }
 function runtimeQualityFor(quality: Quality): "low" | "medium" | "high" {
   if (compactDevice()) return "low";

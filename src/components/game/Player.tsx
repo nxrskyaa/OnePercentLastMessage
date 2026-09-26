@@ -11,6 +11,7 @@ import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { energySurface } from "@/rendering/materials";
 import { createChatGeometry } from "@/rendering/chatGeometry";
+import { createSignalBlade } from "@/rendering/signalBlade";
 import { signalState } from "@/rendering/signalState";
 
 interface PlayerProps {
@@ -22,22 +23,7 @@ interface PlayerProps {
 }
 
 function createPacketShell() {
-  return createChatGeometry(2.7, 1.8, 0.42);
-}
-
-function createSealLines() {
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(
-      [
-        -1.08, 0.42, 0.31, 0, -0.2, 0.31, 0, -0.2, 0.31, 1.06, 0.42, 0.31,
-        -1.08, -0.55, 0.31, 0, 0.08, 0.31, 0, 0.08, 0.31, 1.06, -0.55, 0.31,
-      ],
-      3,
-    ),
-  );
-  return geometry;
+  return createChatGeometry(2.7, 1.8, 1.35);
 }
 
 export function Player({
@@ -53,27 +39,27 @@ export function Player({
   const trailSpark = useRef(new THREE.Object3D());
   const core = useRef<THREE.Mesh>(null);
   const shellGeometry = useMemo(() => createPacketShell(), []);
-  const sealLines = useMemo(() => createSealLines(), []);
+  const signalBlade = useMemo(() => createSignalBlade(), []);
   const materials = useMemo(() => {
     const shell = new THREE.MeshPhysicalMaterial({
-      color: "#298dbe",
+      color: "#276a9d",
       metalness: 0.12,
       roughness: 0.24,
       clearcoat: 1,
       clearcoatRoughness: 0.08,
-      emissive: "#2da6d1",
-      emissiveIntensity: 0.58,
+      emissive: "#348bb5",
+      emissiveIntensity: 0.3,
     });
-    return { core: energySurface("#e5ffff", 5.4, true), shell };
+    return { core: energySurface("#d6f5ff", 3.2, true), shell };
   }, []);
   useEffect(
     () => () => {
       materials.core.dispose();
       materials.shell.dispose();
       shellGeometry.dispose();
-      sealLines.dispose();
+      signalBlade.dispose();
     },
-    [materials, shellGeometry, sealLines],
+    [materials, shellGeometry, signalBlade],
   );
   const speed = useRef<number>(GAME_CONFIG.movement.cruiseSpeed);
   const sideSpeed = useRef(0);
@@ -435,39 +421,62 @@ export function Player({
   return (
     <group ref={playerRef}>
       <group ref={visual}>
-        <mesh>
-          <sphereGeometry args={[2.15, 24, 16]} />
+        <mesh position={[0, 0, -2]} scale={[1.05, 0.58, 0.7]}>
+          <icosahedronGeometry args={[1.6, 1]} />
           <meshPhysicalMaterial
-            color="#a8dfff"
-            transparent
-            opacity={0.15}
-            depthWrite={false}
-            roughness={0.09}
-            metalness={0.1}
+            color="#102e47"
+            metalness={0.48}
+            roughness={0.26}
             clearcoat={1}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-        <mesh rotation={[0.24, 0.14, -0.24]}>
-          <torusGeometry args={[2.18, 0.055, 5, 48, Math.PI * 1.55]} />
-          <meshBasicMaterial
-            color="#c5f9ff"
-            transparent
-            opacity={0.8}
-            depthWrite={false}
-            toneMapped={false}
+            flatShading
           />
         </mesh>
         <mesh geometry={shellGeometry} material={materials.shell} />
-        <lineSegments geometry={sealLines}>
-          <lineBasicMaterial
-            color="#9feeff"
-            transparent
-            opacity={0.82}
-            toneMapped={false}
+        {[-1, 1].map((side) => (
+          <group
+            key={side}
+            position={[side * 1.55, -0.23, 0.25]}
+            rotation={[0, side * 0.32, side * -0.25]}
+          >
+            <mesh scale={[0.35, 0.18, 1.22]}>
+              <icosahedronGeometry args={[1, 0]} />
+              <meshStandardMaterial
+                color="#6dc5dc"
+                metalness={0.38}
+                roughness={0.25}
+                emissive="#32778b"
+                emissiveIntensity={0.3}
+                flatShading
+              />
+            </mesh>
+            <mesh position={[0, 0, 0.95]}>
+              <sphereGeometry args={[0.18, 8, 6]} />
+              <meshBasicMaterial color="#c7f7ff" toneMapped={false} />
+            </mesh>
+          </group>
+        ))}
+        <mesh geometry={signalBlade} position={[0, 0.14, 0.9]} scale={0.032}>
+          <meshStandardMaterial
+            color="#b9e6ef"
+            emissive="#396b83"
+            emissiveIntensity={0.25}
+            roughness={0.25}
           />
-        </lineSegments>
-        <mesh ref={core} position={[0, -0.02, 0.43]} material={materials.core}>
+        </mesh>
+        <mesh
+          geometry={signalBlade}
+          position={[0, -0.14, 0.9]}
+          rotation={[0, 0, Math.PI]}
+          scale={0.032}
+        >
+          <meshStandardMaterial
+            color="#b9e6ef"
+            emissive="#396b83"
+            emissiveIntensity={0.25}
+            roughness={0.25}
+          />
+        </mesh>
+        <mesh ref={core} position={[0, -0.02, 1.12]} material={materials.core}>
           <octahedronGeometry args={[0.24, 0]} />
         </mesh>
       </group>

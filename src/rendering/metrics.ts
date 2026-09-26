@@ -2,8 +2,8 @@ export interface RenderMetrics {
   fps: number;
   frameMs: number;
   backend: "webgpu" | "webgl2" | "unknown";
-  drawCalls: number;
-  triangles: number;
+  drawCalls: number | null;
+  triangles: number | null;
   trafficPackets: number;
   renderScale: number;
   quality: "low" | "medium" | "high";

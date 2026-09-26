@@ -4,125 +4,79 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { GAME_CONFIG } from "@/game/config";
-import { createChatGeometry } from "@/rendering/chatGeometry";
+import { createSignalBlade } from "@/rendering/signalBlade";
 
 export function Destination() {
-  const geometry = useMemo(
-    () => ({
-      aperture: createChatGeometry(124, 88, 14, 30),
-      inner: createChatGeometry(91, 65, 5, 25),
-      satellite: createChatGeometry(31, 19, 4),
-    }),
-    [],
-  );
-  const core = useRef<THREE.Group>(null);
-  const pulse = useRef<THREE.Mesh>(null);
-  useEffect(
-    () => () => Object.values(geometry).forEach((item) => item.dispose()),
-    [geometry],
-  );
+  const blade = useMemo(() => createSignalBlade(), []);
+  const heart = useRef<THREE.Group>(null);
+  const beacon = useRef<THREE.Mesh>(null);
+  useEffect(() => () => blade.dispose(), [blade]);
   useFrame(({ clock }, delta) => {
-    if (core.current) {
-      core.current.rotation.z += Math.min(delta, 0.05) * 0.18;
-      core.current.rotation.y = Math.sin(clock.elapsedTime * 0.45) * 0.14;
+    if (heart.current) {
+      heart.current.rotation.y += Math.min(delta, 0.05) * 0.22;
+      heart.current.rotation.z = Math.sin(clock.elapsedTime * 0.37) * 0.055;
     }
-    if (pulse.current)
-      pulse.current.scale.setScalar(
-        1 + Math.sin(clock.elapsedTime * 2.2) * 0.08,
+    if (beacon.current)
+      beacon.current.scale.setScalar(
+        1 + Math.sin(clock.elapsedTime * 2.1) * 0.085,
       );
   });
+
   return (
     <group position={[0, 0, GAME_CONFIG.destination.z]}>
-      <mesh
-        geometry={geometry.aperture}
-        position={[0, 0, -18]}
-        rotation={[0, -0.1, -0.04]}
-      >
-        <meshPhysicalMaterial
-          color="#327cae"
-          metalness={0.2}
-          roughness={0.28}
-          clearcoat={0.9}
-          clearcoatRoughness={0.12}
-          emissive="#126a9b"
-          emissiveIntensity={0.72}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      <mesh
-        geometry={geometry.inner}
-        position={[0, 0, -5]}
-        rotation={[0, 0.09, 0.04]}
-      >
-        <meshPhysicalMaterial
-          color="#68c6dd"
-          metalness={0.18}
-          roughness={0.23}
-          clearcoat={0.95}
-          clearcoatRoughness={0.12}
-          emissive="#4ab9d3"
-          emissiveIntensity={0.75}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      <mesh
-        geometry={geometry.satellite}
-        position={[-82, 39, -45]}
-        rotation={[0.12, -0.38, -0.23]}
-      >
-        <meshPhysicalMaterial
-          color="#78649f"
-          metalness={0.2}
-          roughness={0.28}
-          clearcoat={0.8}
-          emissive="#463e85"
-          emissiveIntensity={0.5}
-        />
-      </mesh>
-      <mesh
-        geometry={geometry.satellite}
-        position={[82, -31, -39]}
-        rotation={[-0.1, 0.49, 0.3]}
-        scale={0.9}
-      >
-        <meshPhysicalMaterial
-          color="#bb9062"
-          metalness={0.2}
-          roughness={0.28}
-          clearcoat={0.8}
-          emissive="#8e5731"
-          emissiveIntensity={0.5}
-        />
-      </mesh>
-      <mesh position={[0, 0, -28]}>
-        <circleGeometry args={[22, 48]} />
-        <meshBasicMaterial
-          color="#137da4"
-          transparent
-          opacity={0.12}
-          depthWrite={false}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      <group ref={core}>
-        <mesh position={[0, 0, -13]} rotation={[0, 0, Math.PI / 4]}>
-          <icosahedronGeometry args={[14, 1]} />
+      {/* A monumental receiver: layered, beveled signal blades wrap a live core. */}
+      {[-1, 1].map((side) => (
+        <group key={side}>
+          <mesh
+            geometry={blade}
+            position={[0, side * 10, -35]}
+            rotation={[side * 0.12, side * -0.18, side < 0 ? Math.PI : 0]}
+            scale={[2.7, 2.7, 1.45]}
+          >
+            <meshPhysicalMaterial
+              color="#4a8bb7"
+              vertexColors
+              metalness={0.35}
+              roughness={0.29}
+              clearcoat={0.95}
+              emissive="#163e5f"
+              emissiveIntensity={0.26}
+            />
+          </mesh>
+          <mesh
+            geometry={blade}
+            position={[0, side * 7, -12]}
+            rotation={[side * 0.08, side * -0.09, side < 0 ? Math.PI : 0]}
+            scale={[1.86, 1.86, 1.05]}
+          >
+            <meshPhysicalMaterial
+              color="#74d5f0"
+              vertexColors
+              metalness={0.15}
+              roughness={0.24}
+              clearcoat={1}
+              emissive="#238fae"
+              emissiveIntensity={0.35}
+            />
+          </mesh>
+        </group>
+      ))}
+      <group ref={heart}>
+        <mesh position={[0, 0, -13]} rotation={[0.2, 0.2, Math.PI / 4]}>
+          <octahedronGeometry args={[18, 0]} />
           <meshPhysicalMaterial
-            color="#4ea8d1"
-            metalness={0.15}
-            roughness={0.16}
+            color="#133854"
+            metalness={0.55}
+            roughness={0.18}
             clearcoat={1}
-            emissive="#4fb9e6"
-            emissiveIntensity={0.9}
-            flatShading
           />
         </mesh>
-        <mesh ref={pulse} position={[0, 0, 7]} rotation={[0, 0, Math.PI / 4]}>
-          <octahedronGeometry args={[4.5, 0]} />
-          <meshBasicMaterial color="#e8ffff" toneMapped={false} />
+        <mesh ref={beacon} position={[0, 0, 5]} rotation={[0, 0, Math.PI / 4]}>
+          <octahedronGeometry args={[8, 0]} />
+          <meshBasicMaterial color="#c9faff" toneMapped={false} />
         </mesh>
       </group>
-      <pointLight color="#8fe9f7" intensity={42} distance={150} decay={2} />
+      <pointLight color="#a1eeff" intensity={50} distance={155} decay={2} />
     </group>
   );
 }
