@@ -88,7 +88,7 @@
 }
 .profile-art-index {
   position: absolute;
-  bottom: 20px;
+  top: 20px;
   left: 22px;
   font:
     700 10px Consolas,
