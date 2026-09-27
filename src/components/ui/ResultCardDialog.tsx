@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { drawResultCard, type ResultCardData } from "@/game/resultCard";
+import { copyFor } from "@/game/copy";
 
 export function ResultCardDialog({
   data,
@@ -15,18 +16,38 @@ export function ResultCardDialog({
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
   );
-  const [downloadStatus, setDownloadStatus] = useState("DOWNLOAD PNG");
+  const [downloadStatus, setDownloadStatus] = useState<
+    "ready" | "saved" | "error"
+  >("ready");
+  const t = copyFor(data.language);
 
   useEffect(() => {
     let mounted = true;
     const mascot = new Image();
     const logo = new Image();
+    const avatar = new Image();
     mascot.src = "/brand/dili-blue-cutout.png";
     logo.src = "/brand/dlicom-mark-reference.jpg";
-    Promise.all([mascot.decode(), logo.decode()])
-      .then(() => {
+    if (data.avatarUrl) {
+      avatar.crossOrigin = "anonymous";
+      avatar.referrerPolicy = "no-referrer";
+      avatar.src = data.avatarUrl;
+    }
+    const avatarReady = data.avatarUrl
+      ? Promise.race<HTMLImageElement | null>([
+          avatar
+            .decode()
+            .then(() => avatar)
+            .catch(() => null),
+          new Promise<null>((resolve) =>
+            window.setTimeout(() => resolve(null), 3500),
+          ),
+        ])
+      : Promise.resolve(null);
+    Promise.all([mascot.decode(), logo.decode(), avatarReady])
+      .then(([, , photo]) => {
         if (!mounted || !canvasRef.current) return;
-        drawResultCard(canvasRef.current, data, mascot, logo);
+        drawResultCard(canvasRef.current, data, mascot, logo, photo);
         setStatus("ready");
       })
       .catch(() => {
@@ -54,7 +75,7 @@ export function ResultCardDialog({
     if (!canvas || status !== "ready") return;
     canvas.toBlob((blob) => {
       if (!blob) {
-        setDownloadStatus("DOWNLOAD UNAVAILABLE");
+        setDownloadStatus("error");
         return;
       }
       const url = URL.createObjectURL(blob);
@@ -66,7 +87,7 @@ export function ResultCardDialog({
       link.click();
       link.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 30000);
-      setDownloadStatus("PNG SAVED");
+      setDownloadStatus("saved");
     }, "image/png");
   };
 
@@ -76,7 +97,7 @@ export function ResultCardDialog({
         className="result-card-dialog"
         role="dialog"
         aria-modal="true"
-        aria-label="Download your result card"
+        aria-label={t.downloadCard}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="result-card-preview">
@@ -85,13 +106,11 @@ export function ResultCardDialog({
             width={1080}
             height={1350}
             role="img"
-            aria-label={`${data.success ? "Message delivered" : "Signal lost"} result card preview`}
+            aria-label={`${data.success ? t.delivered : t.lost} ${t.downloadCard}`}
           />
           {status !== "ready" && (
             <div className="result-card-loading" role="status">
-              {status === "loading"
-                ? "PREPARING YOUR TRANSMISSION CARD…"
-                : "CARD ART FAILED TO LOAD. PLEASE TRY AGAIN."}
+              {status === "loading" ? t.cardPreparing : t.cardError}
             </div>
           )}
         </div>
@@ -104,15 +123,8 @@ export function ResultCardDialog({
           </div>
           <div>
             <span className="micro-label">TRANSMISSION RECORD / 01</span>
-            <h3>
-              Your run,
-              <br />
-              <em>on record.</em>
-            </h3>
-            <p>
-              A 1080 × 1350 PNG of your actual result, with the Dlicom mark and
-              Dili mascot.
-            </p>
+            <h3>{t.cardTitle}</h3>
+            <p>{t.cardDetail}</p>
           </div>
           <div className="result-card-side-actions">
             <button
@@ -121,10 +133,15 @@ export function ResultCardDialog({
               onClick={download}
               disabled={status !== "ready"}
             >
-              {downloadStatus} <span aria-hidden="true">↓</span>
+              {downloadStatus === "ready"
+                ? t.cardReady
+                : downloadStatus === "saved"
+                  ? t.cardSaved
+                  : t.cardUnavailable}{" "}
+              <span aria-hidden="true">↓</span>
             </button>
             <button type="button" onClick={onClose}>
-              BACK TO RESULTS
+              {t.cardBack}
             </button>
           </div>
         </div>

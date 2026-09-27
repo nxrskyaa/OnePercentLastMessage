@@ -3,6 +3,8 @@
 import Image from "next/image";
 import type { GamePhase } from "@/store/gameStore";
 import { GameButton } from "@/components/ui/GameButton";
+import { copyFor } from "@/game/copy";
+import { useSettingsStore } from "@/store/settingsStore";
 
 export function BootSequence({
   phase,
@@ -11,6 +13,8 @@ export function BootSequence({
   phase: GamePhase;
   onSkip: () => void;
 }) {
+  const language = useSettingsStore((state) => state.language);
+  const t = copyFor(language);
   return (
     <section className="boot-screen" aria-label="Game opening">
       <div className="boot-cross boot-cross--a" />
@@ -26,7 +30,7 @@ export function BootSequence({
             unoptimized
           />
           <span className="micro-label">DLICOM NETWORK / NXR GAME</span>
-          <strong>INITIALIZING NETWORK...</strong>
+          <strong>{t.initializing}</strong>
           <span className="boot-line" />
         </div>
       )}
@@ -40,7 +44,11 @@ export function BootSequence({
             alt="DILI mascot"
             unoptimized
           />
-          <span className="micro-label">DILI IS CONNECTING YOUR MESSAGE</span>
+          <span className="micro-label">
+            {language === "id"
+              ? "DILI MENGHUBUNGKAN PESANMU"
+              : "DILI IS CONNECTING YOUR MESSAGE"}
+          </span>
           <strong>DLICOM</strong>
           <span className="boot-line" />
         </div>
@@ -51,12 +59,16 @@ export function BootSequence({
             1<span>%</span>
           </strong>
           <b>LAST MESSAGE</b>
-          <p>One battery percent. One message left.</p>
+          <p>
+            {language === "id"
+              ? "Satu persen baterai. Satu pesan terakhir."
+              : "One battery percent. One message left."}
+          </p>
         </div>
       )}
       {phase !== "loading" && (
         <GameButton className="boot-skip" onClick={onSkip}>
-          SKIP INTRO ↗
+          {t.skipIntro} ↗
         </GameButton>
       )}
     </section>

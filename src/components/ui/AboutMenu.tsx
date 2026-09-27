@@ -2,33 +2,36 @@
 
 import Image from "next/image";
 import { GameButton } from "@/components/ui/GameButton";
+import { copyFor } from "@/game/copy";
 import { useGameStore } from "@/store/gameStore";
+import { useSettingsStore } from "@/store/settingsStore";
 
 export function AboutMenu() {
   const closePanel = useGameStore((state) => state.closePanel);
   const setPhase = useGameStore((state) => state.setPhase);
+  const language = useSettingsStore((state) => state.language);
+  const t = copyFor(language);
   return (
-    <section
-      className="panel-screen about-screen"
-      aria-label="About and credits"
-    >
+    <section className="panel-screen about-screen" aria-label={t.credits}>
       <div className="panel-heading">
         <span className="micro-label">SIGNAL ORIGIN / 03</span>
-        <GameButton onClick={closePanel}>CLOSE ✕</GameButton>
+        <GameButton onClick={closePanel}>{t.close} ✕</GameButton>
       </div>
       <div className="about-mark">
         NXR<span>{"//"}</span>
       </div>
       <h2>
-        ABOUT THE <em>SIGNAL</em>
+        {language === "id" ? "TENTANG" : "ABOUT THE"} <em>SIGNAL</em>
       </h2>
       <p className="panel-lede">
-        One battery percent. One message. Find a path through the network before
-        the signal dies.
+        {language === "id"
+          ? "Satu persen baterai. Satu pesan. Temukan jalur sebelum sinyal padam."
+          : "One battery percent. One message. Find a path through the network before the signal dies."}
       </p>
       <p>
-        1% — Last Message is a short 3D network survival game created for the
-        Dlicom AI Game Jam. An independent game jam project.
+        {language === "id"
+          ? "1% — Last Message adalah game bertahan di jaringan 3D yang dibuat untuk Dlicom AI Game Jam. Sebuah proyek game jam independen."
+          : "1% — Last Message is a short 3D network survival game created for the Dlicom AI Game Jam. An independent game jam project."}
       </p>
       <div className="dlicom-feature">
         <div className="dlicom-feature-copy">
@@ -41,21 +44,23 @@ export function AboutMenu() {
               unoptimized
             />
             <div>
-              <span className="micro-label">GAME JAM ORIGIN</span>
+              <span className="micro-label">
+                {language === "id" ? "ASAL GAME JAM" : "GAME JAM ORIGIN"}
+              </span>
               <strong>DLICOM</strong>
             </div>
           </div>
           <p>
-            Dlicom brings messages, communities, creator tips, and a
-            self-custody wallet together. This game turns one last encrypted
-            message into a playable race.
+            {language === "id"
+              ? "Dlicom menyatukan pesan, komunitas, tip untuk kreator, dan dompet self-custody. Game ini mengubah satu pesan terenkripsi terakhir menjadi perlombaan."
+              : "Dlicom brings messages, communities, creator tips, and a self-custody wallet together. This game turns one last encrypted message into a playable race."}
           </p>
           <a
             href="https://www.dlicom.ai/"
             target="_blank"
             rel="noopener noreferrer"
           >
-            EXPLORE DLICOM ↗
+            {language === "id" ? "JELAJAHI DLICOM" : "EXPLORE DLICOM"} ↗
           </a>
         </div>
         <Image
@@ -68,7 +73,9 @@ export function AboutMenu() {
         />
       </div>
       <div className="creator-line">
-        <span className="micro-label">CREATED BY</span>
+        <span className="micro-label">
+          {language === "id" ? "DIBUAT OLEH" : "CREATED BY"}
+        </span>
         <strong>NXR</strong>
         <span>@nxrskyaa</span>
       </div>
@@ -90,19 +97,19 @@ export function AboutMenu() {
       </div>
       <div className="credits-grid">
         <div>
-          <span>GAME DESIGN</span>
+          <span>{language === "id" ? "DESAIN GAME" : "GAME DESIGN"}</span>
           <strong>NXR</strong>
         </div>
         <div>
-          <span>DEVELOPMENT</span>
+          <span>{language === "id" ? "PENGEMBANGAN" : "DEVELOPMENT"}</span>
           <strong>NXR + Codex</strong>
         </div>
         <div>
-          <span>TECHNOLOGY</span>
+          <span>{language === "id" ? "TEKNOLOGI" : "TECHNOLOGY"}</span>
           <strong>Three.js · R3F · Next.js</strong>
         </div>
         <div>
-          <span>BUILT FOR</span>
+          <span>{language === "id" ? "DIBUAT UNTUK" : "BUILT FOR"}</span>
           <strong>Dlicom AI Game Jam</strong>
         </div>
       </div>
@@ -112,7 +119,7 @@ export function AboutMenu() {
           setPhase("ident");
         }}
       >
-        REPLAY INTRO ↗
+        {language === "id" ? "ULANGI INTRO" : "REPLAY INTRO"} ↗
       </GameButton>
     </section>
   );

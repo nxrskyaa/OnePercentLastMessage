@@ -13,6 +13,7 @@ import { MissionBriefing } from "@/components/ui/MissionBriefing";
 import { MobileControls } from "@/components/ui/MobileControls";
 import { PauseMenu } from "@/components/ui/PauseMenu";
 import { PerformanceHUD } from "@/components/ui/PerformanceHUD";
+import { PlayerProfile } from "@/components/ui/PlayerProfile";
 import { ResultsScreen } from "@/components/ui/ResultsScreen";
 import { SettingsMenu } from "@/components/ui/SettingsMenu";
 import { configureAudio, setAudioPhase, shutdownAudio } from "@/lib/audio";
@@ -33,6 +34,7 @@ export function GameApp() {
   const musicVolume = useSettingsStore((state) => state.musicVolume);
   const sfxVolume = useSettingsStore((state) => state.sfxVolume);
   const mute = useSettingsStore((state) => state.mute);
+  const language = useSettingsStore((state) => state.language);
   const onCanvasReady = useCallback(() => {
     if (useGameStore.getState().phase === "loading")
       useGameStore.getState().bootReady();
@@ -49,6 +51,10 @@ export function GameApp() {
       shutdownAudio();
     };
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   useEffect(() => {
     if (phase === "ident") {
@@ -88,6 +94,7 @@ export function GameApp() {
         />
       )}
       {phase === "menu" && panel === "none" && <MainMenu />}
+      {phase === "profile" && <PlayerProfile onboarding />}
       {phase === "briefing" && <MissionBriefing />}
       {phase === "tutorial" && <FirstRunTutorial />}
       {phase === "countdown" && <Countdown />}
@@ -100,6 +107,7 @@ export function GameApp() {
           {panel === "how" && <HowToPlay />}
           {panel === "settings" && <SettingsMenu />}
           {panel === "about" && <AboutMenu />}
+          {panel === "profile" && <PlayerProfile />}
         </div>
       )}
       <div className="screen-noise" aria-hidden="true" />

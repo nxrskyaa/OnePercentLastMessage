@@ -1,7 +1,9 @@
 "use client";
 
 import { GameButton } from "@/components/ui/GameButton";
+import { copyFor } from "@/game/copy";
 import { useGameStore } from "@/store/gameStore";
+import { useSettingsStore } from "@/store/settingsStore";
 
 const NETWORK = [
   ["relay", "RELAY RING", "Hit its center for points and a speed burst."],
@@ -14,79 +16,117 @@ const NETWORK = [
   ["public", "PUBLIC RELAY", "The right gate is faster, but costs privacy."],
   ["tip", "TIP NODE", "Collect gold packets quickly to build a combo."],
 ] as const;
+const NETWORK_ID = [
+  [
+    "relay",
+    "CINCIN RELAY",
+    "Lewati pusatnya untuk poin dan lonjakan kecepatan.",
+  ],
+  [
+    "tracker",
+    "PELACAK",
+    "Cincin merah menguras privasi dan baterai. Lewati tepinya untuk near miss.",
+  ],
+  ["booster", "PENGUAT SINYAL", "Node biru terang memulihkan 0,08% baterai."],
+  [
+    "public",
+    "RELAY PUBLIK",
+    "Gerbang kanan lebih cepat, tetapi mengurangi privasi.",
+  ],
+  ["tip", "NODE TIP", "Kumpulkan paket emas dengan cepat untuk membuat kombo."],
+] as const;
 
 export function HowToPlay() {
   const closePanel = useGameStore((state) => state.closePanel);
+  const language = useSettingsStore((state) => state.language);
+  const t = copyFor(language);
+  const id = language === "id";
   return (
     <section className="panel-screen" aria-label="How to play">
       <div className="panel-heading">
         <span className="micro-label">FIELD MANUAL / 01</span>
-        <GameButton onClick={closePanel}>CLOSE ✕</GameButton>
+        <GameButton onClick={closePanel}>{t.close} ✕</GameButton>
       </div>
       <h2>
-        HOW TO <em>PLAY</em>
+        {id ? "CARA" : "HOW TO"} <em>{id ? "BERMAIN" : "PLAY"}</em>
       </h2>
       <p className="panel-lede">
-        Deliver your last message before the battery reaches zero.
+        {id
+          ? "Kirim pesan terakhirmu sebelum baterai habis."
+          : "Deliver your last message before the battery reaches zero."}
       </p>
       <div className="guide-grid">
         <div className="guide-section desktop-instructions">
-          <span className="micro-label">CONTROLS</span>
+          <span className="micro-label">{t.controls}</span>
           <div className="guide-control">
             <kbd>W / ↑</kbd>
-            <span>Accelerate</span>
+            <span>{id ? "Akselerasi" : "Accelerate"}</span>
           </div>
           <div className="guide-control">
             <kbd>A D / ← →</kbd>
-            <span>Steer</span>
+            <span>{id ? "Belok" : "Steer"}</span>
           </div>
           <div className="guide-control">
             <kbd>S / ↓</kbd>
-            <span>Brake</span>
+            <span>{id ? "Rem" : "Brake"}</span>
           </div>
           <div className="guide-control">
             <kbd>SHIFT</kbd>
-            <span>Boost · costly</span>
+            <span>{id ? "Boost · boros daya" : "Boost · costly"}</span>
           </div>
           <div className="guide-control">
             <kbd>SPACE</kbd>
-            <span>Network scan</span>
+            <span>{id ? "Pindai jaringan" : "Network scan"}</span>
           </div>
           <div className="guide-control">
             <kbd>ESC</kbd>
-            <span>Pause</span>
+            <span>{id ? "Jeda" : "Pause"}</span>
           </div>
         </div>
         <div className="guide-section touch-instructions">
-          <span className="micro-label">TOUCH CONTROLS</span>
+          <span className="micro-label">
+            {id ? "KONTROL SENTUH" : "TOUCH CONTROLS"}
+          </span>
           <div className="guide-control">
             <kbd>◀ ▶</kbd>
-            <span>Steer</span>
+            <span>{id ? "Belok" : "Steer"}</span>
           </div>
           <div className="guide-control">
             <kbd>THRUST</kbd>
-            <span>Accelerate</span>
+            <span>{id ? "Akselerasi" : "Accelerate"}</span>
           </div>
           <div className="guide-control">
             <kbd>BRAKE</kbd>
-            <span>Slow down</span>
+            <span>{id ? "Perlambat" : "Slow down"}</span>
           </div>
           <div className="guide-control">
             <kbd>BOOST</kbd>
-            <span>Hold for speed · costly</span>
+            <span>
+              {id
+                ? "Tahan untuk cepat · boros daya"
+                : "Hold for speed · costly"}
+            </span>
           </div>
           <div className="guide-control">
             <kbd>SCAN</kbd>
-            <span>Tap to reveal the network</span>
+            <span>
+              {id
+                ? "Ketuk untuk melihat jaringan"
+                : "Tap to reveal the network"}
+            </span>
           </div>
           <div className="guide-control">
             <kbd>PAUSE</kbd>
-            <span>Tap the top-right button</span>
+            <span>
+              {id ? "Ketuk tombol kanan atas" : "Tap the top-right button"}
+            </span>
           </div>
         </div>
         <div className="guide-section">
-          <span className="micro-label">NETWORK SIGNALS</span>
-          {NETWORK.map(([type, title, description]) => (
+          <span className="micro-label">
+            {id ? "SINYAL JARINGAN" : "NETWORK SIGNALS"}
+          </span>
+          {(id ? NETWORK_ID : NETWORK).map(([type, title, description]) => (
             <div className="network-item" key={type}>
               <span className={`node-icon node-icon--${type}`} />
               <div>
@@ -98,7 +138,7 @@ export function HowToPlay() {
         </div>
       </div>
       <GameButton variant="primary" onClick={closePanel}>
-        BACK TO MENU <span aria-hidden="true">↗</span>
+        {t.returnMenu} <span aria-hidden="true">↗</span>
       </GameButton>
     </section>
   );

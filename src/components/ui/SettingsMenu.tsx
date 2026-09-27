@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { GameButton } from "@/components/ui/GameButton";
+import { copyFor } from "@/game/copy";
 import { useGameStore } from "@/store/gameStore";
 import {
   useSettingsStore,
@@ -67,6 +68,7 @@ export function SettingsMenu() {
   const goMenu = useGameStore((state) => state.goMenu);
   const openTutorial = useGameStore((state) => state.openTutorial);
   const phase = useGameStore((state) => state.phase);
+  const t = copyFor(settings.language);
   const [fullscreen, setFullscreen] = useState(false);
   const [fullscreenError, setFullscreenError] = useState("");
   useEffect(() => {
@@ -97,61 +99,79 @@ export function SettingsMenu() {
     <section className="panel-screen settings-screen" aria-label="Settings">
       <div className="panel-heading">
         <span className="micro-label">SYSTEM CONFIGURATION / 02</span>
-        <GameButton onClick={closePanel}>CLOSE ✕</GameButton>
+        <GameButton onClick={closePanel}>{t.close} ✕</GameButton>
       </div>
-      <h2>SETTINGS</h2>
+      <h2>{t.settings}</h2>
+      <div className="settings-language">
+        <span>{t.language}</span>
+        <p>{t.languageIntro}</p>
+        <div>
+          <button
+            type="button"
+            className={settings.language === "en" ? "active" : ""}
+            onClick={() => update("language", "en")}
+          >
+            ENGLISH
+          </button>
+          <button
+            type="button"
+            className={settings.language === "id" ? "active" : ""}
+            onClick={() => update("language", "id")}
+          >
+            BAHASA INDONESIA
+          </button>
+        </div>
+      </div>
       <div className="settings-grid">
         <div className="settings-group">
-          <span className="micro-label">AUDIO</span>
+          <span className="micro-label">{t.audio}</span>
           <Slider
-            label="Master volume"
+            label={t.masterVolume}
             value={settings.masterVolume}
             onChange={(value) => update("masterVolume", value)}
           />
           <Slider
-            label="Music volume"
+            label={t.musicVolume}
             value={settings.musicVolume}
             onChange={(value) => update("musicVolume", value)}
           />
           <Slider
-            label="SFX volume"
+            label={t.sfxVolume}
             value={settings.sfxVolume}
             onChange={(value) => update("sfxVolume", value)}
           />
           <Toggle
-            label="Mute"
+            label={t.mute}
             checked={settings.mute}
             onChange={(value) => update("mute", value)}
           />
         </div>
         <div className="settings-group">
-          <span className="micro-label">VISUAL / CONTROL</span>
+          <span className="micro-label">{t.visualControl}</span>
           <Toggle
-            label="Camera shake"
+            label={t.cameraShake}
             checked={settings.cameraShake}
             onChange={(value) => update("cameraShake", value)}
           />
           <Toggle
-            label="Screen effects"
+            label={t.screenEffects}
             checked={settings.screenEffects}
             onChange={(value) => update("screenEffects", value)}
           />
           <Toggle
-            label="Reduced motion"
+            label={t.reducedMotion}
             checked={settings.reducedMotion}
             onChange={(value) => update("reducedMotion", value)}
           />
           <Slider
-            label="Mouse influence"
+            label={t.mouseInfluence}
             value={settings.mouseSensitivity}
             onChange={(value) => update("mouseSensitivity", value)}
           />
           <label className="setting-row quality-row">
             <span>
-              Quality
-              <small className="quality-mobile-note">
-                Mobile capped at Low
-              </small>
+              {t.quality}
+              <small className="quality-mobile-note">{t.mobileLow}</small>
             </span>
             <select
               value={settings.quality}
@@ -169,11 +189,11 @@ export function SettingsMenu() {
       </div>
       <div className="settings-actions">
         <GameButton variant="menu" onClick={toggleFullscreen}>
-          {fullscreen ? "EXIT FULLSCREEN" : "ENTER FULLSCREEN"}{" "}
+          {fullscreen ? t.exitFullscreen : t.fullscreen}{" "}
           <span aria-hidden="true">↗</span>
         </GameButton>
         <GameButton variant="menu" onClick={replayTutorial}>
-          REPLAY GUIDE {phase === "paused" ? "· END RUN" : ""}{" "}
+          {t.replayGuide} {phase === "paused" ? "· END RUN" : ""}{" "}
           <span aria-hidden="true">↗</span>
         </GameButton>
       </div>

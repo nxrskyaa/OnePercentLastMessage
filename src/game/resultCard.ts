@@ -10,6 +10,11 @@ export interface ResultCardData {
   score: number;
   trackerHits: number;
   tipsCollected: number;
+  playerName: string;
+  xHandle: string;
+  avatarUrl: string;
+  stageName: string;
+  language: "en" | "id";
 }
 
 export const CARD_WIDTH = 1080;
@@ -91,6 +96,7 @@ export function drawResultCard(
   data: ResultCardData,
   mascot: HTMLImageElement,
   logo: HTMLImageElement,
+  avatar: HTMLImageElement | null,
 ) {
   canvas.width = CARD_WIDTH;
   canvas.height = CARD_HEIGHT;
@@ -170,7 +176,22 @@ export function drawResultCard(
   ctx.restore();
 
   ctx.fillStyle = ivory;
-  textFit(ctx, data.success ? "MESSAGE" : "SIGNAL", 78, 272, 760, 101, 800, 76);
+  textFit(
+    ctx,
+    data.language === "id"
+      ? data.success
+        ? "PESAN"
+        : "SINYAL"
+      : data.success
+        ? "MESSAGE"
+        : "SIGNAL",
+    78,
+    272,
+    760,
+    101,
+    800,
+    76,
+  );
   const titleGradient = ctx.createLinearGradient(70, 285, 724, 358);
   titleGradient.addColorStop(0, data.success ? "#bff9ff" : "#ffcfca");
   titleGradient.addColorStop(0.54, data.success ? "#86bfff" : "#ff9bc3");
@@ -178,7 +199,13 @@ export function drawResultCard(
   ctx.fillStyle = titleGradient;
   textFit(
     ctx,
-    data.success ? "DELIVERED." : "LOST.",
+    data.language === "id"
+      ? data.success
+        ? "TERKIRIM."
+        : "HILANG."
+      : data.success
+        ? "DELIVERED."
+        : "LOST.",
     78,
     366,
     760,
@@ -188,15 +215,24 @@ export function drawResultCard(
   );
   line(ctx, [78, 402, 1002, 402], "#9ddbf34d", 2);
 
-  label(ctx, "TO / RECEIVER", 78, 461);
+  label(
+    ctx,
+    data.language === "id" ? "KE / PENERIMA" : "TO / RECEIVER",
+    78,
+    461,
+  );
   ctx.fillStyle = ivory;
   textFit(ctx, data.receiver.toUpperCase(), 78, 513, 535, 46, 700, 27);
   ctx.fillStyle = "#c3dce3";
   ctx.font = "400 24px Arial, sans-serif";
   ctx.fillText(
-    data.success
-      ? "The final packet made it through."
-      : "The network kept the final packet.",
+    data.language === "id"
+      ? data.success
+        ? "Paket terakhir berhasil sampai."
+        : "Paket terakhir tertahan di jaringan."
+      : data.success
+        ? "The final packet made it through."
+        : "The network kept the final packet.",
     78,
     552,
   );
@@ -236,13 +272,19 @@ export function drawResultCard(
   ctx.strokeStyle = "#a5e8ff77";
   ctx.lineWidth = 2;
   ctx.stroke();
-  label(ctx, "RUN TELEMETRY", 83, 671);
+  label(ctx, data.language === "id" ? "TELEMETRI" : "RUN TELEMETRY", 83, 671);
   line(ctx, [83, 687, 464, 687], "#7bd0e763");
   const rows: [string, string][] = [
-    ["TIME", formatTime(data.elapsed)],
-    ["BATTERY LEFT", `${data.battery.toFixed(2)}%`],
-    ["PRIVACY", `${Math.round(data.privacy)}%`],
-    ["TRACKERS", `${data.trackerHits}`],
+    [data.language === "id" ? "WAKTU" : "TIME", formatTime(data.elapsed)],
+    [
+      data.language === "id" ? "BATERAI" : "BATTERY LEFT",
+      `${data.battery.toFixed(2)}%`,
+    ],
+    [
+      data.language === "id" ? "PRIVASI" : "PRIVACY",
+      `${Math.round(data.privacy)}%`,
+    ],
+    [data.language === "id" ? "PELACAK" : "TRACKERS", `${data.trackerHits}`],
     ["TIPS", `${data.tipsCollected}`],
   ];
   rows.forEach(([name, value], index) => {
@@ -256,17 +298,71 @@ export function drawResultCard(
     ctx.textAlign = "left";
   });
 
+  // The identity plate belongs to the player, separate from Dili's illustration.
+  ctx.fillStyle = "#0c2041ea";
+  ctx.fillRect(525, 863, 477, 138);
+  ctx.strokeStyle = "#a8dff3a8";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(525, 863, 477, 138);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(593, 932, 47, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.fillStyle = "#5a79bd";
+  ctx.fillRect(546, 885, 94, 94);
+  if (avatar) {
+    const size = Math.min(avatar.naturalWidth, avatar.naturalHeight);
+    ctx.drawImage(
+      avatar,
+      (avatar.naturalWidth - size) / 2,
+      (avatar.naturalHeight - size) / 2,
+      size,
+      size,
+      546,
+      885,
+      94,
+      94,
+    );
+  } else {
+    ctx.fillStyle = ivory;
+    ctx.textAlign = "center";
+    ctx.font = "800 40px Arial, sans-serif";
+    ctx.fillText(data.playerName.slice(0, 2).toUpperCase(), 593, 946);
+    ctx.textAlign = "left";
+  }
+  ctx.restore();
+  ctx.fillStyle = muted;
+  ctx.font = "700 16px Arial, sans-serif";
+  ctx.fillText(
+    data.language === "id" ? "OPERATOR / TAHAP" : "OPERATOR / STAGE",
+    660,
+    895,
+  );
+  ctx.fillStyle = ivory;
+  textFit(ctx, data.playerName.toUpperCase(), 660, 935, 315, 35, 800, 22);
+  ctx.fillStyle = "#a4e7f3";
+  textFit(
+    ctx,
+    `${data.xHandle ? `@${data.xHandle}  ·  ` : ""}${data.stageName}`,
+    660,
+    975,
+    315,
+    20,
+    700,
+    16,
+  );
+
   line(ctx, [78, 1030, 1002, 1030], "#9ddbf37a", 2);
   ctx.fillStyle = spectrum;
   ctx.fillRect(78, 1029, 924, 3);
-  label(ctx, "FINAL SCORE", 78, 1083);
+  label(ctx, data.language === "id" ? "SKOR AKHIR" : "FINAL SCORE", 78, 1083);
   ctx.fillStyle = ivory;
   textFit(ctx, data.score.toLocaleString("en-US"), 76, 1199, 590, 122, 800, 66);
   ctx.fillStyle = "#8ee8f7";
   ctx.font = "700 22px Arial, sans-serif";
   textFit(
     ctx,
-    `PRIVACY RANK / ${privacyRank(data.privacy)}`,
+    `${data.language === "id" ? "PERINGKAT PRIVASI" : "PRIVACY RANK"} / ${privacyRank(data.privacy)}`,
     80,
     1250,
     625,

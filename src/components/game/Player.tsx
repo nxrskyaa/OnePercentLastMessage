@@ -254,6 +254,7 @@ export function Player({
             playerZ: body.position.z,
           },
           nodes,
+          useSettingsStore.getState().language,
         ),
       );
       playSound("scan");
@@ -281,7 +282,9 @@ export function Player({
           state.recordEvent("tracker");
           hitUntil.current = elapsed.current + 0.42;
           state.setAdvisor(
-            "Tracker contact. Protect your privacy; steer around the next red ring.",
+            useSettingsStore.getState().language === "id"
+              ? "Terkena pelacak. Lindungi privasimu; hindari cincin merah berikutnya."
+              : "Tracker contact. Protect your privacy; steer around the next red ring.",
           );
           playSound("hit");
         } else if (gap <= node.radius + GAME_CONFIG.nodes.nearMissMargin) {
@@ -336,13 +339,17 @@ export function Player({
     if (!splitAdvised.current && body.position.z < -215) {
       splitAdvised.current = true;
       state.setAdvisor(
-        "Split ahead. Left is secure; right is faster but public.",
+        useSettingsStore.getState().language === "id"
+          ? "Persimpangan di depan. Kiri aman; kanan lebih cepat tetapi publik."
+          : "Split ahead. Left is secure; right is faster but public.",
       );
     }
     if (battery.current < 0.1 && warningLevel.current < 1) {
       warningLevel.current = 1;
       state.setAdvisor(
-        "Critical power. Keep accelerating toward the receiver.",
+        useSettingsStore.getState().language === "id"
+          ? "Daya kritis. Terus melaju menuju penerima."
+          : "Critical power. Keep accelerating toward the receiver.",
       );
       playSound("warning");
     }

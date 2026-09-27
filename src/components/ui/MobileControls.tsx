@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { gameInput } from "@/game/input";
 import { useGameStore } from "@/store/gameStore";
+import { useSettingsStore } from "@/store/settingsStore";
 
 function HoldButton({
   input,
@@ -56,13 +57,18 @@ function HoldButton({
 
 function ScanButton() {
   const cooldown = useGameStore((state) => state.scanCooldown);
+  const language = useSettingsStore((state) => state.language);
   const ready = cooldown <= 0;
   return (
     <button
       type="button"
       className="touch-button touch-button--scan"
       aria-label={
-        ready ? "Scan network" : `Scan ready in ${cooldown.toFixed(1)} seconds`
+        ready
+          ? language === "id"
+            ? "Pindai jaringan"
+            : "Scan network"
+          : `Scan ready in ${cooldown.toFixed(1)} seconds`
       }
       disabled={!ready}
       onPointerDown={(event) => {
@@ -74,29 +80,42 @@ function ScanButton() {
       }}
     >
       <strong aria-hidden="true">◎</strong>
-      <span>{ready ? "SCAN" : `${cooldown.toFixed(0)}s`}</span>
+      <span>
+        {ready
+          ? language === "id"
+            ? "PINDAI"
+            : "SCAN"
+          : `${cooldown.toFixed(0)}s`}
+      </span>
     </button>
   );
 }
 
 export function MobileControls() {
+  const language = useSettingsStore((state) => state.language);
+  const id = language === "id";
   return (
     <div className="mobile-controls" aria-label="Touch flight controls">
       <div className="mobile-control-cluster">
         <span className="mobile-control-caption">STEER</span>
         <div className="mobile-control-row">
-          <HoldButton input="a" label="Left" symbol="◀" />
-          <HoldButton input="d" label="Right" symbol="▶" />
+          <HoldButton input="a" label={id ? "Kiri" : "Left"} symbol="◀" />
+          <HoldButton input="d" label={id ? "Kanan" : "Right"} symbol="▶" />
         </div>
       </div>
       <div className="mobile-control-cluster mobile-control-cluster--drive">
         <span className="mobile-control-caption">FLIGHT</span>
         <div className="mobile-control-row">
-          <HoldButton input="s" label="Brake" symbol="−" />
+          <HoldButton input="s" label={id ? "Rem" : "Brake"} symbol="−" />
           <ScanButton />
         </div>
         <div className="mobile-control-row">
-          <HoldButton input="w" label="Thrust" symbol="↑" tone="cyan" />
+          <HoldButton
+            input="w"
+            label={id ? "Maju" : "Thrust"}
+            symbol="↑"
+            tone="cyan"
+          />
           <HoldButton input="shift" label="Boost" symbol="⇧" tone="amber" />
         </div>
       </div>

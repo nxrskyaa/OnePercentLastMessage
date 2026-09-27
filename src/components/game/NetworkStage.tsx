@@ -6,6 +6,8 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { useSettingsStore } from "@/store/settingsStore";
 import { signalState } from "@/rendering/signalState";
+import { stageAt, type StageDefinition } from "@/game/stages";
+import { useGameStore } from "@/store/gameStore";
 
 const FIN_POSITIONS = [
   -45, -102, -168, -232, -296, -364, -430, -496, -562, -620,
@@ -27,15 +29,15 @@ function colorize(geometry: THREE.BufferGeometry, color: string) {
   return geometry;
 }
 
-function makeFoldedChannel() {
+function makeFoldedChannel(stage: StageDefinition) {
   const positions: number[] = [];
   const colors: number[] = [];
   const indices: number[] = [];
   const strips = [
-    { a: 20, b: 29, ya: -21, yb: -16, tint: "#4d6fb1" },
-    { a: 29, b: 36, ya: -16, yb: -3, tint: "#6885c9" },
-    { a: 36, b: 45, ya: -3, yb: 19, tint: "#384e99" },
-    { a: 45, b: 61, ya: 19, yb: 38, tint: "#5673b5" },
+    { a: 20, b: 29, ya: -21, yb: -16, tint: stage.channel[0] },
+    { a: 29, b: 36, ya: -16, yb: -3, tint: stage.channel[1] },
+    { a: 36, b: 45, ya: -3, yb: 19, tint: stage.channel[2] },
+    { a: 45, b: 61, ya: 19, yb: 38, tint: stage.channel[3] },
   ];
   const emit = (p: readonly [number, number, number], c: THREE.Color) => {
     positions.push(...p);
@@ -44,8 +46,8 @@ function makeFoldedChannel() {
   for (const side of [-1, 1]) {
     for (const strip of strips) {
       const base = new THREE.Color(strip.tint);
-      const violetColor = new THREE.Color("#9d86cb");
-      const glacierColor = new THREE.Color("#9dbde2");
+      const violetColor = new THREE.Color(stage.accentSoft);
+      const glacierColor = new THREE.Color(stage.accent);
       const start = positions.length / 3;
       for (let i = 0; i <= 74; i++) {
         const z = 35 - i * 10;
@@ -94,13 +96,13 @@ function wallPoint(side: number, t: number, z: number, lift = 0) {
   ] as const;
 }
 
-function makeWallRelief() {
+function makeWallRelief(stage: StageDefinition) {
   const positions: number[] = [];
   const colors: number[] = [];
   const indices: number[] = [];
-  const dark = new THREE.Color("#3f63ae");
-  const light = new THREE.Color("#7b9bd3");
-  const lilac = new THREE.Color("#9c91c8");
+  const dark = new THREE.Color(stage.relief[0]);
+  const light = new THREE.Color(stage.relief[1]);
+  const lilac = new THREE.Color(stage.relief[2]);
   const tint = new THREE.Color();
   const add = (
     point: readonly [number, number, number],
@@ -148,15 +150,15 @@ function makeWallRelief() {
   return geometry;
 }
 
-function makeCurrent() {
+function makeCurrent(stage: StageDefinition) {
   const geometry = new THREE.PlaneGeometry(40, 720, 20, 180);
   geometry.rotateX(-Math.PI / 2);
   geometry.translate(0, 0, -320);
   const position = geometry.getAttribute("position");
   const colors = new Float32Array(position.count * 3);
-  const deep = new THREE.Color("#275ba6");
-  const edge = new THREE.Color("#5cb4d1");
-  const light = new THREE.Color("#b6e7e0");
+  const deep = new THREE.Color(stage.current[0]);
+  const edge = new THREE.Color(stage.current[1]);
+  const light = new THREE.Color(stage.current[2]);
   const shade = new THREE.Color();
   for (let i = 0; i < position.count; i++) {
     const x = position.getX(i);
@@ -179,21 +181,13 @@ function makeCurrent() {
   return geometry;
 }
 
-function makeCrossings() {
+function makeCrossings(stage: StageDefinition) {
   const positions: number[] = [];
   const colors: number[] = [];
   const indices: number[] = [];
   const stops = [-80, -242, -436, -574];
   stops.forEach((zBase, section) => {
-    const tint = new THREE.Color(
-      section === 0
-        ? "#b5dded"
-        : section === 1
-          ? "#9f9ad4"
-          : section === 2
-            ? "#d6bce1"
-            : "#e7dcbf",
-    );
+    const tint = new THREE.Color(section % 2 ? stage.accentSoft : stage.accent);
     const row = (x: number, side: number): [number, number, number] => {
       const reach = Math.max(0, 1 - Math.pow(Math.abs(x) / 43, 1.8));
       return [
@@ -234,7 +228,7 @@ function makeCrossings() {
   return geometry;
 }
 
-function makeCrossingLight() {
+function makeCrossingLight(stage: StageDefinition) {
   const stops = [-80, -242, -436, -574];
   const parts = stops.map((zBase, section) => {
     const points: THREE.Vector3[] = [];
@@ -257,7 +251,7 @@ function makeCrossingLight() {
         3,
         false,
       ),
-      section % 2 ? "#ddc8ff" : "#dbfcff",
+      section % 2 ? stage.accentSoft : stage.accent,
     );
   });
   const merged = mergeGeometries(parts);
@@ -299,55 +293,70 @@ function makeSail() {
   });
 }
 
-function makeRelaySails(low: boolean) {
+function makeLandmarks(stage: StageDefinition, low: boolean) {
   const parts: THREE.BufferGeometry[] = [];
-  const sail = makeSail();
+  const landmark =
+    stage.motif === "sails"
+      ? makeSail()
+      : stage.motif === "prisms"
+        ? new THREE.OctahedronGeometry(1, 0)
+        : new THREE.TorusGeometry(11, 0.85, 6, 28);
   FIN_POSITIONS.forEach((z, index) => {
     if (low && index % 2) return;
     for (const side of [index % 2 === 0 ? -1 : 1]) {
-      const clone = sail.clone();
+      const clone = landmark.clone();
+      const prism = stage.motif === "prisms";
+      const halo = stage.motif === "halos";
       const matrix = new THREE.Matrix4().compose(
         new THREE.Vector3(
-          side * (36 + (index % 3) * 3),
-          6 + channelHeight(z),
+          side * (halo ? 32 : 36 + (index % 3) * 3),
+          (halo ? 7 : 6) + channelHeight(z),
           z,
         ),
         new THREE.Quaternion().setFromEuler(
           new THREE.Euler(
-            0,
-            side < 0 ? 0.42 : Math.PI - 0.42,
+            halo ? 0.3 : 0,
+            halo ? side * 0.54 : side < 0 ? 0.42 : Math.PI - 0.42,
             side * (0.12 + index * 0.025),
           ),
         ),
-        new THREE.Vector3(
-          0.85 + (index % 3) * 0.17,
-          0.78 + (index % 4) * 0.09,
-          1,
-        ),
+        prism
+          ? new THREE.Vector3(5, 17 + (index % 3) * 3, 4.5)
+          : halo
+            ? new THREE.Vector3(1, 1.2, 1)
+            : new THREE.Vector3(
+                0.85 + (index % 3) * 0.17,
+                0.78 + (index % 4) * 0.09,
+                1,
+              ),
       );
       clone.applyMatrix4(matrix);
       parts.push(
         colorize(
           clone,
-          index < 3 ? "#adc7e3" : index < 7 ? "#aa9ddd" : "#c4d7f2",
+          index < 3
+            ? stage.accent
+            : index < 7
+              ? stage.accentSoft
+              : stage.relief[2],
         ),
       );
     }
   });
-  sail.dispose();
+  landmark.dispose();
   const merged = mergeGeometries(parts);
   parts.forEach((part) => part.dispose());
   if (!merged) throw new Error("Relay sails could not be generated");
   return merged;
 }
 
-function makeSky() {
+function makeSky(stage: StageDefinition) {
   const geometry = new THREE.SphereGeometry(900, 48, 24);
   const positions = geometry.getAttribute("position");
   const colors = new Float32Array(positions.count * 3);
-  const low = new THREE.Color("#293b6e");
-  const middle = new THREE.Color("#4a68a6");
-  const high = new THREE.Color("#94a1c7");
+  const low = new THREE.Color(stage.sky[0]);
+  const middle = new THREE.Color(stage.sky[1]);
+  const high = new THREE.Color(stage.sky[2]);
   const shade = new THREE.Color();
   for (let i = 0; i < positions.count; i++) {
     const h = positions.getY(i) / 900;
@@ -362,6 +371,8 @@ function makeSky() {
 }
 
 export function NetworkStage() {
+  const stageIndex = useGameStore((state) => state.stageIndex);
+  const stage = stageAt(stageIndex);
   const low = useSettingsStore((state) => state.runtimeQuality === "low");
   const currentMaterial = useRef<THREE.MeshBasicMaterial>(null);
   const crossingMaterial = useRef<THREE.MeshStandardMaterial>(null);
@@ -371,16 +382,16 @@ export function NetworkStage() {
     ribbons.forEach((ribbon) => ribbon.dispose());
     if (!mergedRibbon) throw new Error("Signal ribbon could not be generated");
     return {
-      channel: makeFoldedChannel(),
-      relief: makeWallRelief(),
-      current: makeCurrent(),
-      crossings: makeCrossings(),
-      crossingLight: makeCrossingLight(),
-      sails: makeRelaySails(low),
+      channel: makeFoldedChannel(stage),
+      relief: makeWallRelief(stage),
+      current: makeCurrent(stage),
+      crossings: makeCrossings(stage),
+      crossingLight: makeCrossingLight(stage),
+      sails: makeLandmarks(stage, low),
       ribbon: mergedRibbon,
-      sky: makeSky(),
+      sky: makeSky(stage),
     };
-  }, [low]);
+  }, [low, stage]);
   useEffect(
     () => () => Object.values(world).forEach((asset) => asset.dispose()),
     [world],
@@ -450,7 +461,7 @@ export function NetworkStage() {
         />
       </mesh>
       <mesh geometry={world.ribbon} frustumCulled={false}>
-        <meshBasicMaterial color="#bdeaff" toneMapped={false} />
+        <meshBasicMaterial color={stage.accent} toneMapped={false} />
       </mesh>
     </>
   );

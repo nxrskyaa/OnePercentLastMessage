@@ -22,3 +22,10 @@ Verified on September 24, 2026: production build, lint, and formatting pass. Bro
 - No physics engine, external AI dependency, wallet, database, or remote assets.
 - Store game phase and HUD samples in Zustand; keep per-frame position and camera data inside the canvas.
 - Make the destination and the current battery state readable within the first ten seconds.
+
+## Stage and identity update — September 27, 2026
+
+- Add three selectable stage treatments using the same proven flight mechanics. Each stage changes the sky, channel, landmarks, moving network motifs, and seeded node layout without multiplying draw calls.
+- Ask new players for a local display name, optional X username and HTTPS image link. Let them select English or Indonesian before entering the menu; allow profile edits later.
+- Include identity and stage on the result screen and exported PNG. Keep a safe initials fallback for images that do not support cross-origin canvas export.
+- Validate desktop and compact layouts, gameplay and card export, then run format, lint, typecheck, production build, and release verification.

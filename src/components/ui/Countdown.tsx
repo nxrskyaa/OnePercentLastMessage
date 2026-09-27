@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { playSound } from "@/lib/audio";
+import { copyFor } from "@/game/copy";
 import { useGameStore } from "@/store/gameStore";
+import { useSettingsStore } from "@/store/settingsStore";
 
 export function Countdown() {
   const [step, setStep] = useState(0);
   const startRun = useGameStore((state) => state.startRun);
+  const language = useSettingsStore((state) => state.language);
+  const t = copyFor(language);
   useEffect(() => {
     const timers = [650, 1300, 1950].map((delay, index) =>
       window.setTimeout(() => {
@@ -24,9 +28,9 @@ export function Countdown() {
   return (
     <section className="countdown-screen" aria-label="Starting transmission">
       <div className="countdown-core">
-        <span className="micro-label">ENCRYPTING MESSAGE...</span>
+        <span className="micro-label">{t.encrypting}</span>
         <strong key={step}>{3 - step}</strong>
-        <span>ROUTE ESTABLISHED</span>
+        <span>{t.routeReady}</span>
       </div>
     </section>
   );

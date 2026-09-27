@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { GameButton } from "@/components/ui/GameButton";
+import { copyFor } from "@/game/copy";
 import { useGameStore } from "@/store/gameStore";
+import { useSettingsStore } from "@/store/settingsStore";
 
 const STEPS = [
   {
@@ -52,11 +54,61 @@ const STEPS = [
   },
 ] as const;
 
+const STEPS_ID = [
+  {
+    count: "01 / 03",
+    title: "KAMULAH PESANNYA.",
+    body: "Packet bergerak maju. Arahkan melewati jaringan dan terus melaju.",
+    chips: [
+      ["W / ↑", "AKSELERASI"],
+      ["A D / ← →", "BELOK"],
+      ["S / ↓", "REM"],
+    ],
+    touchChips: [
+      ["MAJU", "AKSELERASI"],
+      ["◀ ▶", "BELOK"],
+      ["REM", "PERLAMBAT"],
+    ],
+  },
+  {
+    count: "02 / 03",
+    title: "SATU PERSEN.",
+    body: "Baterai terus menipis. Boost cepat tetapi boros. Booster biru memulihkan daya; pelacak merah menguras daya dan privasi.",
+    chips: [
+      ["SHIFT", "BOOST"],
+      ["BIRU", "DAYA"],
+      ["MERAH", "BAHAYA"],
+    ],
+    touchChips: [
+      ["BOOST", "TAHAN"],
+      ["BIRU", "DAYA"],
+      ["MERAH", "BAHAYA"],
+    ],
+  },
+  {
+    count: "03 / 03",
+    title: "BACA JARINGAN.",
+    body: "Tekan Spasi untuk memindai. Lewati pusat relay untuk lonjakan kecepatan. Pilih jalur privat atau jalur publik yang lebih cepat.",
+    chips: [
+      ["SPACE", "PINDAI"],
+      ["TENGAH", "RELAY SEMPURNA"],
+      ["ESC", "JEDA"],
+    ],
+    touchChips: [
+      ["PINDAI", "KETUK"],
+      ["TENGAH", "RELAY SEMPURNA"],
+      ["JEDA", "KETUK"],
+    ],
+  },
+] as const;
+
 export function FirstRunTutorial() {
   const [step, setStep] = useState(0);
   const completeTutorial = useGameStore((state) => state.completeTutorial);
   const goMenu = useGameStore((state) => state.goMenu);
-  const current = STEPS[step];
+  const language = useSettingsStore((state) => state.language);
+  const t = copyFor(language);
+  const current = language === "id" ? STEPS_ID[step] : STEPS[step];
   return (
     <section className="tutorial-screen" aria-label="First run guide">
       <div className="tutorial-visual" aria-hidden="true">
@@ -67,7 +119,7 @@ export function FirstRunTutorial() {
       </div>
       <div className="tutorial-content">
         <span className="micro-label">
-          FIELD GUIDE <i>{"//"}</i> {current.count}
+          {t.guide} <i>{"//"}</i> {current.count}
         </span>
         <h2>{current.title}</h2>
         <p>{current.body}</p>
@@ -98,10 +150,10 @@ export function FirstRunTutorial() {
             step === STEPS.length - 1 ? completeTutorial() : setStep(step + 1)
           }
         >
-          {step === STEPS.length - 1 ? "UNDERSTOOD" : "NEXT"}{" "}
+          {step === STEPS.length - 1 ? t.understood : t.next}{" "}
           <span aria-hidden="true">↗</span>
         </GameButton>
-        <GameButton onClick={goMenu}>← MAIN MENU</GameButton>
+        <GameButton onClick={goMenu}>← {t.mainMenu}</GameButton>
       </div>
     </section>
   );

@@ -18,9 +18,11 @@ import { Player } from "@/components/game/Player";
 import { QualityMonitor } from "@/components/game/QualityMonitor";
 import { RouteFork } from "@/components/game/RouteFork";
 import { ScanPulse } from "@/components/game/ScanPulse";
+import { StageMotion } from "@/components/game/StageMotion";
 import { budgetedDpr } from "@/rendering/resolution";
 import { GAME_CONFIG } from "@/game/config";
 import { generateNodes } from "@/game/nodes";
+import { stageAt } from "@/game/stages";
 import { useKeyboard } from "@/hooks/useKeyboard";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -29,12 +31,20 @@ function GameScene() {
   const playerRef = useRef<THREE.Group>(null);
   const input = useKeyboard();
   const runId = useGameStore((state) => state.runId);
-  const nodes = useMemo(() => generateNodes(runId), [runId]);
+  const stageIndex = useGameStore((state) => state.stageIndex);
+  const stage = stageAt(stageIndex);
+  const nodes = useMemo(
+    () => generateNodes(runId + stageIndex * 101),
+    [runId, stageIndex],
+  );
 
   return (
     <>
-      <color attach="background" args={["#5572a2"]} />
-      <fogExp2 attach="fog" args={["#657da8", GAME_CONFIG.world.fogDensity]} />
+      <color attach="background" args={[stage.sky[1]]} />
+      <fogExp2
+        attach="fog"
+        args={[stage.sky[1], GAME_CONFIG.world.fogDensity]}
+      />
       <ambientLight color="#a4bcf2" intensity={0.9} />
       <directionalLight
         color="#eef4fa"
@@ -47,6 +57,7 @@ function GameScene() {
         position={[30, -12, -35]}
       />
       <NetworkStage />
+      <StageMotion />
       <RouteFork />
       <NodeManager nodes={nodes} playerRef={playerRef} />
       <Destination />

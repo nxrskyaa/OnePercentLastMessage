@@ -93,6 +93,91 @@ export const MISSIONS: Mission[] = [
   },
 ];
 
+const INDONESIAN_MISSIONS: Record<
+  string,
+  Pick<Mission, "source" | "message" | "objective" | "receiver">
+> = {
+  mom: {
+    source: "IBU",
+    message: "kamu di mana?",
+    objective: "Kirim satu balasan terakhir.",
+    receiver: "IBU",
+  },
+  nxr: {
+    source: "NXR LABS",
+    message: "server produksi mati",
+    objective: "Kirim kunci deploy.",
+    receiver: "NXR LABS",
+  },
+  gm: {
+    source: "DILI ROOM #781",
+    message: "gm?",
+    objective: "Kirim satu gm terakhir.",
+    receiver: "DILI ROOM",
+  },
+  private: {
+    source: "RUANG PRIVAT",
+    message: "mereka mengawasi jalur ini",
+    objective: "Kirim peringatan tanpa rusak.",
+    receiver: "RUANG PRIVAT",
+  },
+  creator: {
+    source: "RUANG KREATOR",
+    message: "dukungan diterima",
+    objective: "Konfirmasi tip yang masuk.",
+    receiver: "RUANG KREATOR",
+  },
+  sister: {
+    source: "KAKAK",
+    message: "sudah sampai rumah?",
+    objective: "Katakan kamu aman.",
+    receiver: "KAKAK",
+  },
+  station: {
+    source: "STASIUN 04",
+    message: "kereta terakhir berangkat",
+    objective: "Kirim lokasimu.",
+    receiver: "STASIUN 04",
+  },
+  friend: {
+    source: "TEMAN LAMA",
+    message: "masih bangun?",
+    objective: "Kirim jawaban yang tertunda.",
+    receiver: "TEMAN LAMA",
+  },
+  crew: {
+    source: "KRU MALAM",
+    message: "kode pintu berubah",
+    objective: "Kirim kode baru.",
+    receiver: "KRU MALAM",
+  },
+  archive: {
+    source: "ARSIP",
+    message: "simpan sebelum reset",
+    objective: "Selamatkan berkas terakhir.",
+    receiver: "ARSIP",
+  },
+  pilot: {
+    source: "PILOT",
+    message: "jarak pandang hilang",
+    objective: "Kirim vektor pendaratan.",
+    receiver: "PILOT",
+  },
+  unknown: {
+    source: "TAK DIKENAL",
+    message: "tolong, jawab",
+    objective: "Pastikan pesan ini sampai.",
+    receiver: "TAK DIKENAL",
+  },
+};
+
+export function missionAt(index: number, language: "en" | "id"): Mission {
+  const mission = MISSIONS[index] ?? MISSIONS[0];
+  return language === "id"
+    ? { ...mission, ...INDONESIAN_MISSIONS[mission.id] }
+    : mission;
+}
+
 export function nextMissionIndex(current: number): number {
   if (MISSIONS.length < 2) return 0;
   const offset = 1 + Math.floor(Math.random() * (MISSIONS.length - 1));

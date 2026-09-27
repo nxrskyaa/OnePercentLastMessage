@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 export type Quality = "auto" | "low" | "medium" | "high";
+export type Language = "en" | "id";
 
 export interface GameSettings {
   version: 1;
@@ -13,6 +14,7 @@ export interface GameSettings {
   reducedMotion: boolean;
   mouseSensitivity: number;
   quality: Quality;
+  language: Language;
 }
 
 const KEY = "last-message.settings.v1";
@@ -41,6 +43,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   reducedMotion: false,
   mouseSensitivity: 0.35,
   quality: "auto",
+  language: "en",
 };
 
 function clamp(value: unknown, fallback: number, min = 0, max = 1): number {
@@ -83,6 +86,7 @@ function validate(input: unknown): GameSettings {
       1,
     ),
     quality,
+    language: raw.language === "id" ? "id" : "en",
   };
 }
 

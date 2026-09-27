@@ -2,12 +2,16 @@ import { create } from "zustand";
 import { GAME_CONFIG } from "@/game/config";
 import { MISSIONS, nextMissionIndex } from "@/game/missions";
 import { awardsFor, finalScore } from "@/game/scoring";
+import { STAGES } from "@/game/stages";
+import { usePlayerProfileStore } from "@/store/playerProfileStore";
+import { useSettingsStore } from "@/store/settingsStore";
 
 export type GamePhase =
   | "loading"
   | "ident"
   | "title"
   | "menu"
+  | "profile"
   | "briefing"
   | "tutorial"
   | "countdown"
@@ -15,7 +19,7 @@ export type GamePhase =
   | "paused"
   | "success"
   | "failed";
-export type MenuPanel = "none" | "how" | "settings" | "about";
+export type MenuPanel = "none" | "how" | "settings" | "about" | "profile";
 export type GameEvent =
   "perfect" | "nearMiss" | "tracker" | "booster" | "tip" | "public" | "safe";
 export interface Feedback {
@@ -40,6 +44,7 @@ interface GameState extends HudSample {
   panel: MenuPanel;
   runId: number;
   missionIndex: number;
+  stageIndex: number;
   hasSeenIntro: boolean;
   tutorialCompleted: boolean;
   tutorialReturn: "menu" | "countdown";
@@ -69,6 +74,8 @@ interface GameState extends HudSample {
   closePanel: () => void;
   finishIntro: () => void;
   openBriefing: (newMission?: boolean) => void;
+  selectStage: (index: number) => void;
+  completeProfile: () => void;
   openTutorial: (returnTo: "menu" | "countdown") => void;
   completeTutorial: () => void;
   beginCountdown: () => void;
@@ -97,6 +104,7 @@ interface Profile {
   bestPrivacy: number;
   completedRuns: number;
   totalRuns: number;
+  stageIndex: number;
 }
 
 function numberOr(value: unknown, fallback: number): number {
@@ -113,6 +121,7 @@ function readProfile(): Profile {
     bestPrivacy: 0,
     completedRuns: 0,
     totalRuns: 0,
+    stageIndex: 0,
   };
   try {
     const raw = window.localStorage.getItem(PROFILE_KEY);
@@ -141,6 +150,10 @@ function readProfile(): Profile {
       bestPrivacy: numberOr(record.bestPrivacy, 0),
       completedRuns: numberOr(record.completedRuns, 0),
       totalRuns: numberOr(record.totalRuns, 0),
+      stageIndex: Math.max(
+        0,
+        Math.min(STAGES.length - 1, Math.floor(numberOr(record.stageIndex, 0))),
+      ),
     };
   } catch {
     return empty;
@@ -155,6 +168,7 @@ function saveProfile(state: GameState): void {
     bestPrivacy: state.bestPrivacy,
     completedRuns: state.completedRuns,
     totalRuns: state.totalRuns,
+    stageIndex: state.stageIndex,
   };
   try {
     window.localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
@@ -167,48 +181,59 @@ function feedbackFor(
   event: GameEvent,
   combo: number,
 ): { title: string; detail: string; tone: Feedback["tone"]; points: number } {
+  const id = useSettingsStore.getState().language === "id";
   switch (event) {
     case "perfect":
       return {
-        title: "PERFECT RELAY",
-        detail: "+300 · SPEED BURST",
+        title: id ? "RELAY SEMPURNA" : "PERFECT RELAY",
+        detail: id ? "+300 · DORONGAN KECEPATAN" : "+300 · SPEED BURST",
         tone: "cyan",
         points: 300,
       };
     case "nearMiss":
-      return { title: "NEAR MISS", detail: "+450", tone: "gold", points: 450 };
+      return {
+        title: id ? "NYARIS KENA" : "NEAR MISS",
+        detail: "+450",
+        tone: "gold",
+        points: 450,
+      };
     case "tracker":
       return {
-        title: "PRIVACY BREACH",
-        detail: `-${GAME_CONFIG.nodes.trackerPrivacyDamage}% PRIVACY · -${GAME_CONFIG.nodes.trackerBatteryDamage.toFixed(2)}% BATTERY`,
+        title: id ? "PRIVASI BOCOR" : "PRIVACY BREACH",
+        detail: `-${GAME_CONFIG.nodes.trackerPrivacyDamage}% ${id ? "PRIVASI" : "PRIVACY"} · -${GAME_CONFIG.nodes.trackerBatteryDamage.toFixed(2)}% ${id ? "BATERAI" : "BATTERY"}`,
         tone: "red",
         points: -300,
       };
     case "booster":
       return {
-        title: "SIGNAL BOOST",
-        detail: `+${GAME_CONFIG.nodes.boosterCharge.toFixed(2)}% BATTERY`,
+        title: id ? "PENGUAT SINYAL" : "SIGNAL BOOST",
+        detail: `+${GAME_CONFIG.nodes.boosterCharge.toFixed(2)}% ${id ? "BATERAI" : "BATTERY"}`,
         tone: "cyan",
         points: 150,
       };
     case "tip":
       return {
-        title: combo > 1 ? `TIP COMBO ×${combo}` : "TIP CAPTURED",
+        title:
+          combo > 1
+            ? `${id ? "TIP KOMBO" : "TIP COMBO"} ×${combo}`
+            : id
+              ? "TIP DIDAPAT"
+              : "TIP CAPTURED",
         detail: `+${250 * combo}`,
         tone: "gold",
         points: 250 * combo,
       };
     case "public":
       return {
-        title: "PUBLIC RELAY",
-        detail: `FAST ROUTE · -${GAME_CONFIG.nodes.publicPrivacyDamage}% PRIVACY`,
+        title: id ? "RELAY PUBLIK" : "PUBLIC RELAY",
+        detail: `${id ? "JALUR CEPAT" : "FAST ROUTE"} · -${GAME_CONFIG.nodes.publicPrivacyDamage}% ${id ? "PRIVASI" : "PRIVACY"}`,
         tone: "gold",
         points: 200,
       };
     case "safe":
       return {
-        title: "SECURE ROUTE",
-        detail: "PRIVACY PRESERVED",
+        title: id ? "JALUR AMAN" : "SECURE ROUTE",
+        detail: id ? "PRIVASI TERJAGA" : "PRIVACY PRESERVED",
         tone: "cyan",
         points: 100,
       };
@@ -220,6 +245,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   panel: "none",
   runId: 0,
   missionIndex: 0,
+  stageIndex: 0,
   hasSeenIntro: false,
   tutorialCompleted: false,
   tutorialReturn: "countdown",
@@ -252,6 +278,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   totalRuns: 0,
   bootReady: () => {
     const profile = readProfile();
+    usePlayerProfileStore.getState().hydrate();
+    const hasIdentity = usePlayerProfileStore.getState().complete;
     let hasSeenIntro = false;
     let tutorialCompleted = false;
     try {
@@ -264,7 +292,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       ...profile,
       hasSeenIntro,
       tutorialCompleted,
-      phase: hasSeenIntro ? "menu" : "ident",
+      phase: hasSeenIntro ? (hasIdentity ? "menu" : "profile") : "ident",
     });
   },
   setPhase: (phase) => set({ phase }),
@@ -276,17 +304,31 @@ export const useGameStore = create<GameState>((set, get) => ({
     } catch {
       /* Optional persistence. */
     }
-    set({ hasSeenIntro: true, phase: "menu" });
+    set({
+      hasSeenIntro: true,
+      phase: usePlayerProfileStore.getState().complete ? "menu" : "profile",
+    });
   },
-  openBriefing: (newMission = true) =>
+  completeProfile: () => set({ phase: "menu", panel: "none" }),
+  selectStage: (index) => {
+    set({ stageIndex: Math.max(0, Math.min(STAGES.length - 1, index)) });
+    saveProfile(get());
+  },
+  openBriefing: (newMission = true) => {
     set((state) => ({
       phase: "briefing",
       panel: "none",
       missionIndex: newMission
         ? nextMissionIndex(state.missionIndex)
         : state.missionIndex,
+      stageIndex:
+        newMission && (state.phase === "success" || state.phase === "failed")
+          ? (state.stageIndex + 1) % STAGES.length
+          : state.stageIndex,
       feedback: null,
-    })),
+    }));
+    saveProfile(get());
+  },
   openTutorial: (tutorialReturn) => set({ phase: "tutorial", tutorialReturn }),
   completeTutorial: () => {
     try {

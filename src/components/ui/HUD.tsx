@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import { GAME_CONFIG } from "@/game/config";
-import { MISSIONS } from "@/game/missions";
+import { missionAt } from "@/game/missions";
+import { copyFor } from "@/game/copy";
 import { formatTime } from "@/lib/format";
 import { useGameStore } from "@/store/gameStore";
+import { useSettingsStore } from "@/store/settingsStore";
 
 export function HUD() {
   const battery = useGameStore((state) => state.battery);
@@ -16,6 +18,9 @@ export function HUD() {
   const feedback = useGameStore((state) => state.feedback);
   const advisor = useGameStore((state) => state.advisor);
   const missionIndex = useGameStore((state) => state.missionIndex);
+  const language = useSettingsStore((state) => state.language);
+  const t = copyFor(language);
+  const mission = missionAt(missionIndex, language);
   const pause = useGameStore((state) => state.pause);
   const critical = battery < 0.1;
   return (
@@ -26,9 +31,9 @@ export function HUD() {
       <header className="hud-primary">
         <div
           className="hud-energy"
-          aria-label={`Battery ${battery.toFixed(2)} percent, privacy ${Math.round(privacy)} percent`}
+          aria-label={`${t.battery} ${battery.toFixed(2)} percent, ${t.privacy} ${Math.round(privacy)} percent`}
         >
-          <span className="hud-caption">BATTERY</span>
+          <span className="hud-caption">{t.battery}</span>
           <strong>
             {battery.toFixed(2)}
             <small>%</small>
@@ -37,14 +42,14 @@ export function HUD() {
             <span style={{ width: `${battery * 100}%` }} />
           </div>
           <div className="hud-privacy">
-            <span>PRIVACY</span>
+            <span>{t.privacy}</span>
             <b>{Math.round(privacy)}%</b>
             <i style={{ width: `${privacy}%` }} />
           </div>
         </div>
         <div
           className="hud-destination"
-          aria-label={`${Math.ceil(distance)} metres to ${MISSIONS[missionIndex].receiver}`}
+          aria-label={`${Math.ceil(distance)} metres to ${mission.receiver}`}
         >
           <span className="hud-destination-icon" aria-hidden="true">
             ◇
@@ -54,7 +59,7 @@ export function HUD() {
               {Math.ceil(distance)}
               <small>m</small>
             </strong>
-            <span>{MISSIONS[missionIndex].receiver}</span>
+            <span>{mission.receiver}</span>
           </div>
         </div>
         <div className="hud-clock">
@@ -71,12 +76,14 @@ export function HUD() {
         <div className="route-choice" role="status">
           <div>
             <span>←</span>
-            <strong>SAFE</strong>
-            <small>100% PRIVATE</small>
+            <strong>{t.safe}</strong>
+            <small>{t.private}</small>
           </div>
           <div>
-            <strong>FAST</strong>
-            <small>−{GAME_CONFIG.nodes.publicPrivacyDamage}% PRIVACY</small>
+            <strong>{t.fast}</strong>
+            <small>
+              −{GAME_CONFIG.nodes.publicPrivacyDamage}% {t.privacy}
+            </small>
             <span>→</span>
           </div>
         </div>
@@ -104,7 +111,7 @@ export function HUD() {
       )}
       {critical && (
         <div className="critical-alert" role="alert">
-          LOW POWER
+          {t.lowPower}
         </div>
       )}
       <footer className="hud-footer">
@@ -118,10 +125,10 @@ export function HUD() {
         >
           <span>⌁</span>
           <small>
-            {scanCooldown <= 0 ? "SPACE · SCAN" : `${scanCooldown.toFixed(1)}s`}
+            {scanCooldown <= 0 ? t.scanReady : `${scanCooldown.toFixed(1)}s`}
           </small>
         </div>
-        {boosting && <span className="boost-active">BOOSTING</span>}
+        {boosting && <span className="boost-active">{t.boosting}</span>}
       </footer>
     </div>
   );
