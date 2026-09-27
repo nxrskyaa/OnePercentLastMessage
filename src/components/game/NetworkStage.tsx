@@ -13,7 +13,7 @@ const FIN_POSITIONS = [
   -45, -102, -168, -232, -296, -364, -430, -496, -562, -620,
 ];
 
-function channelHeight(z: number) {
+export function channelHeight(z: number) {
   return Math.sin(z * 0.019) * 2.3 + Math.sin(z * 0.047) * 0.75;
 }
 
@@ -181,6 +181,13 @@ function makeCurrent(stage: StageDefinition) {
   return geometry;
 }
 
+function crossingRise(stage: StageDefinition, x: number) {
+  const reach = Math.max(0, 1 - Math.pow(Math.abs(x) / 43, 1.8));
+  if (stage.motif === "prisms") return 44 * (Math.floor(reach * 6) / 6);
+  if (stage.motif === "halos") return 41 * Math.pow(reach, 0.9);
+  return 44 * Math.pow(reach, 0.68);
+}
+
 function makeCrossings(stage: StageDefinition) {
   const positions: number[] = [];
   const colors: number[] = [];
@@ -189,10 +196,9 @@ function makeCrossings(stage: StageDefinition) {
   stops.forEach((zBase, section) => {
     const tint = new THREE.Color(section % 2 ? stage.accentSoft : stage.accent);
     const row = (x: number, side: number): [number, number, number] => {
-      const reach = Math.max(0, 1 - Math.pow(Math.abs(x) / 43, 1.8));
       return [
         x,
-        -13 + 44 * Math.pow(reach, 0.68) + side * 2.5,
+        -13 + crossingRise(stage, x) + side * 2.5,
         zBase + Math.sin(x * 0.07) * 5 + side * 1.2,
       ];
     };
@@ -212,6 +218,9 @@ function makeCrossings(stage: StageDefinition) {
       emit(a, 0.58);
       emit(b, 1);
       if (i < 28) {
+        const x1 = -43 + ((i + 1) / 28) * 86;
+        if (stage.motif === "halos" && (Math.abs(x0) < 12 || Math.abs(x1) < 12))
+          continue;
         const n = start + i * 2;
         indices.push(n, n + 1, n + 2, n + 1, n + 3, n + 2);
       }
@@ -230,30 +239,38 @@ function makeCrossings(stage: StageDefinition) {
 
 function makeCrossingLight(stage: StageDefinition) {
   const stops = [-80, -242, -436, -574];
-  const parts = stops.map((zBase, section) => {
-    const points: THREE.Vector3[] = [];
-    for (let i = 0; i <= 24; i++) {
-      const x = -43 + (i / 24) * 86;
-      const reach = Math.max(0, 1 - Math.pow(Math.abs(x) / 43, 1.8));
-      points.push(
-        new THREE.Vector3(
-          x,
-          -13 + 44 * Math.pow(reach, 0.68) + 2.7,
-          zBase + Math.sin(x * 0.07) * 5 + 1.5,
+  const ranges =
+    stage.motif === "halos"
+      ? ([
+          [-43, -12],
+          [12, 43],
+        ] as const)
+      : ([[-43, 43]] as const);
+  const parts = stops.flatMap((zBase, section) =>
+    ranges.map(([from, to]) => {
+      const points: THREE.Vector3[] = [];
+      for (let i = 0; i <= 24; i++) {
+        const x = from + (i / 24) * (to - from);
+        points.push(
+          new THREE.Vector3(
+            x,
+            -13 + crossingRise(stage, x) + 2.7,
+            zBase + Math.sin(x * 0.07) * 5 + 1.5,
+          ),
+        );
+      }
+      return colorize(
+        new THREE.TubeGeometry(
+          new THREE.CatmullRomCurve3(points),
+          stage.motif === "halos" ? 36 : 72,
+          0.12,
+          3,
+          false,
         ),
+        section % 2 ? stage.accentSoft : stage.accent,
       );
-    }
-    return colorize(
-      new THREE.TubeGeometry(
-        new THREE.CatmullRomCurve3(points),
-        72,
-        0.12,
-        3,
-        false,
-      ),
-      section % 2 ? stage.accentSoft : stage.accent,
-    );
-  });
+    }),
+  );
   const merged = mergeGeometries(parts);
   parts.forEach((part) => part.dispose());
   if (!merged) throw new Error("Crossing lights could not be generated");
@@ -275,6 +292,43 @@ function makeRibbon(x: number, y: number) {
     4,
     false,
   );
+}
+
+function makeWallCircuits(stage: StageDefinition) {
+  const parts: THREE.BufferGeometry[] = [];
+  for (const side of [-1, 1]) {
+    for (const level of [0.28, 0.68]) {
+      const points: THREE.Vector3[] = [];
+      for (let i = 0; i <= 72; i++) {
+        const z = 35 - i * 10;
+        const fold = Math.sin(((35 - z) / 10) * 0.71 + 36) * 1.7;
+        const t = level + Math.sin(z * 0.026 + side * 2) * 0.075;
+        points.push(
+          new THREE.Vector3(
+            side * (36 + 9 * t + fold - 0.65),
+            -3 + 22 * t + channelHeight(z),
+            z,
+          ),
+        );
+      }
+      parts.push(
+        colorize(
+          new THREE.TubeGeometry(
+            new THREE.CatmullRomCurve3(points),
+            146,
+            0.095,
+            3,
+            false,
+          ),
+          level < 0.5 ? stage.accent : stage.accentSoft,
+        ),
+      );
+    }
+  }
+  const merged = mergeGeometries(parts);
+  parts.forEach((part) => part.dispose());
+  if (!merged) throw new Error("Wall circuits could not be generated");
+  return merged;
 }
 
 function makeSail() {
@@ -300,7 +354,7 @@ function makeLandmarks(stage: StageDefinition, low: boolean) {
       ? makeSail()
       : stage.motif === "prisms"
         ? new THREE.OctahedronGeometry(1, 0)
-        : new THREE.TorusGeometry(11, 0.85, 6, 28);
+        : new THREE.TorusGeometry(11, 0.85, 6, 28, Math.PI * 1.2);
   FIN_POSITIONS.forEach((z, index) => {
     if (low && index % 2) return;
     for (const side of [index % 2 === 0 ? -1 : 1]) {
@@ -341,6 +395,24 @@ function makeLandmarks(stage: StageDefinition, low: boolean) {
               : stage.relief[2],
         ),
       );
+      const satellite = landmark.clone();
+      const satelliteMatrix = new THREE.Matrix4().compose(
+        new THREE.Vector3(
+          side * (stage.motif === "halos" ? 41 : 44),
+          12 + channelHeight(z) + (index % 2) * 5,
+          z - 8,
+        ),
+        new THREE.Quaternion().setFromEuler(
+          new THREE.Euler(0.2 + index * 0.07, side * 0.5, -side * 0.48),
+        ),
+        stage.motif === "prisms"
+          ? new THREE.Vector3(3.5, 8.5, 3.5)
+          : stage.motif === "halos"
+            ? new THREE.Vector3(0.48, 0.54, 0.65)
+            : new THREE.Vector3(0.45, 0.57, 0.74),
+      );
+      satellite.applyMatrix4(satelliteMatrix);
+      parts.push(colorize(satellite, stage.relief[2]));
     }
   });
   landmark.dispose();
@@ -389,6 +461,7 @@ export function NetworkStage() {
       crossingLight: makeCrossingLight(stage),
       sails: makeLandmarks(stage, low),
       ribbon: mergedRibbon,
+      circuits: makeWallCircuits(stage),
       sky: makeSky(stage),
     };
   }, [low, stage]);
@@ -462,6 +535,9 @@ export function NetworkStage() {
       </mesh>
       <mesh geometry={world.ribbon} frustumCulled={false}>
         <meshBasicMaterial color={stage.accent} toneMapped={false} />
+      </mesh>
+      <mesh geometry={world.circuits} frustumCulled={false}>
+        <meshBasicMaterial vertexColors toneMapped={false} />
       </mesh>
     </>
   );

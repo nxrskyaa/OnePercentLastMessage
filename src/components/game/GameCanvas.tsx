@@ -34,7 +34,7 @@ function GameScene() {
   const stageIndex = useGameStore((state) => state.stageIndex);
   const stage = stageAt(stageIndex);
   const nodes = useMemo(
-    () => generateNodes(runId + stageIndex * 101),
+    () => generateNodes(runId + stageIndex * 101, stageIndex),
     [runId, stageIndex],
   );
 
@@ -103,29 +103,23 @@ class RendererBoundary extends Component<
 
 export default function GameCanvas({ onReady }: { onReady?: () => void }) {
   const quality = useSettingsStore((state) => state.runtimeQuality);
-  const antialias = useRef(
-    quality !== "low" && window.innerWidth >= 700,
-  ).current;
   const [rendererError, setRendererError] = useState(false);
-  const createRenderer = useCallback(
-    ({ canvas }: { canvas: EventTarget }) => {
-      const options = {
-        canvas: canvas as HTMLCanvasElement,
-        antialias,
-        alpha: false,
-      };
-      try {
-        return new THREE.WebGLRenderer({
-          ...options,
-          powerPreference: "high-performance",
-        });
-      } catch {
-        setRendererError(true);
-        throw new Error("No compatible graphics renderer is available.");
-      }
-    },
-    [antialias],
-  );
+  const createRenderer = useCallback(({ canvas }: { canvas: EventTarget }) => {
+    const options = {
+      canvas: canvas as HTMLCanvasElement,
+      antialias: true,
+      alpha: false,
+    };
+    try {
+      return new THREE.WebGLRenderer({
+        ...options,
+        powerPreference: "high-performance",
+      });
+    } catch {
+      setRendererError(true);
+      throw new Error("No compatible graphics renderer is available.");
+    }
+  }, []);
   if (rendererError) return <RendererUnavailable />;
   return (
     <RendererBoundary>

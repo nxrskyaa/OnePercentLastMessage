@@ -4,9 +4,13 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { GAME_CONFIG } from "@/game/config";
+import { stageAt } from "@/game/stages";
 import { createSignalBlade } from "@/rendering/signalBlade";
+import { useGameStore } from "@/store/gameStore";
 
 export function Destination() {
+  const stageIndex = useGameStore((state) => state.stageIndex);
+  const stage = stageAt(stageIndex);
   const blade = useMemo(() => createSignalBlade(), []);
   const heart = useRef<THREE.Group>(null);
   const beacon = useRef<THREE.Mesh>(null);
@@ -34,12 +38,12 @@ export function Destination() {
             scale={[2.7, 2.7, 1.45]}
           >
             <meshPhysicalMaterial
-              color="#4a8bb7"
+              color={stage.channel[0]}
               vertexColors
               metalness={0.35}
               roughness={0.29}
               clearcoat={0.95}
-              emissive="#163e5f"
+              emissive={stage.accentSoft}
               emissiveIntensity={0.26}
             />
           </mesh>
@@ -50,12 +54,12 @@ export function Destination() {
             scale={[1.86, 1.86, 1.05]}
           >
             <meshPhysicalMaterial
-              color="#74d5f0"
+              color={stage.channel[1]}
               vertexColors
               metalness={0.15}
               roughness={0.24}
               clearcoat={1}
-              emissive="#238fae"
+              emissive={stage.accentSoft}
               emissiveIntensity={0.35}
             />
           </mesh>
@@ -65,7 +69,7 @@ export function Destination() {
         <mesh position={[0, 0, -13]} rotation={[0.2, 0.2, Math.PI / 4]}>
           <octahedronGeometry args={[18, 0]} />
           <meshPhysicalMaterial
-            color="#133854"
+            color={stage.current[0]}
             metalness={0.55}
             roughness={0.18}
             clearcoat={1}
@@ -73,7 +77,7 @@ export function Destination() {
         </mesh>
         <mesh ref={beacon} position={[0, 0, 5]} rotation={[0, 0, Math.PI / 4]}>
           <octahedronGeometry args={[8, 0]} />
-          <meshBasicMaterial color="#c9faff" toneMapped={false} />
+          <meshBasicMaterial color={stage.accent} toneMapped={false} />
         </mesh>
       </group>
     </group>

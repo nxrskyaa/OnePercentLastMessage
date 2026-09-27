@@ -3,6 +3,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
+import { channelHeight } from "@/components/game/NetworkStage";
 import { stageAt } from "@/game/stages";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -13,7 +14,9 @@ export function StageMotion() {
   const low = useSettingsStore((state) => state.runtimeQuality === "low");
   const reduced = useSettingsStore((state) => state.reducedMotion);
   const count = low ? 12 : 24;
+  const markCount = low ? 24 : 42;
   const mesh = useRef<THREE.InstancedMesh>(null);
+  const routeMarks = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
   useFrame(({ clock }) => {
@@ -39,28 +42,61 @@ export function StageMotion() {
       mesh.current.setMatrixAt(i, dummy.matrix);
     }
     mesh.current.instanceMatrix.needsUpdate = true;
+    if (!routeMarks.current) return;
+    for (let i = 0; i < markCount; i++) {
+      const z = -((i * 17 + time * 10) % 680);
+      const side = i % 2 ? -1 : 1;
+      dummy.position.set(
+        side * (5 + (i % 3) * 2.5),
+        -20.55 + channelHeight(z),
+        z,
+      );
+      dummy.rotation.set(0, side * (stage.motif === "prisms" ? 0.72 : 0.4), 0);
+      dummy.scale.set(0.55 + (i % 4) * 0.15, 1, 1);
+      dummy.updateMatrix();
+      routeMarks.current.setMatrixAt(i, dummy.matrix);
+    }
+    routeMarks.current.instanceMatrix.needsUpdate = true;
   });
 
   return (
-    <instancedMesh
-      ref={mesh}
-      args={[undefined, undefined, count]}
-      frustumCulled={false}
-    >
-      {stage.motif === "sails" && <tetrahedronGeometry args={[3, 0]} />}
-      {stage.motif === "prisms" && <octahedronGeometry args={[4, 0]} />}
-      {stage.motif === "halos" && <torusGeometry args={[5.6, 0.22, 4, 18]} />}
-      <meshStandardMaterial
-        color={stage.accent}
-        emissive={stage.accentSoft}
-        emissiveIntensity={0.15}
-        metalness={0.1}
-        roughness={0.35}
-        transparent
-        opacity={0.8}
-        depthWrite={false}
-        side={THREE.DoubleSide}
-      />
-    </instancedMesh>
+    <>
+      <instancedMesh
+        ref={mesh}
+        args={[undefined, undefined, count]}
+        frustumCulled={false}
+      >
+        {stage.motif === "sails" && <tetrahedronGeometry args={[3, 0]} />}
+        {stage.motif === "prisms" && <octahedronGeometry args={[4, 0]} />}
+        {stage.motif === "halos" && (
+          <torusGeometry args={[5.6, 0.22, 4, 18, Math.PI * 1.2]} />
+        )}
+        <meshStandardMaterial
+          color={stage.accent}
+          emissive={stage.accentSoft}
+          emissiveIntensity={0.15}
+          metalness={0.1}
+          roughness={0.35}
+          transparent
+          opacity={0.8}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+        />
+      </instancedMesh>
+      <instancedMesh
+        ref={routeMarks}
+        args={[undefined, undefined, markCount]}
+        frustumCulled={false}
+      >
+        <boxGeometry args={[2.5, 0.07, 0.22]} />
+        <meshBasicMaterial
+          color={stage.accent}
+          transparent
+          opacity={0.78}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </instancedMesh>
+    </>
   );
 }

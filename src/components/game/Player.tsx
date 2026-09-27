@@ -5,7 +5,7 @@ import { RefObject, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { localAdvisor } from "@/game/advisor";
 import { GAME_CONFIG } from "@/game/config";
-import type { GameNode } from "@/game/nodes";
+import { curtainOpening, type GameNode } from "@/game/nodes";
 import { playSound, setAudioIntensity } from "@/lib/audio";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -70,6 +70,7 @@ export function Player({
   const tipCombo = useRef(0);
   const crossed = useRef(new Set<string>());
   const splitAdvised = useRef(false);
+  const curtainAdvised = useRef(new Set<string>());
   const warningLevel = useRef(0);
   const hitUntil = useRef(0);
   const relayPulseUntil = useRef(0);
@@ -269,7 +270,26 @@ export function Player({
         continue;
       crossed.current.add(node.id);
       const gap = Math.abs(body.position.x - node.x);
-      if (node.type === "tracker") {
+      if (node.type === "curtain") {
+        const opening = curtainOpening(node, elapsed.current);
+        if (Math.abs(body.position.x - opening) > node.radius) {
+          privacy.current = Math.max(
+            0,
+            privacy.current - GAME_CONFIG.nodes.curtainPrivacyDamage,
+          );
+          battery.current = Math.max(
+            0,
+            battery.current - GAME_CONFIG.nodes.curtainBatteryDamage,
+          );
+          state.recordEvent("curtainHit");
+          hitUntil.current = elapsed.current + 0.42;
+          playSound("hit");
+        } else {
+          state.recordEvent("curtainClear");
+          relayPulseUntil.current = elapsed.current + 0.35;
+          playSound("relay");
+        }
+      } else if (node.type === "tracker") {
         if (gap <= node.radius) {
           privacy.current = Math.max(
             0,
@@ -334,6 +354,22 @@ export function Player({
         state.recordEvent("public");
         playSound("relay");
       }
+    }
+
+    const nextCurtain = nodes.find(
+      (node) =>
+        node.type === "curtain" &&
+        !curtainAdvised.current.has(node.id) &&
+        body.position.z - node.z > 0 &&
+        body.position.z - node.z < 75,
+    );
+    if (nextCurtain) {
+      curtainAdvised.current.add(nextCurtain.id);
+      state.setAdvisor(
+        useSettingsStore.getState().language === "id"
+          ? "Tirai pelacak di depan. Ikuti celah yang menyala saat bergerak."
+          : "Tracker curtain ahead. Follow the moving illuminated gap.",
+      );
     }
 
     if (!splitAdvised.current && body.position.z < -215) {

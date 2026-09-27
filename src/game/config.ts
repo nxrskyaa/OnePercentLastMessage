@@ -32,5 +32,7 @@ export const GAME_CONFIG = {
     publicBurstSpeed: 9,
     publicBurstSeconds: 7,
     tipComboWindowSeconds: 5,
+    curtainPrivacyDamage: 8,
+    curtainBatteryDamage: 0.025,
   },
 } as const;

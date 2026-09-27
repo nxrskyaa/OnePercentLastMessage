@@ -25,6 +25,7 @@ On phones and small tablets, use the on-screen **Left**, **Right**, **Thrust**, 
 ## Features
 
 - Three selectable stage looks — Tidal Conduit, Prism Archive, and Solar Relay — with distinct colors, landmarks, moving motifs, and seeded node layouts. New Message advances to the next stage.
+- Stage-specific tracker curtains slide their safe openings across the channel. Thread the gap for points or lose battery and privacy on contact.
 - One continuous procedural network scene with reusable relay, tracker, booster, tip, and route nodes.
 - Twelve message scenarios, seeded node variation, battery and privacy resources, combo tips, near misses, and perfect relay bursts.
 - Dlicom and DILI art in the opening, menu, live HUD, advice panel, and downloadable 1080 × 1350 PNG result card. The result card includes the user-supplied Dlicom mark and Dili-inspired character art.
@@ -49,7 +50,7 @@ npm run dev
 
 Open <http://localhost:3000> in a modern browser. Desktop offers the widest view; portrait and landscape mobile layouts include touch flight controls and cap runtime rendering at Low for playability.
 
-The renderer uses standard Three.js WebGL for steadier frame pacing. `?perf=1` displays FPS, frame time, draw calls, triangles, render scale, and quality, including in production when diagnosing a device. GPU pixel count is capped before the first frame on large screens. Postprocessing bloom and ambient packet particles were removed to keep the stage responsive.
+The renderer uses standard Three.js WebGL with hardware antialiasing and an adaptive pixel budget. `?perf=1` displays FPS, frame time, draw calls, triangles, render scale, and quality, including in production when diagnosing a device. GPU pixel count is capped before the first frame on large screens. Postprocessing bloom and ambient packet particles were removed to keep the stage responsive.
 
 The committed music file is used directly by the app. Regenerating it is optional and requires Python with NumPy and FFmpeg: `python tools/generate_music.py`.
 

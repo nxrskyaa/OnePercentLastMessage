@@ -1,15 +1,15 @@
 export type RuntimeQuality = "low" | "medium" | "high";
 
 const PIXEL_BUDGET: Record<RuntimeQuality, number> = {
-  low: 520_000,
-  medium: 720_000,
-  high: 1_050_000,
+  low: 900_000,
+  medium: 2_100_000,
+  high: 3_200_000,
 };
 
 const BASE_DPR: Record<RuntimeQuality, number> = {
-  low: 0.8,
-  medium: 1,
-  high: 1.2,
+  low: 1.25,
+  medium: 1.15,
+  high: 1.35,
 };
 
 /** Bounds actual GPU pixels before the first frame, including large desktop screens. */

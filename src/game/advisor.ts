@@ -46,6 +46,16 @@ export class LocalRuleAdvisor implements AIAdvisor {
       return id
         ? "Persimpangan di depan. Kiri menjaga privasi; kanan lebih cepat dengan risiko."
         : "Split ahead. Left preserves privacy; right grants speed at a cost.";
+    const curtain = nodes.find(
+      (node) =>
+        node.type === "curtain" &&
+        node.z < state.playerZ &&
+        state.playerZ - node.z < 115,
+    );
+    if (curtain)
+      return id
+        ? `Tirai pelacak ${Math.round(state.playerZ - curtain.z)}m di depan. Ikuti celah terang yang bergerak.`
+        : `Tracker curtain ${Math.round(state.playerZ - curtain.z)}m ahead. Follow the moving bright gap.`;
     const tracker = nodes.find(
       (node) =>
         node.type === "tracker" &&

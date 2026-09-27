@@ -1,5 +1,8 @@
+import { GAME_CONFIG } from "@/game/config";
+
 export interface ScoreInput {
   success: boolean;
+  distance: number;
   elapsed: number;
   battery: number;
   privacy: number;
@@ -10,6 +13,13 @@ export interface ScoreInput {
 
 export function finalScore(input: ScoreInput): number {
   const completion = input.success ? 5000 : 0;
+  const progress = input.success
+    ? 0
+    : Math.round(
+        (1 -
+          Math.min(1, input.distance / Math.abs(GAME_CONFIG.destination.z))) *
+          2000,
+      );
   const speed = input.success
     ? Math.max(0, Math.round((75 - input.elapsed) * 80))
     : 0;
@@ -20,6 +30,7 @@ export function finalScore(input: ScoreInput): number {
   return Math.max(
     0,
     completion +
+      progress +
       speed +
       battery +
       privacy +

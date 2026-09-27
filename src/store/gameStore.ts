@@ -21,7 +21,15 @@ export type GamePhase =
   | "failed";
 export type MenuPanel = "none" | "how" | "settings" | "about" | "profile";
 export type GameEvent =
-  "perfect" | "nearMiss" | "tracker" | "booster" | "tip" | "public" | "safe";
+  | "perfect"
+  | "nearMiss"
+  | "tracker"
+  | "booster"
+  | "tip"
+  | "public"
+  | "safe"
+  | "curtainHit"
+  | "curtainClear";
 export interface Feedback {
   id: number;
   title: string;
@@ -237,6 +245,20 @@ function feedbackFor(
         tone: "cyan",
         points: 100,
       };
+    case "curtainHit":
+      return {
+        title: id ? "TERJERAT PEMINDAI" : "SCANNER CAUGHT YOU",
+        detail: `-${GAME_CONFIG.nodes.curtainPrivacyDamage}% ${id ? "PRIVASI" : "PRIVACY"} · -${GAME_CONFIG.nodes.curtainBatteryDamage.toFixed(3)}% ${id ? "BATERAI" : "BATTERY"}`,
+        tone: "red",
+        points: -200,
+      };
+    case "curtainClear":
+      return {
+        title: id ? "CELAH DITEMBUS" : "THREAD THE GAP",
+        detail: "+350",
+        tone: "cyan",
+        points: 350,
+      };
   }
 }
 
@@ -397,7 +419,9 @@ export const useGameStore = create<GameState>((set, get) => ({
         },
         perfectRelays: state.perfectRelays + Number(event === "perfect"),
         nearMisses: state.nearMisses + Number(event === "nearMiss"),
-        trackerHits: state.trackerHits + Number(event === "tracker"),
+        trackerHits:
+          state.trackerHits +
+          Number(event === "tracker" || event === "curtainHit"),
         boostersUsed: state.boostersUsed + Number(event === "booster"),
         tipsCollected: state.tipsCollected + Number(event === "tip"),
         maxTipCombo:
@@ -405,7 +429,9 @@ export const useGameStore = create<GameState>((set, get) => ({
             ? Math.max(state.maxTipCombo, combo)
             : state.maxTipCombo,
         damagePulse:
-          event === "tracker" ? state.damagePulse + 1 : state.damagePulse,
+          event === "tracker" || event === "curtainHit"
+            ? state.damagePulse + 1
+            : state.damagePulse,
         route:
           event === "public"
             ? "public"
@@ -422,6 +448,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const state = get();
     const input = {
       success: true,
+      distance: 0,
       elapsed,
       battery,
       privacy,
@@ -454,6 +481,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const state = get();
     const score = finalScore({
       success: false,
+      distance,
       elapsed,
       battery: 0,
       privacy,

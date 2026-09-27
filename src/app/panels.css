@@ -106,6 +106,17 @@ kbd {
   border-color: #ff888c;
   box-shadow: 0 0 12px #ff7070;
 }
+.node-icon--curtain {
+  border-color: #ff9c89;
+  border-radius: 0;
+  background: linear-gradient(
+    90deg,
+    #ff9c89 0 37%,
+    transparent 37% 63%,
+    #ff9c89 63%
+  );
+  box-shadow: 0 0 12px #ff7070;
+}
 .node-icon--tip {
   border-color: #f0d69b;
   box-shadow: 0 0 12px #eac880;

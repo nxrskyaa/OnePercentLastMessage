@@ -4,7 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { type RefObject, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import type { GameNode } from "@/game/nodes";
+import { curtainOpening, type GameNode } from "@/game/nodes";
 import { energySurface } from "@/rendering/materials";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -19,6 +19,96 @@ const dark = new THREE.MeshStandardMaterial({
   metalness: 0.16,
   roughness: 0.68,
 });
+const curtainSurface = new THREE.MeshStandardMaterial({
+  color: "#aa5068",
+  emissive: "#b8324f",
+  emissiveIntensity: 0.42,
+  metalness: 0.22,
+  roughness: 0.47,
+  side: THREE.DoubleSide,
+});
+const curtainWarning = new THREE.MeshBasicMaterial({
+  color: "#ff8b74",
+  toneMapped: false,
+});
+const curtainOpeningLight = new THREE.MeshBasicMaterial({
+  color: "#c7f6e9",
+  toneMapped: false,
+});
+const curtainLattice = (() => {
+  const rails = [-6, -4.5, -3, -1.5, 0, 1.5, 3, 4.5, 6].map((y) => {
+    const rail = new THREE.BoxGeometry(1, 0.2, 0.32);
+    rail.translate(0, y, 0);
+    return rail;
+  });
+  const merged = mergeGeometries(rails);
+  rails.forEach((rail) => rail.dispose());
+  if (!merged) throw new Error("Curtain lattice could not be generated");
+  return merged;
+})();
+
+/** A readable moving aperture built from six cheap meshes, shared across stages. */
+function CurtainGate({ node, low }: { node: GameNode; low: boolean }) {
+  const left = useRef<THREE.Mesh>(null);
+  const right = useRef<THREE.Mesh>(null);
+  const leftEdge = useRef<THREE.Mesh>(null);
+  const rightEdge = useRef<THREE.Mesh>(null);
+  const bridge = useRef<THREE.Mesh>(null);
+  const scan = useRef<THREE.Mesh>(null);
+  useFrame(() => {
+    const time = useGameStore.getState().elapsed;
+    const opening = curtainOpening(node, time);
+    const gapLeft = opening - node.radius;
+    const gapRight = opening + node.radius;
+    if (left.current) {
+      left.current.position.x = (-18 + gapLeft) / 2;
+      left.current.scale.x = gapLeft + 18;
+    }
+    if (right.current) {
+      right.current.position.x = (18 + gapRight) / 2;
+      right.current.scale.x = 18 - gapRight;
+    }
+    if (leftEdge.current) leftEdge.current.position.x = gapLeft;
+    if (rightEdge.current) rightEdge.current.position.x = gapRight;
+    if (bridge.current) {
+      bridge.current.position.x = opening;
+      bridge.current.scale.x = node.radius * 2;
+    }
+    if (scan.current) {
+      scan.current.position.x = opening;
+      scan.current.position.y = -5 + ((time * 2.4 + (node.phase ?? 0)) % 11);
+      scan.current.scale.x = node.radius * 1.9;
+    }
+  });
+  return (
+    <group position={[0, 0, node.z]}>
+      <mesh ref={left} material={curtainSurface}>
+        <primitive object={curtainLattice} attach="geometry" />
+      </mesh>
+      <mesh ref={right} material={curtainSurface}>
+        <primitive object={curtainLattice} attach="geometry" />
+      </mesh>
+      <mesh ref={leftEdge} material={curtainWarning} position={[0, 0, 0.52]}>
+        <boxGeometry args={[0.22, 13.6, 0.16]} />
+      </mesh>
+      <mesh ref={rightEdge} material={curtainWarning} position={[0, 0, 0.52]}>
+        <boxGeometry args={[0.22, 13.6, 0.16]} />
+      </mesh>
+      <mesh
+        ref={bridge}
+        material={curtainOpeningLight}
+        position={[0, 6.45, 0.6]}
+      >
+        <boxGeometry args={[1, 0.2, 0.16]} />
+      </mesh>
+      {!low && (
+        <mesh ref={scan} material={curtainWarning} position={[0, -5, 0.65]}>
+          <boxGeometry args={[1, 0.11, 0.14]} />
+        </mesh>
+      )}
+    </group>
+  );
+}
 
 const frameCache = new Map<
   string,
@@ -212,7 +302,11 @@ export function NodeManager({
             groups.current[index] = group;
           }}
         >
-          <NodeVisual node={node} low={low} />
+          {node.type === "curtain" ? (
+            <CurtainGate node={node} low={low} />
+          ) : (
+            <NodeVisual node={node} low={low} />
+          )}
         </group>
       ))}
     </>

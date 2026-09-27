@@ -40,7 +40,7 @@ const STEPS = [
   {
     count: "03 / 03",
     title: "READ THE NETWORK.",
-    body: "Press Space to scan. Pass through relay centers for a speed burst. At the split, choose a private route or a faster public one.",
+    body: "Press Space to scan. Thread the moving gaps in tracker curtains. At the split, choose a private route or a faster public one.",
     chips: [
       ["SPACE", "SCAN"],
       ["CENTER", "PERFECT RELAY"],
@@ -88,7 +88,7 @@ const STEPS_ID = [
   {
     count: "03 / 03",
     title: "BACA JARINGAN.",
-    body: "Tekan Spasi untuk memindai. Lewati pusat relay untuk lonjakan kecepatan. Pilih jalur privat atau jalur publik yang lebih cepat.",
+    body: "Tekan Spasi untuk memindai. Tembus celah bergerak pada tirai pelacak. Pilih jalur privat atau jalur publik yang lebih cepat.",
     chips: [
       ["SPACE", "PINDAI"],
       ["TENGAH", "RELAY SEMPURNA"],

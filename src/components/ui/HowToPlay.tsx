@@ -15,6 +15,11 @@ const NETWORK = [
   ["booster", "SIGNAL BOOSTER", "Bright cyan nodes restore 0.08% battery."],
   ["public", "PUBLIC RELAY", "The right gate is faster, but costs privacy."],
   ["tip", "TIP NODE", "Collect gold packets quickly to build a combo."],
+  [
+    "curtain",
+    "TRACKER CURTAIN",
+    "Steer through its moving bright opening. A clean pass earns points.",
+  ],
 ] as const;
 const NETWORK_ID = [
   [
@@ -34,6 +39,11 @@ const NETWORK_ID = [
     "Gerbang kanan lebih cepat, tetapi mengurangi privasi.",
   ],
   ["tip", "NODE TIP", "Kumpulkan paket emas dengan cepat untuk membuat kombo."],
+  [
+    "curtain",
+    "TIRAI PELACAK",
+    "Arahkan paket melalui celah terang yang bergerak. Lewat bersih memberi poin.",
+  ],
 ] as const;
 
 export function HowToPlay() {

@@ -44,27 +44,30 @@ export function QualityMonitor() {
     // Shader compilation and first-run asset upload are not sustained load.
     const warmedUp = activeSeconds.current > 4;
     slowWindows.current = warmedUp && fps < 45 ? slowWindows.current + 1 : 0;
-    fastWindows.current = warmedUp && fps > 62 ? fastWindows.current + 1 : 0;
+    fastWindows.current = warmedUp && fps > 58 ? fastWindows.current + 1 : 0;
     if (slowWindows.current >= 2) {
-      scale.current = Math.max(0.55, scale.current - 0.12);
+      scale.current = Math.max(0.78, scale.current - 0.08);
       slowWindows.current = 0;
     } else if (fastWindows.current >= 2) {
-      scale.current = Math.min(1, scale.current + 0.08);
+      scale.current = Math.min(1, scale.current + 0.06);
       fastWindows.current = 0;
     }
     if (settings.quality === "auto" && warmedUp) {
       if (
         fps < 48 &&
-        scale.current <= 0.8 &&
+        scale.current <= 0.82 &&
         settings.runtimeQuality === "high"
-      )
+      ) {
         settings.setRuntimeQuality("medium");
-      else if (
+        scale.current = 0.95;
+      } else if (
         fps < 45 &&
-        scale.current <= 0.8 &&
+        scale.current <= 0.82 &&
         settings.runtimeQuality === "medium"
-      )
+      ) {
         settings.setRuntimeQuality("low");
+        scale.current = 0.95;
+      }
     } else if (settings.quality !== "auto" && warmedUp) {
       if (fps < 35 && scale.current <= 0.6 && settings.quality !== "low") {
         settings.update({ quality: "low" });
