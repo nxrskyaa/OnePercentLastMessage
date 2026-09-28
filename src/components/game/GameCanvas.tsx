@@ -19,6 +19,7 @@ import { QualityMonitor } from "@/components/game/QualityMonitor";
 import { RouteFork } from "@/components/game/RouteFork";
 import { ScanPulse } from "@/components/game/ScanPulse";
 import { StageMotion } from "@/components/game/StageMotion";
+import { StageLighting } from "@/components/game/StageLighting";
 import { budgetedDpr } from "@/rendering/resolution";
 import { GAME_CONFIG } from "@/game/config";
 import { generateNodes } from "@/game/nodes";
@@ -45,18 +46,19 @@ function GameScene() {
         attach="fog"
         args={[stage.sky[1], GAME_CONFIG.world.fogDensity]}
       />
-      <ambientLight color="#8ba5d4" intensity={0.58} />
+      <ambientLight color="#8ba5d4" intensity={0.42} />
       <directionalLight
         color="#c4dcf3"
-        intensity={1.85}
+        intensity={1.28}
         position={[-15, 28, 20]}
       />
       <directionalLight
         color={stage.accentSoft}
-        intensity={1.12}
+        intensity={0.68}
         position={[30, -12, -35]}
       />
       <NetworkStage />
+      <StageLighting playerRef={playerRef} />
       <StageMotion />
       <RouteFork />
       <NodeManager nodes={nodes} playerRef={playerRef} />

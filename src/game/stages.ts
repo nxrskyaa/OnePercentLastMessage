@@ -57,7 +57,7 @@ export const STAGES: readonly StageDefinition[] = [
     current: ["#365c7b", "#ab857c", "#f0cbab"],
     relief: ["#485877", "#a38a94", "#dcc1a2"],
     accent: "#ffdfa9",
-    accentSoft: "#9cddd5",
+    accentSoft: "#69c8bd",
     motif: "halos",
   },
 ];

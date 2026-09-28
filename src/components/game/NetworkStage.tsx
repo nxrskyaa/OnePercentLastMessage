@@ -7,12 +7,13 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { useSettingsStore } from "@/store/settingsStore";
 import { signalState } from "@/rendering/signalState";
 import { stageAt, type StageDefinition } from "@/game/stages";
+import { GAME_CONFIG } from "@/game/config";
 import { useGameStore } from "@/store/gameStore";
 
 const FIN_POSITIONS = [
   -45, -102, -168, -232, -296, -364, -430, -496, -562, -620,
 ];
-const LIGHT_STOPS = [-80, -242, -436, -574];
+export const LIGHT_STOPS = [-80, -242, -436, -574];
 
 function lightPool(z: number) {
   return LIGHT_STOPS.reduce((strength, stop) => {
@@ -182,7 +183,8 @@ function makeCurrent(stage: StageDefinition) {
     shade.lerp(light, THREE.MathUtils.smoothstep(flow, 0.76, 1.35) * 0.6);
     shade.lerp(
       practical,
-      lightPool(z) * THREE.MathUtils.smoothstep(Math.abs(x), 8, 20) * 0.2,
+      lightPool(z) *
+        (0.2 + THREE.MathUtils.smoothstep(Math.abs(x), 5, 20) * 0.3),
     );
     colors[i * 3] = shade.r;
     colors[i * 3 + 1] = shade.g;
@@ -369,6 +371,116 @@ function makePracticalLights() {
   if (!housing || !slit || !glow)
     throw new Error("Signal lights could not be generated");
   return { housing, slit, glow };
+}
+
+// Light from the wall fixtures is projected into the channel as broken shutters.
+// All eight fixtures share one small mesh instead of separate transparent lights.
+function makeLightProjections(stage: StageDefinition) {
+  const positions: number[] = [];
+  const colors: number[] = [];
+  const source = new THREE.Color(stage.accentSoft).multiplyScalar(1.15);
+  const edge = new THREE.Color(stage.accentSoft).multiplyScalar(0.015);
+  const blades =
+    stage.motif === "prisms"
+      ? [
+          [-13, 1.4, 17],
+          [-5, 2.7, 12],
+          [4, 1.4, 18],
+          [12, 2.5, 13],
+        ]
+      : stage.motif === "halos"
+        ? [
+            [-13, 1.7, 11],
+            [-6, 3.6, 17],
+            [3, 3.6, 17],
+            [12, 1.7, 11],
+          ]
+        : [
+            [-12, 3.8, 16],
+            [-4, 2.2, 12],
+            [5, 3.1, 17],
+            [13, 1.5, 11],
+          ];
+  const add = (x: number, y: number, z: number, color: THREE.Color) => {
+    positions.push(x, y, z);
+    colors.push(color.r, color.g, color.b);
+  };
+  const triangle = (
+    a: readonly [number, number, number],
+    b: readonly [number, number, number],
+    c: readonly [number, number, number],
+    inner: THREE.Color,
+  ) => {
+    add(...a, source);
+    add(...b, inner);
+    add(...c, edge);
+  };
+
+  for (const z of LIGHT_STOPS) {
+    for (const side of [-1, 1]) {
+      const height = channelHeight(z);
+      const lamp: [number, number, number] = [side * 32, height - 2.5, z + 0.6];
+      // A few asymmetric blades look like an engineered optical fixture,
+      // while gaps between them keep the flight path legible.
+      for (const [offset, width, reach] of blades) {
+        const a: [number, number, number] = [
+          side * 28,
+          height - 8,
+          z + offset - width,
+        ];
+        const b: [number, number, number] = [
+          side * (28 - reach),
+          height - 20,
+          z + offset,
+        ];
+        const c: [number, number, number] = [
+          side * (28 - reach),
+          height - 20,
+          z + offset + width,
+        ];
+        triangle(lamp, a, b, source.clone().multiplyScalar(0.22));
+        triangle(lamp, b, c, source.clone().multiplyScalar(0.15));
+      }
+      // Split reflections continue across the moving current below the lamp.
+      for (const [offset, width] of [
+        [-10, 1.7],
+        [-1, 2.4],
+        [9, 1.3],
+      ]) {
+        const x1 = side * 18;
+        const x2 = side * 5;
+        const floor = (x: number, depth: number) =>
+          -20.7 +
+          channelHeight(depth) +
+          Math.sin(x * 0.18 + depth * 0.035) * 0.35;
+        const near: [number, number, number] = [
+          x1,
+          floor(x1, z + offset),
+          z + offset,
+        ];
+        const center: [number, number, number] = [
+          side * 12,
+          floor(side * 12, z + offset + width),
+          z + offset + width,
+        ];
+        const far: [number, number, number] = [
+          x2,
+          floor(x2, z + offset + width + 5),
+          z + offset + width + 5,
+        ];
+        add(...near, edge);
+        add(...center, source.clone().multiplyScalar(0.38));
+        add(...far, edge);
+      }
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(positions, 3),
+  );
+  geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+  return geometry;
 }
 
 function makeGlowTexture() {
@@ -563,8 +675,11 @@ export function NetworkStage() {
   const stageIndex = useGameStore((state) => state.stageIndex);
   const stage = stageAt(stageIndex);
   const low = useSettingsStore((state) => state.runtimeQuality === "low");
+  const reducedMotion = useSettingsStore((state) => state.reducedMotion);
   const currentMaterial = useRef<THREE.MeshStandardMaterial>(null);
   const crossingMaterial = useRef<THREE.MeshStandardMaterial>(null);
+  const glowMaterial = useRef<THREE.MeshBasicMaterial>(null);
+  const projectionMaterial = useRef<THREE.MeshBasicMaterial>(null);
   const world = useMemo(() => {
     const ribbons = [-22, 22].map((x) => makeRibbon(x, x < 0 ? -16 : -17));
     const mergedRibbon = mergeGeometries(ribbons);
@@ -583,6 +698,7 @@ export function NetworkStage() {
       fixtureHousing: fixtures.housing,
       fixtureSlit: fixtures.slit,
       fixtureGlow: fixtures.glow,
+      lightProjections: makeLightProjections(stage),
       glowTexture: makeGlowTexture(),
       floorEtching: makeFloorEtching(stage, low),
       sky: makeSky(stage),
@@ -602,6 +718,14 @@ export function NetworkStage() {
     );
     const pulse = 0.94 + Math.sin(clock.elapsedTime * 1.2) * 0.06;
     crossingMaterial.current?.color.setRGB(pulse, pulse, 1);
+    const cadence = reducedMotion
+      ? 0
+      : Math.sin(clock.elapsedTime * 2.1) * 0.04;
+    if (glowMaterial.current)
+      glowMaterial.current.opacity = 0.36 + cadence + boost * 0.12;
+    if (projectionMaterial.current)
+      projectionMaterial.current.opacity =
+        GAME_CONFIG.world.fixtureProjectionOpacity + cadence + boost * 0.11;
   });
   return (
     <>
@@ -674,10 +798,27 @@ export function NetworkStage() {
       </mesh>
       <mesh geometry={world.fixtureGlow} frustumCulled={false}>
         <meshBasicMaterial
+          ref={glowMaterial}
           color={stage.accentSoft}
           map={world.glowTexture}
           transparent
           opacity={0.36}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          toneMapped={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      <mesh
+        geometry={world.lightProjections}
+        frustumCulled={false}
+        renderOrder={4}
+      >
+        <meshBasicMaterial
+          ref={projectionMaterial}
+          vertexColors
+          transparent
+          opacity={GAME_CONFIG.world.fixtureProjectionOpacity}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
           toneMapped={false}
