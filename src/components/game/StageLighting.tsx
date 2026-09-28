@@ -31,10 +31,14 @@ export function StageLighting({
     const target =
       strength *
       GAME_CONFIG.world.fixtureLightIntensity *
-      (stage.motif === "halos" ? 0.62 : 1) *
+      (stage.motif === "halos" ? 0.62 : stage.motif === "prisms" ? 0.72 : 1) *
       (1 + signalState.boost.value * 0.3);
     if (left.current) {
-      left.current.position.set(-29, height - 5, nearest);
+      left.current.position.set(
+        -29,
+        THREE.MathUtils.damp(left.current.position.y, height - 5, 2.4, delta),
+        THREE.MathUtils.damp(left.current.position.z, nearest, 2.4, delta),
+      );
       left.current.intensity = THREE.MathUtils.damp(
         left.current.intensity,
         target,
@@ -43,7 +47,11 @@ export function StageLighting({
       );
     }
     if (right.current) {
-      right.current.position.set(29, height - 5, nearest);
+      right.current.position.set(
+        29,
+        THREE.MathUtils.damp(right.current.position.y, height - 5, 2.4, delta),
+        THREE.MathUtils.damp(right.current.position.z, nearest, 2.4, delta),
+      );
       right.current.intensity = THREE.MathUtils.damp(
         right.current.intensity,
         target,
@@ -57,6 +65,7 @@ export function StageLighting({
     <>
       <pointLight
         ref={left}
+        position={[-29, channelHeight(LIGHT_STOPS[0]) - 5, LIGHT_STOPS[0]]}
         color={stage.accentSoft}
         intensity={0}
         distance={GAME_CONFIG.world.fixtureLightDistance}
@@ -64,6 +73,7 @@ export function StageLighting({
       />
       <pointLight
         ref={right}
+        position={[29, channelHeight(LIGHT_STOPS[0]) - 5, LIGHT_STOPS[0]]}
         color={stage.accentSoft}
         intensity={0}
         distance={GAME_CONFIG.world.fixtureLightDistance}

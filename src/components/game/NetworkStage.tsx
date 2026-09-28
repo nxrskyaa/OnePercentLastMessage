@@ -13,11 +13,11 @@ import { useGameStore } from "@/store/gameStore";
 const FIN_POSITIONS = [
   -45, -102, -168, -232, -296, -364, -430, -496, -562, -620,
 ];
-export const LIGHT_STOPS = [-80, -242, -436, -574];
+export const LIGHT_STOPS = [-58, -132, -208, -284, -362, -442, -520, -592];
 
 function lightPool(z: number) {
   return LIGHT_STOPS.reduce((strength, stop) => {
-    const distance = (z - stop) / 45;
+    const distance = (z - stop) / 31;
     return Math.max(strength, Math.exp(-distance * distance));
   }, 0);
 }
@@ -169,6 +169,7 @@ function makeCurrent(stage: StageDefinition) {
   const edge = new THREE.Color(stage.current[1]);
   const light = new THREE.Color(stage.current[2]);
   const practical = new THREE.Color(stage.accentSoft);
+  const wellLight = new THREE.Color(stage.accent);
   const shade = new THREE.Color();
   for (let i = 0; i < position.count; i++) {
     const x = position.getX(i);
@@ -185,6 +186,14 @@ function makeCurrent(stage: StageDefinition) {
       practical,
       lightPool(z) *
         (0.2 + THREE.MathUtils.smoothstep(Math.abs(x), 5, 20) * 0.3),
+    );
+    const well = GAME_CONFIG.world.wellStops.reduce((strength, stop) => {
+      const distance = (z - stop) / 23;
+      return Math.max(strength, Math.exp(-distance * distance));
+    }, 0);
+    shade.lerp(
+      wellLight,
+      well * (1 - THREE.MathUtils.smoothstep(Math.abs(x), 3, 17)) * 0.42,
     );
     colors[i * 3] = shade.r;
     colors[i * 3 + 1] = shade.g;
@@ -374,7 +383,7 @@ function makePracticalLights() {
 }
 
 // Light from the wall fixtures is projected into the channel as broken shutters.
-// All eight fixtures share one small mesh instead of separate transparent lights.
+// All fixtures share one small mesh instead of separate transparent lights.
 function makeLightProjections(stage: StageDefinition) {
   const positions: number[] = [];
   const colors: number[] = [];
@@ -576,13 +585,44 @@ function makeSail() {
   });
 }
 
+function makeArchiveShard() {
+  const outline = [
+    [0.04, 1.25],
+    [0.59, 0.57],
+    [0.91, 0.12],
+    [0.49, -0.59],
+    [-0.12, -1.16],
+    [-0.72, -0.68],
+    [-0.93, 0.06],
+    [-0.43, 0.73],
+  ];
+  const positions: number[] = [];
+  const add = (a: number[], b: number[], c: number[]) =>
+    positions.push(...a, ...b, ...c);
+  for (let i = 0; i < outline.length; i++) {
+    const a = outline[i];
+    const b = outline[(i + 1) % outline.length];
+    add([0.04, 0.03, 0.46], [a[0], a[1], 0.08], [b[0], b[1], 0.08]);
+    add([0.04, 0.03, -0.46], [b[0], b[1], -0.08], [a[0], a[1], -0.08]);
+    add([a[0], a[1], 0.08], [a[0], a[1], -0.08], [b[0], b[1], 0.08]);
+    add([b[0], b[1], 0.08], [a[0], a[1], -0.08], [b[0], b[1], -0.08]);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(positions, 3),
+  );
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
 function makeLandmarks(stage: StageDefinition, low: boolean) {
   const parts: THREE.BufferGeometry[] = [];
   const landmark =
     stage.motif === "sails"
       ? makeSail()
       : stage.motif === "prisms"
-        ? new THREE.OctahedronGeometry(1, 0)
+        ? makeArchiveShard()
         : new THREE.TorusGeometry(11, 0.85, 6, 28, Math.PI * 1.2);
   FIN_POSITIONS.forEach((z, index) => {
     if (low && index % 2) return;

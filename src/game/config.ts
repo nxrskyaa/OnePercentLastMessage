@@ -22,7 +22,8 @@ export const GAME_CONFIG = {
     fogDensity: 0.00078,
     fixtureLightIntensity: 420,
     fixtureLightDistance: 84,
-    fixtureProjectionOpacity: 0.32,
+    fixtureProjectionOpacity: 0.1,
+    wellStops: [-42, -286, -544],
   },
   scan: { cooldown: 5 },
   nodes: {

@@ -29,3 +29,11 @@ Verified on September 24, 2026: production build, lint, and formatting pass. Bro
 - Ask new players for a local display name, optional X username and HTTPS image link. Let them select English or Indonesian before entering the menu; allow profile edits later.
 - Include identity and stage on the result screen and exported PNG. Keep a safe initials fallback for images that do not support cross-origin canvas export.
 - Validate desktop and compact layouts, gameplay and card export, then run format, lint, typecheck, production build, and release verification.
+
+## Ceiling and lighting update — September 28, 2026
+
+- Add folded overhead architecture, illuminated apertures, soft light shafts, and matching pools on the channel surface. Change crown height, tilt, and color by stage.
+- Double the fixture stations to eight pairs; retain two moving point lights and batch the visible fixtures. Smooth light movement between stations.
+- Deepen the sky palette, reduce flat ambient illumination, and add subtle wall surface detail. Give the archive landmarks an authored bevel silhouette.
+- Verified: ESLint and production build pass; desktop gameplay, scan, tracker damage, battery drain, pause/resume, and stage selection work. At 390 × 844, the touch scan works and document width matches the viewport. No console errors observed in the local production session.
+- Performance readings in the local in-app browser at 1280 × 720 were approximately 88–104 FPS during sampled Tidal/Solar gameplay on Medium. These are local observations, not a guarantee for other hardware. Physical mobile devices and other browser engines were not tested in this pass.
