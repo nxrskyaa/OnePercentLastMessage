@@ -1,5 +1,15 @@
 # 1% — Last Message: implementation plan
 
+## Lantern and material revision — September 29, 2026
+
+- Reference review: study the compact hot lamp cores, soft amber falloff, cool environmental fill, and readable material edges in Lost Marbles.
+- Replace the flat slit fixtures and triangular projection fans with modeled relay lanterns, rounded metal collars, diffuse halos, and surface-aligned light pools.
+- Give the architecture curved structural ribs and a restrained material reflection environment. Remove decorative floating primitives that compete with gameplay nodes.
+- Test a capped-resolution bloom pass with native Three.js utilities; keep a lightweight fallback for low quality and disabled screen effects. Measure the complete render workload.
+- Review actual desktop/mobile gameplay, scan, pause, stage changes, and console output. Run lint/build before pushing and deploying the verified result.
+
+Verification: lint, strict TypeScript compilation, production build, formatting, and diff checks passed. In the local production build, Tidal and Prism samples at 1280 × 720 were 88–92 FPS with Medium quality and bloom enabled; disabling screen effects rendered correctly and raised sampled throughput to 146 FPS. At 390 × 844, Low quality rendered correctly, touch scan entered cooldown, and document width equaled viewport width. Stage changes and pause/resume produced no observed console errors. These are samples on the development machine, not physical-phone or cross-browser performance guarantees.
+
 ## First playable — complete
 
 1. Scaffold a strict Next.js App Router project with TypeScript, Tailwind, ESLint, and Prettier. Add Three.js, React Three Fiber, Drei, and Zustand. Keep the postprocessing package available for later polish.

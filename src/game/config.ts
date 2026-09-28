@@ -20,9 +20,10 @@ export const GAME_CONFIG = {
   camera: { baseFov: 70, boostFov: 79, followResponse: 3.8, lookAhead: 22 },
   world: {
     fogDensity: 0.00078,
-    fixtureLightIntensity: 420,
+    fixtureLightIntensity: 1050,
     fixtureLightDistance: 84,
-    fixtureProjectionOpacity: 0.1,
+    bloomStrength: 0.3,
+    bloomMaxHeight: 240,
     wellStops: [-42, -286, -544],
   },
   scan: { cooldown: 5 },

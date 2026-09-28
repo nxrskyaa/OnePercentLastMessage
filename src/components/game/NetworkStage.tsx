@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { useSettingsStore } from "@/store/settingsStore";
 import { signalState } from "@/rendering/signalState";
 import { stageAt, type StageDefinition } from "@/game/stages";
@@ -58,12 +59,10 @@ function makeFoldedChannel(stage: StageDefinition) {
       const practical = new THREE.Color(stage.accentSoft);
       const signal = new THREE.Color(stage.accent);
       const start = positions.length / 3;
-      for (let i = 0; i <= 74; i++) {
-        const z = 35 - i * 10;
-        const fold = Math.sin(i * 0.71 + strip.a) * 1.7;
+      for (let i = 0; i <= 185; i++) {
+        const z = 35 - i * 4;
+        const fold = Math.sin(i * 0.4 * 0.71 + strip.a) * 1.7;
         const shade = base.clone();
-        const wash = lightPool(z) * (strip.a < 40 ? 0.26 : 0.12);
-        shade.lerp(practical, wash);
         shade.lerp(signal, THREE.MathUtils.smoothstep(-z, 490, 650) * 0.13);
         shade.multiplyScalar(0.88 + Math.sin(i * 0.31 + strip.a) * 0.035);
         const a = [
@@ -76,9 +75,19 @@ function makeFoldedChannel(stage: StageDefinition) {
           strip.yb + channelHeight(z),
           z,
         ] as const;
-        emit(a, shade);
-        emit(b, shade);
-        if (i < 74) {
+        for (const point of [a, b]) {
+          const spill = LIGHT_STOPS.reduce((best, stop) => {
+            const dx = Math.abs(point[0]) - 31;
+            const dy = point[1] - channelHeight(stop) + 0.8;
+            const dz = point[2] - stop;
+            return Math.max(
+              best,
+              Math.exp(-(dx * dx + dy * dy + dz * dz) / 210),
+            );
+          }, 0);
+          emit(point, shade.clone().lerp(practical, spill * 0.46));
+        }
+        if (i < 185) {
           const n = start + i * 2;
           indices.push(n, n + 1, n + 2, n + 1, n + 3, n + 2);
         }
@@ -96,67 +105,36 @@ function makeFoldedChannel(stage: StageDefinition) {
   return geometry;
 }
 
-function wallPoint(side: number, t: number, z: number, lift = 0) {
-  const fold = Math.sin(((35 - z) / 10) * 0.71 + 36) * 1.7;
-  return [
-    side * (36 + 9 * t + fold - lift),
-    -3 + 22 * t + channelHeight(z),
-    z,
-  ] as const;
-}
-
 function makeWallRelief(stage: StageDefinition) {
-  const positions: number[] = [];
-  const colors: number[] = [];
-  const indices: number[] = [];
-  const dark = new THREE.Color(stage.relief[0]);
-  const light = new THREE.Color(stage.relief[1]);
-  const lilac = new THREE.Color(stage.relief[2]);
-  const tint = new THREE.Color();
-  const add = (
-    point: readonly [number, number, number],
-    color: THREE.Color,
-  ) => {
-    positions.push(...point);
-    colors.push(color.r, color.g, color.b);
-  };
+  const parts: THREE.BufferGeometry[] = [];
+  const panel = new RoundedBoxGeometry(0.85, 6.7, 14, 1, 0.38);
   for (const side of [-1, 1]) {
-    for (let section = 0; section < 17; section++) {
-      const z = -25 - section * 40;
-      const start = positions.length / 3;
-      tint.copy(section > 8 ? lilac : light);
-      const accent = section % 4 === 0 ? 0.26 : 0.13;
-      const base = tint.clone().lerp(dark, accent);
-      add(wallPoint(side, 0.18, z + 15, 0.3), base);
-      add(wallPoint(side, 0.8, z + 9, 0.34), tint);
-      add(wallPoint(side, 0.88, z - 10, 0.4), base);
-      add(wallPoint(side, 0.36, z - 16, 0.37), dark);
-      add(wallPoint(side, 0.52, z, 1.2), tint);
-      indices.push(
-        start,
-        start + 1,
-        start + 4,
-        start + 1,
-        start + 2,
-        start + 4,
-        start + 2,
-        start + 3,
-        start + 4,
-        start + 3,
-        start,
-        start + 4,
-      );
+    for (let section = 0; section < 35; section++) {
+      for (let row = 0; row < 2; row++) {
+        const z = 14 - section * 20 - row * 9;
+        const y = row * 9 + 2;
+        const fold = Math.sin(((35 - z) / 10) * 0.71 + 36) * 1.7;
+        const tile = panel.clone();
+        tile.rotateZ(-side * Math.atan(9 / 22));
+        tile.translate(
+          side * (36 + ((y + 3) * 9) / 22 + fold - 0.6),
+          y + channelHeight(z),
+          z,
+        );
+        const tint = new THREE.Color(stage.channel[2]).lerp(
+          new THREE.Color(stage.relief[1]),
+          0.15 + (section % 3) * 0.025,
+        );
+        colorize(tile, tint.getStyle());
+        parts.push(tile);
+      }
     }
   }
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(positions, 3),
-  );
-  geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-  geometry.setIndex(indices);
-  geometry.computeVertexNormals();
-  return geometry;
+  panel.dispose();
+  const result = mergeGeometries(parts);
+  parts.forEach((part) => part.dispose());
+  if (!result) throw new Error("Ceramic panels could not be assembled");
+  return result;
 }
 
 function makeCurrent(stage: StageDefinition) {
@@ -353,163 +331,6 @@ function makeWallCircuits(stage: StageDefinition) {
   parts.forEach((part) => part.dispose());
   if (!merged) throw new Error("Wall circuits could not be generated");
   return merged;
-}
-
-function makePracticalLights() {
-  const housings: THREE.BufferGeometry[] = [];
-  const slits: THREE.BufferGeometry[] = [];
-  const glows: THREE.BufferGeometry[] = [];
-  for (const z of LIGHT_STOPS) {
-    for (const side of [-1, 1]) {
-      const height = -3 + channelHeight(z);
-      const housing = new THREE.BoxGeometry(2.1, 7.8, 3.4);
-      housing.translate(side * 33.5, height, z);
-      housings.push(housing);
-      const slit = new THREE.BoxGeometry(0.34, 4.4, 1.25);
-      slit.translate(side * 32.25, height + 0.4, z + 0.5);
-      slits.push(slit);
-      const glow = new THREE.PlaneGeometry(21, 22);
-      glow.translate(side * 32.1, height + 0.4, z + 0.8);
-      glows.push(glow);
-    }
-  }
-  const housing = mergeGeometries(housings);
-  const slit = mergeGeometries(slits);
-  const glow = mergeGeometries(glows);
-  [...housings, ...slits, ...glows].forEach((part) => part.dispose());
-  if (!housing || !slit || !glow)
-    throw new Error("Signal lights could not be generated");
-  return { housing, slit, glow };
-}
-
-// Light from the wall fixtures is projected into the channel as broken shutters.
-// All fixtures share one small mesh instead of separate transparent lights.
-function makeLightProjections(stage: StageDefinition) {
-  const positions: number[] = [];
-  const colors: number[] = [];
-  const source = new THREE.Color(stage.accentSoft).multiplyScalar(1.15);
-  const edge = new THREE.Color(stage.accentSoft).multiplyScalar(0.015);
-  const blades =
-    stage.motif === "prisms"
-      ? [
-          [-13, 1.4, 17],
-          [-5, 2.7, 12],
-          [4, 1.4, 18],
-          [12, 2.5, 13],
-        ]
-      : stage.motif === "halos"
-        ? [
-            [-13, 1.7, 11],
-            [-6, 3.6, 17],
-            [3, 3.6, 17],
-            [12, 1.7, 11],
-          ]
-        : [
-            [-12, 3.8, 16],
-            [-4, 2.2, 12],
-            [5, 3.1, 17],
-            [13, 1.5, 11],
-          ];
-  const add = (x: number, y: number, z: number, color: THREE.Color) => {
-    positions.push(x, y, z);
-    colors.push(color.r, color.g, color.b);
-  };
-  const triangle = (
-    a: readonly [number, number, number],
-    b: readonly [number, number, number],
-    c: readonly [number, number, number],
-    inner: THREE.Color,
-  ) => {
-    add(...a, source);
-    add(...b, inner);
-    add(...c, edge);
-  };
-
-  for (const z of LIGHT_STOPS) {
-    for (const side of [-1, 1]) {
-      const height = channelHeight(z);
-      const lamp: [number, number, number] = [side * 32, height - 2.5, z + 0.6];
-      // A few asymmetric blades look like an engineered optical fixture,
-      // while gaps between them keep the flight path legible.
-      for (const [offset, width, reach] of blades) {
-        const a: [number, number, number] = [
-          side * 28,
-          height - 8,
-          z + offset - width,
-        ];
-        const b: [number, number, number] = [
-          side * (28 - reach),
-          height - 20,
-          z + offset,
-        ];
-        const c: [number, number, number] = [
-          side * (28 - reach),
-          height - 20,
-          z + offset + width,
-        ];
-        triangle(lamp, a, b, source.clone().multiplyScalar(0.22));
-        triangle(lamp, b, c, source.clone().multiplyScalar(0.15));
-      }
-      // Split reflections continue across the moving current below the lamp.
-      for (const [offset, width] of [
-        [-10, 1.7],
-        [-1, 2.4],
-        [9, 1.3],
-      ]) {
-        const x1 = side * 18;
-        const x2 = side * 5;
-        const floor = (x: number, depth: number) =>
-          -20.7 +
-          channelHeight(depth) +
-          Math.sin(x * 0.18 + depth * 0.035) * 0.35;
-        const near: [number, number, number] = [
-          x1,
-          floor(x1, z + offset),
-          z + offset,
-        ];
-        const center: [number, number, number] = [
-          side * 12,
-          floor(side * 12, z + offset + width),
-          z + offset + width,
-        ];
-        const far: [number, number, number] = [
-          x2,
-          floor(x2, z + offset + width + 5),
-          z + offset + width + 5,
-        ];
-        add(...near, edge);
-        add(...center, source.clone().multiplyScalar(0.38));
-        add(...far, edge);
-      }
-    }
-  }
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(positions, 3),
-  );
-  geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-  return geometry;
-}
-
-function makeGlowTexture() {
-  const size = 64;
-  const pixels = new Uint8Array(size * size * 4);
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const u = (x + 0.5 - size / 2) / (size / 2);
-      const v = (y + 0.5 - size / 2) / (size / 2);
-      const falloff = Math.max(0, 1 - Math.sqrt(u * u + v * v));
-      const index = (y * size + x) * 4;
-      pixels[index] = 255;
-      pixels[index + 1] = 255;
-      pixels[index + 2] = 255;
-      pixels[index + 3] = Math.round(255 * falloff * falloff);
-    }
-  }
-  const texture = new THREE.DataTexture(pixels, size, size, THREE.RGBAFormat);
-  texture.needsUpdate = true;
-  return texture;
 }
 
 function makeFloorEtching(stage: StageDefinition, low: boolean) {
@@ -715,17 +536,13 @@ export function NetworkStage() {
   const stageIndex = useGameStore((state) => state.stageIndex);
   const stage = stageAt(stageIndex);
   const low = useSettingsStore((state) => state.runtimeQuality === "low");
-  const reducedMotion = useSettingsStore((state) => state.reducedMotion);
   const currentMaterial = useRef<THREE.MeshStandardMaterial>(null);
   const crossingMaterial = useRef<THREE.MeshStandardMaterial>(null);
-  const glowMaterial = useRef<THREE.MeshBasicMaterial>(null);
-  const projectionMaterial = useRef<THREE.MeshBasicMaterial>(null);
   const world = useMemo(() => {
     const ribbons = [-22, 22].map((x) => makeRibbon(x, x < 0 ? -16 : -17));
     const mergedRibbon = mergeGeometries(ribbons);
     ribbons.forEach((ribbon) => ribbon.dispose());
     if (!mergedRibbon) throw new Error("Signal ribbon could not be generated");
-    const fixtures = makePracticalLights();
     return {
       channel: makeFoldedChannel(stage),
       relief: makeWallRelief(stage),
@@ -735,11 +552,6 @@ export function NetworkStage() {
       sails: makeLandmarks(stage, low),
       ribbon: mergedRibbon,
       circuits: makeWallCircuits(stage),
-      fixtureHousing: fixtures.housing,
-      fixtureSlit: fixtures.slit,
-      fixtureGlow: fixtures.glow,
-      lightProjections: makeLightProjections(stage),
-      glowTexture: makeGlowTexture(),
       floorEtching: makeFloorEtching(stage, low),
       sky: makeSky(stage),
     };
@@ -758,14 +570,6 @@ export function NetworkStage() {
     );
     const pulse = 0.94 + Math.sin(clock.elapsedTime * 1.2) * 0.06;
     crossingMaterial.current?.color.setRGB(pulse, pulse, 1);
-    const cadence = reducedMotion
-      ? 0
-      : Math.sin(clock.elapsedTime * 2.1) * 0.04;
-    if (glowMaterial.current)
-      glowMaterial.current.opacity = 0.36 + cadence + boost * 0.12;
-    if (projectionMaterial.current)
-      projectionMaterial.current.opacity =
-        GAME_CONFIG.world.fixtureProjectionOpacity + cadence + boost * 0.11;
   });
   return (
     <>
@@ -828,42 +632,7 @@ export function NetworkStage() {
         <meshBasicMaterial color={stage.accent} toneMapped={false} />
       </mesh>
       <mesh geometry={world.circuits} frustumCulled={false}>
-        <meshBasicMaterial vertexColors toneMapped={false} />
-      </mesh>
-      <mesh geometry={world.fixtureHousing} frustumCulled={false}>
-        <meshStandardMaterial color={stage.channel[2]} roughness={0.76} />
-      </mesh>
-      <mesh geometry={world.fixtureSlit} frustumCulled={false}>
-        <meshBasicMaterial color={stage.accentSoft} toneMapped={false} />
-      </mesh>
-      <mesh geometry={world.fixtureGlow} frustumCulled={false}>
-        <meshBasicMaterial
-          ref={glowMaterial}
-          color={stage.accentSoft}
-          map={world.glowTexture}
-          transparent
-          opacity={0.36}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      <mesh
-        geometry={world.lightProjections}
-        frustumCulled={false}
-        renderOrder={4}
-      >
-        <meshBasicMaterial
-          ref={projectionMaterial}
-          vertexColors
-          transparent
-          opacity={GAME_CONFIG.world.fixtureProjectionOpacity}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
-          side={THREE.DoubleSide}
-        />
+        <meshBasicMaterial vertexColors color="#748292" toneMapped={false} />
       </mesh>
       <mesh geometry={world.floorEtching} frustumCulled={false}>
         <meshBasicMaterial

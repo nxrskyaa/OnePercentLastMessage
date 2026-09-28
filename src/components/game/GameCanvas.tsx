@@ -22,6 +22,9 @@ import { SkyVault } from "@/components/game/SkyVault";
 import { StageMotion } from "@/components/game/StageMotion";
 import { StageLighting } from "@/components/game/StageLighting";
 import { WorldDetail } from "@/components/game/WorldDetail";
+import { RelayLanterns } from "@/components/game/RelayLanterns";
+import { MaterialLighting } from "@/components/game/MaterialLighting";
+import { LightBloom } from "@/components/game/LightBloom";
 import { budgetedDpr } from "@/rendering/resolution";
 import { GAME_CONFIG } from "@/game/config";
 import { generateNodes } from "@/game/nodes";
@@ -48,18 +51,20 @@ function GameScene() {
         attach="fog"
         args={[stage.sky[1], GAME_CONFIG.world.fogDensity]}
       />
-      <ambientLight color="#8ba5d4" intensity={0.3} />
+      <hemisphereLight color="#a4c2e0" groundColor="#292138" intensity={0.38} />
       <directionalLight
         color="#c4dcf3"
-        intensity={1.03}
+        intensity={0.8}
         position={[-15, 28, 20]}
       />
       <directionalLight
         color={stage.accentSoft}
-        intensity={0.48}
+        intensity={0.22}
         position={[30, -12, -35]}
       />
       <NetworkStage />
+      <MaterialLighting />
+      <RelayLanterns />
       <WorldDetail />
       <SkyVault />
       <StageLighting playerRef={playerRef} />
@@ -78,6 +83,7 @@ function GameScene() {
       <ScanPulse playerRef={playerRef} />
       <ChaseCamera key={`camera-${runId}`} playerRef={playerRef} />
       <QualityMonitor />
+      <LightBloom />
     </>
   );
 }
@@ -142,7 +148,8 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
         gl={createRenderer}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.42;
+          gl.toneMappingExposure = 1.15;
+          gl.info.autoReset = false;
           gl.domElement.dataset.rendererBackend = "webgl2";
           onReady?.();
         }}

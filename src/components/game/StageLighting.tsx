@@ -26,7 +26,8 @@ export function StageLighting({
       if (Math.abs(z - stop) < Math.abs(z - nearest)) nearest = stop;
     }
     const distance = Math.abs(z - nearest);
-    const strength = THREE.MathUtils.smoothstep(86 - distance, 0, 72);
+    // Fade before switching fixtures; a light must stay attached to its lantern.
+    const strength = Math.exp(-Math.pow(distance / 25, 4));
     const height = channelHeight(nearest);
     const target =
       strength *
@@ -34,11 +35,7 @@ export function StageLighting({
       (stage.motif === "halos" ? 0.62 : stage.motif === "prisms" ? 0.72 : 1) *
       (1 + signalState.boost.value * 0.3);
     if (left.current) {
-      left.current.position.set(
-        -29,
-        THREE.MathUtils.damp(left.current.position.y, height - 5, 2.4, delta),
-        THREE.MathUtils.damp(left.current.position.z, nearest, 2.4, delta),
-      );
+      left.current.position.set(-31, height - 0.8, nearest);
       left.current.intensity = THREE.MathUtils.damp(
         left.current.intensity,
         target,
@@ -47,11 +44,7 @@ export function StageLighting({
       );
     }
     if (right.current) {
-      right.current.position.set(
-        29,
-        THREE.MathUtils.damp(right.current.position.y, height - 5, 2.4, delta),
-        THREE.MathUtils.damp(right.current.position.z, nearest, 2.4, delta),
-      );
+      right.current.position.set(31, height - 0.8, nearest);
       right.current.intensity = THREE.MathUtils.damp(
         right.current.intensity,
         target,
