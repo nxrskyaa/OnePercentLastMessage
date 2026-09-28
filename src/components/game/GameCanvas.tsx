@@ -45,15 +45,15 @@ function GameScene() {
         attach="fog"
         args={[stage.sky[1], GAME_CONFIG.world.fogDensity]}
       />
-      <ambientLight color="#a4bcf2" intensity={0.9} />
+      <ambientLight color="#8ba5d4" intensity={0.58} />
       <directionalLight
-        color="#eef4fa"
-        intensity={2.3}
+        color="#c4dcf3"
+        intensity={1.85}
         position={[-15, 28, 20]}
       />
       <directionalLight
-        color="#be9af0"
-        intensity={0.95}
+        color={stage.accentSoft}
+        intensity={1.12}
         position={[30, -12, -35]}
       />
       <NetworkStage />
@@ -135,6 +135,8 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
         }}
         gl={createRenderer}
         onCreated={({ gl }) => {
+          gl.toneMapping = THREE.ACESFilmicToneMapping;
+          gl.toneMappingExposure = 1.42;
           gl.domElement.dataset.rendererBackend = "webgl2";
           onReady?.();
         }}

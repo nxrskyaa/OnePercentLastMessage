@@ -50,7 +50,7 @@ npm run dev
 
 Open <http://localhost:3000> in a modern browser. Desktop offers the widest view; portrait and landscape mobile layouts include touch flight controls and cap runtime rendering at Low for playability.
 
-The renderer uses standard Three.js WebGL with hardware antialiasing and an adaptive pixel budget. `?perf=1` displays FPS, frame time, draw calls, triangles, render scale, and quality, including in production when diagnosing a device. GPU pixel count is capped before the first frame on large screens. Postprocessing bloom and ambient packet particles were removed to keep the stage responsive.
+The renderer uses standard Three.js WebGL with hardware antialiasing, filmic tone mapping, and an adaptive pixel budget. Stage lighting pairs cool signal surfaces with authored warm or cyan fixtures, baked light pools, and small batched floor markings; no real-time shadows are required. `?perf=1` displays FPS, frame time, draw calls, triangles, render scale, and quality, including in production when diagnosing a device. GPU pixel count is capped before the first frame on large screens. Postprocessing bloom and ambient packet particles were removed to keep the stage responsive.
 
 The committed music file is used directly by the app. Regenerating it is optional and requires Python with NumPy and FFmpeg: `python tools/generate_music.py`.
 
