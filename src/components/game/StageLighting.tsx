@@ -3,7 +3,8 @@
 import { useFrame } from "@react-three/fiber";
 import { useRef, type RefObject } from "react";
 import * as THREE from "three";
-import { channelHeight, LIGHT_STOPS } from "@/components/game/NetworkStage";
+import { dockHeight as channelHeight, HARBOR } from "@/game/harbor";
+const LIGHT_STOPS: readonly number[] = HARBOR.lightStops;
 import { stageAt } from "@/game/stages";
 import { GAME_CONFIG } from "@/game/config";
 import { signalState } from "@/rendering/signalState";
@@ -57,6 +58,7 @@ export function StageLighting({
   return (
     <>
       <pointLight
+        onUpdate={(object) => object.layers.enable(1)}
         ref={left}
         position={[-29, channelHeight(LIGHT_STOPS[0]) - 5, LIGHT_STOPS[0]]}
         color={stage.accentSoft}
@@ -65,6 +67,7 @@ export function StageLighting({
         decay={2}
       />
       <pointLight
+        onUpdate={(object) => object.layers.enable(1)}
         ref={right}
         position={[29, channelHeight(LIGHT_STOPS[0]) - 5, LIGHT_STOPS[0]]}
         color={stage.accentSoft}

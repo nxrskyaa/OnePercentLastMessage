@@ -3,7 +3,8 @@
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { channelHeight, LIGHT_STOPS } from "./NetworkStage";
+import { dockHeight as channelHeight, HARBOR } from "@/game/harbor";
+const LIGHT_STOPS = HARBOR.lightStops;
 import { stageAt } from "@/game/stages";
 import { makeSoftLightTexture } from "@/rendering/lightTextures";
 import { useGameStore } from "@/store/gameStore";
@@ -87,24 +88,36 @@ export function RelayLanterns() {
   useEffect(() => () => texture.dispose(), [texture]);
   return (
     <>
-      <mesh geometry={geometry.metal}>
+      <mesh
+        onUpdate={(object) => object.layers.enable(1)}
+        geometry={geometry.metal}
+      >
         <meshStandardMaterial
           color="#786750"
           roughness={0.3}
           metalness={0.72}
         />
       </mesh>
-      <mesh geometry={geometry.porcelain}>
+      <mesh
+        onUpdate={(object) => object.layers.enable(1)}
+        geometry={geometry.porcelain}
+      >
         <meshStandardMaterial
           color={stage.relief[2]}
           roughness={0.34}
           metalness={0.15}
         />
       </mesh>
-      <mesh geometry={geometry.cores}>
+      <mesh
+        onUpdate={(object) => object.layers.enable(1)}
+        geometry={geometry.cores}
+      >
         <meshBasicMaterial color={hot} toneMapped={false} />
       </mesh>
-      <mesh geometry={geometry.glows}>
+      <mesh
+        onUpdate={(object) => object.layers.enable(1)}
+        geometry={geometry.glows}
+      >
         <meshBasicMaterial
           color={stage.accentSoft}
           map={texture}

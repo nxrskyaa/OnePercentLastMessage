@@ -42,7 +42,7 @@ export function MaterialLighting() {
     const previous = scene.environment;
     const previousIntensity = scene.environmentIntensity;
     scene.environment = target.texture;
-    scene.environmentIntensity = 0.22;
+    scene.environmentIntensity = 0.55;
     pmrem.dispose();
     geometry.dispose();
     materials.forEach((material) => material.dispose());

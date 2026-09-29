@@ -8,7 +8,7 @@ const PIXEL_BUDGET: Record<RuntimeQuality, number> = {
 
 const BASE_DPR: Record<RuntimeQuality, number> = {
   low: 1.25,
-  medium: 1.15,
+  medium: 1,
   high: 1.35,
 };
 

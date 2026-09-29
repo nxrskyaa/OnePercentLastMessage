@@ -93,3 +93,9 @@ Push this repository to GitHub, then import it in Vercel as a Next.js project. T
 ## Credits
 
 Created by **NXR / [@nxrskyaa](https://x.com/nxrskyaa)** for the Dlicom AI Game Jam. Design and implementation: NXR + Codex. The Dlicom mark is copied from the reference supplied for this project; the blue mascot card illustration was generated from the supplied mascot references. Dlicom and Dili remain their owners' marks and character. Gameplay visuals and sound effects are original.
+
+## Signal harbor rendering
+
+The flight route crosses an authored harbor of relay islands, glazed towers, overhead bridges and mooring buoys. Tidal, Prism and Solar change the station structures and atmosphere. The scenery is procedural geometry batched into four material meshes; animated buoys and service craft use instancing.
+
+Medium and High use a 512px planar reflection updated every other frame, with a small reflection filter and capped bloom. Low skips the extra reflection render. The main scene remains antialiased at its own resolution. Cosmetic buoy motion uses damped springs driven by packet proximity and scan, with no physics engine dependency. Reduced motion and pause stop environmental simulation.

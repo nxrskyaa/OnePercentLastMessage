@@ -43,13 +43,13 @@ export function QualityMonitor() {
     renderMetrics.triangles = gl.info.render.triangles;
     // Shader compilation and first-run asset upload are not sustained load.
     const warmedUp = activeSeconds.current > 4;
-    slowWindows.current = warmedUp && fps < 45 ? slowWindows.current + 1 : 0;
-    fastWindows.current = warmedUp && fps > 58 ? fastWindows.current + 1 : 0;
+    slowWindows.current = warmedUp && fps < 56 ? slowWindows.current + 1 : 0;
+    fastWindows.current = warmedUp && fps > 59 ? fastWindows.current + 1 : 0;
     if (slowWindows.current >= 2) {
       scale.current = Math.max(0.78, scale.current - 0.08);
       slowWindows.current = 0;
-    } else if (fastWindows.current >= 2) {
-      scale.current = Math.min(1, scale.current + 0.06);
+    } else if (fastWindows.current >= 8) {
+      scale.current = Math.min(1, scale.current + 0.03);
       fastWindows.current = 0;
     }
     if (settings.quality === "auto" && warmedUp) {
@@ -67,10 +67,6 @@ export function QualityMonitor() {
       ) {
         settings.setRuntimeQuality("low");
         scale.current = 0.95;
-      }
-    } else if (settings.quality !== "auto" && warmedUp) {
-      if (fps < 35 && scale.current <= 0.6 && settings.quality !== "low") {
-        settings.update({ quality: "low" });
       }
     }
     const nextDpr = budgetedDpr(

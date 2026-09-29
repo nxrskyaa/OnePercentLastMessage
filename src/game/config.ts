@@ -24,7 +24,6 @@ export const GAME_CONFIG = {
     fixtureLightDistance: 84,
     bloomStrength: 0.3,
     bloomMaxHeight: 240,
-    wellStops: [-42, -286, -544],
   },
   scan: { cooldown: 5 },
   nodes: {

@@ -47,3 +47,19 @@ Verified on September 24, 2026: production build, lint, and formatting pass. Bro
 - Deepen the sky palette, reduce flat ambient illumination, and add subtle wall surface detail. Give the archive landmarks an authored bevel silhouette.
 - Verified: ESLint and production build pass; desktop gameplay, scan, tracker damage, battery drain, pause/resume, and stage selection work. At 390 × 844, the touch scan works and document width matches the viewport. No console errors observed in the local production session.
 - Performance readings in the local in-app browser at 1280 × 720 were approximately 88–104 FPS during sampled Tidal/Solar gameplay on Medium. These are local observations, not a guarantee for other hardware. Physical mobile devices and other browser engines were not tested in this pass.
+
+## Signal harbor world rebuild — September 29, 2026
+
+- Reference observed in-browser: Threejs-Punk has a detailed layered streetscape, bright physical light sources, material contrast, and wet reflections. Apply those principles to an original signal harbor.
+- Replace the repeated folded corridor/sails with six asymmetric island stations, glazed receiver towers, three cable crossings, service docks, and distant satellite islands.
+- Add a single 512px planar water reflection at half rate for Medium/High. Low uses the same animated water shader without rendering a reflected scene. Keep bloom and quality adaptation.
+- Add instanced mooring buoys using damped springs driven by player proximity, boost and scan; tiny overhead service shuttles provide scale. Pause and reduced motion stop simulation.
+- Preserve the flight corridor, collisions, stage selection, profiles and result cards. Verify production visuals, interactions and measured render cost before publishing.
+
+### Verification and renderer budget
+
+- Production build, strict TypeScript, ESLint and changed-file formatting pass.
+- Observed Tidal, Prism and Solar flight scenes; tested scan, pause/resume, battery depletion, tracker/privacy effects and retry. No browser errors in the observed sessions.
+- At 390 x 844, document width stays 390, touch scan changes to cooldown, and Low renders without the reflection pass. Local desktop GPU samples at that viewport: 103-109 FPS; this is not a physical-phone benchmark.
+- Initial Prism measurements dipped to 51 FPS. Restricted reflections to the environment layer, removed Medium oversampling (native resolution plus MSAA), and made adaptive scaling respond below 56 FPS. Later desktop samples were 64-70 FPS in the inspected session. Performance varies with hardware and other active GPU work.
+- Menu, briefing, profile, tutorial and pause now use demand rendering. Only active gameplay/countdown and end effects render continuously. Fixed Space being swallowed in menu controls.

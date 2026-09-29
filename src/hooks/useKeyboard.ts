@@ -9,6 +9,7 @@ export function useKeyboard() {
     const down = (event: KeyboardEvent) => {
       const key = event.key.toLowerCase();
       if (
+        useGameStore.getState().phase === "playing" &&
         ["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(key)
       ) {
         event.preventDefault();
