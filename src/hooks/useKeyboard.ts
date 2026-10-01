@@ -29,6 +29,7 @@ export function useKeyboard() {
         else if (state.phase === "paused") state.resume();
         else if (state.phase === "briefing" || state.phase === "tutorial")
           state.goMenu();
+        return;
       }
       if (
         key === " " &&
@@ -47,22 +48,39 @@ export function useKeyboard() {
         event.target.closest(".mobile-controls")
       )
         return;
-      if (useGameStore.getState().phase === "playing")
+      // Mouse steering is opt-in: click-drag the canvas, never cursor position alone.
+      if (
+        useGameStore.getState().phase === "playing" &&
+        event.buttons === 1 &&
+        event.target instanceof Element &&
+        event.target.closest("canvas")
+      )
         gameInput.mouseX.current =
           (event.clientX / window.innerWidth - 0.5) * 2;
       else gameInput.mouseX.current = 0;
     };
     const clear = () => gameInput.clear();
+    const releaseMouse = () => {
+      gameInput.mouseX.current = 0;
+    };
+    const unsubscribe = useGameStore.subscribe((state, previous) => {
+      if (state.phase !== previous.phase) gameInput.clear();
+    });
     gameInput.clear();
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     window.addEventListener("blur", clear);
     window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", releaseMouse);
+    window.addEventListener("pointercancel", releaseMouse);
     return () => {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
       window.removeEventListener("blur", clear);
       window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", releaseMouse);
+      window.removeEventListener("pointercancel", releaseMouse);
+      unsubscribe();
     };
   }, []);
 

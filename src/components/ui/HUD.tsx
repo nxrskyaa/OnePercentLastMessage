@@ -7,7 +7,8 @@ import { copyFor } from "@/game/copy";
 import { formatTime } from "@/lib/format";
 import { courseAct } from "@/game/course";
 import { craftAt } from "@/game/crafts";
-import { RouteMap } from "./RouteMap";
+import { FlightKeys } from "./FlightKeys";
+import { PilotGuidance } from "./PilotGuidance";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
 
@@ -80,6 +81,7 @@ export function HUD() {
       <div className="hud-reticle" aria-hidden="true">
         <span />
       </div>
+      <PilotGuidance />
       <div className="course-readout">
         <b>{act.mark}</b>
         <span>{language === "id" ? act.nameId : act.name}</span>
@@ -102,7 +104,7 @@ export function HUD() {
           <span>{language === "id" ? "NAVIGASI" : "NAVIGATION"}</span>
           <b>{act.mark} / 04</b>
         </header>
-        <RouteMap stage={stageIndex} progress={1 - distance / 1800} />
+        <FlightKeys language={language} />
         <div>
           <span>{craft.name}</span>
           <b>

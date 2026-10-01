@@ -16,6 +16,7 @@ import { Destination } from "@/components/game/Destination";
 import { NetworkStage } from "@/components/game/NetworkStage";
 import { NodeManager } from "@/components/game/NodeManager";
 import { Player } from "@/components/game/Player";
+import { FlightGuide } from "@/components/game/FlightGuide";
 import { PresentationDirector } from "@/components/game/PresentationDirector";
 import { QualityMonitor } from "@/components/game/QualityMonitor";
 import { RouteFork } from "@/components/game/RouteFork";
@@ -93,6 +94,7 @@ function GameScene({ onReady }: { onReady?: () => void }) {
         nodes={nodes}
       />
       <ScanPulse playerRef={playerRef} />
+      <FlightGuide nodes={nodes} playerRef={playerRef} />
       <FlightFeedback key={`feedback-${runId}`} playerRef={playerRef} />
       <ChaseCamera key={`camera-${runId}`} playerRef={playerRef} />
       <QualityMonitor />

@@ -12,7 +12,7 @@ const NETWORK = [
     "TRACKER",
     "Red rings drain privacy and battery. Skim the edge for a near miss.",
   ],
-  ["booster", "SIGNAL BOOSTER", "Bright cyan nodes restore 0.08% battery."],
+  ["booster", "SIGNAL BOOSTER", "Bright cyan nodes restore 0.07% battery."],
   ["public", "PUBLIC RELAY", "The right gate is faster, but costs privacy."],
   ["tip", "TIP NODE", "Collect gold packets quickly to build a combo."],
   [
@@ -37,7 +37,7 @@ const NETWORK_ID = [
     "PELACAK",
     "Cincin merah menguras privasi dan baterai. Lewati tepinya untuk near miss.",
   ],
-  ["booster", "PENGUAT SINYAL", "Node biru terang memulihkan 0,08% baterai."],
+  ["booster", "PENGUAT SINYAL", "Node biru terang memulihkan 0,07% baterai."],
   [
     "public",
     "RELAY PUBLIK",
@@ -72,8 +72,8 @@ export function HowToPlay() {
       </h2>
       <p className="panel-lede">
         {id
-          ? "Kirim pesan terakhirmu sebelum baterai habis."
-          : "Deliver your last message before the battery reaches zero."}
+          ? "Belokan jalur otomatis. Ikuti garis biru menuju ◇; arahkan roket melalui celah sebelum baterai habis. Mouse opsional: klik-tahan dan geser di dunia."
+          : "The route turns automatically. Follow the cyan line to ◇ and steer through the openings before power runs out. Optional mouse: click-drag inside the world."}
       </p>
       <div className="guide-grid">
         <div className="guide-section desktop-instructions">

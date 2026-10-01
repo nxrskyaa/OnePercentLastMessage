@@ -2,6 +2,7 @@
 
 import { GameButton } from "@/components/ui/GameButton";
 import { RouteMap } from "@/components/ui/RouteMap";
+import { FlightKeys } from "@/components/ui/FlightKeys";
 import { missionAt } from "@/game/missions";
 import { copyFor } from "@/game/copy";
 import { stageAt } from "@/game/stages";
@@ -61,6 +62,12 @@ export function MissionBriefing() {
         <span>{language === "id" ? "RENCANA PENERBANGAN" : "FLIGHT PLAN"}</span>
         <h3>{language === "id" ? stage.nameId : stage.name}</h3>
         <RouteMap stage={stageIndex} />
+        <div className="briefing-pilot-note">
+          {language === "id"
+            ? "Belokan jalur otomatis. Arahkan roket ke tanda ◇."
+            : "The route turns automatically. Line up your craft with ◇."}
+        </div>
+        <FlightKeys language={language} />
         <p>
           01 / {language === "id" ? "BERANGKAT" : "DEPARTURE"}
           <span>04 / {language === "id" ? "PENERIMA" : "RECEIVER"}</span>

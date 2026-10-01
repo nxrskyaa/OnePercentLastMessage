@@ -1,5 +1,12 @@
 # 1% — Last Message: implementation plan
 
+## Flight readability and difficulty repair — October 1, 2026
+
+- Fix unintended mouse steering and reduce coasting after steering/climb keys are released; let braking override boost. Keep automatic course following and explain it explicitly.
+- Rebalance cruise speed, battery drain, boost cost and collision penalties so missed pickups and several mistakes are recoverable. Ease early gate offsets, enlarge openings and slow their movement while retaining later rotors and stage variation.
+- Add a lightweight 3D flight guide to the next gate/power node, live direction cues and a persistent compact desktop key guide. Put the control diagram in the briefing even for returning players.
+- Verify full courses with delayed, imperfect keyboard-style pilots, not only perfect tracking. Check browser controls, guide layout, pause/retry and mobile overlap; run lint/build, push and verify production.
+
 ## Soundtrack revision — October 1, 2026
 
 - Replace the repetitive 38-second arpeggio with an original 64-bar, 116 BPM score: warm electric piano, syncopated bass, swung breakbeats and a recurring melodic hook. Arrange an introduction, flight groove, quieter bridge and final refrain.
@@ -117,3 +124,8 @@ Verified on September 24, 2026: production build, lint, and formatting pass. Bro
 - At 390 x 844, document width stays 390, touch scan changes to cooldown, and Low renders without the reflection pass. Local desktop GPU samples at that viewport: 103-109 FPS; this is not a physical-phone benchmark.
 - Initial Prism measurements dipped to 51 FPS. Restricted reflections to the environment layer, removed Medium oversampling (native resolution plus MSAA), and made adaptive scaling respond below 56 FPS. Later desktop samples were 64-70 FPS in the inspected session. Performance varies with hardware and other active GPU work.
 - Menu, briefing, profile, tutorial and pause now use demand rendering. Only active gameplay/countdown and end effects render continuously. Fixed Space being swallowed in menu controls.
+
+## Flight repair verification — October 1, 2026
+- Verified 108 full-course movement simulations across three stages and twelve seeds: expert pilots, cruise pilots reacting every 0.4 seconds with alternate boosters omitted from guidance, and the same delayed pilots at 30 FPS. The delayed cruise pilots finish with battery remaining; an idle pilot still fails. Added checks for brake priority, keyboard priority and release damping.
+- ESLint, strict TypeScript production build and the audio lifecycle regression check pass. Browser checks cover menu, briefing, scan cooldown, pause/resume via button and Escape, battery depletion and retry. At 390 x 844 the climb button changes altitude and release holds it; controls and the direction cue fit the viewport. At 1280 x 720 the desktop key diagram and 3D guide are visible.
+- Local in-app browser samples on Low were approximately 160 FPS. These are observations on this desktop, not physical-phone or cross-browser benchmarks. Full successful runs were simulated; no manual full-course success is claimed. The observed browser console has no app errors, with a dependency warning about deprecated THREE.Clock.

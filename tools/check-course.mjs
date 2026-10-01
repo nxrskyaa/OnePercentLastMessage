@@ -58,11 +58,34 @@ for (let stage = 0; stage < 3; stage++) {
 }
 const { generateNodes, aperture, hitsObstacle, rotorAngle } =
   load("src/game/nodes.ts");
+const { flightControls, axisVelocity, pilotTarget, pilotCue } =
+  load("src/game/pilot.ts");
+const brake = flightControls(new Set(["shift", "s"]));
+assert.equal(brake.boosting, false, "Brakes override nitro");
+assert.equal(brake.targetSpeed, config.movement.brakeSpeed);
+assert.equal(
+  flightControls(new Set(["a"]), 0.8).steer,
+  -1,
+  "Keyboard overrides mouse",
+);
+assert(
+  axisVelocity(7, 0, 7, 12, 0.2) < 0.1,
+  "Released altitude input stops promptly",
+);
 const damp = (value, target, response, dt) =>
   target + (value - target) * Math.exp(-response * dt);
 
-function simulate(seed, stage, idle = false) {
+function simulate(seed, stage, idle = false, novice = false, dt = 1 / 60) {
   const nodes = generateNodes(seed, stage);
+  // A novice follows the actual visible cue, reacts only every 0.4 seconds,
+  // cruises without W, and overlooks alternate power nodes when choosing a target.
+  let powerIndex = 0;
+  const visible = nodes.filter(
+    (n) => n.type !== "booster" || ++powerIndex % 2 === 1,
+  );
+  let nextReaction = 0,
+    sx = 0,
+    sy = 0;
   let x = 0,
     y = 0,
     z = 0,
@@ -81,7 +104,6 @@ function simulate(seed, stage, idle = false) {
     Math.hypot(x, y, z - config.destination.z) > config.destination.radius &&
     elapsed < 280
   ) {
-    const dt = 1 / 60;
     const target = nodes.find(
       (n) => n.z < z && !["tip", "tracker", "public"].includes(n.type),
     );
@@ -119,23 +141,41 @@ function simulate(seed, stage, idle = false) {
           }
       }
     }
-    const sx = idle ? 0 : Math.max(-1, Math.min(1, (tx - x) * 1.3));
-    const sy = idle ? 0 : Math.max(-1, Math.min(1, (ty - y) * 1.3));
-    vx = damp(
+    if (novice) {
+      if (elapsed >= nextReaction) {
+        const cue = pilotCue(
+          pilotTarget(visible, z, elapsed),
+          x,
+          y,
+          z - config.destination.z,
+        );
+        sx = cue.horizontal;
+        sy = cue.vertical;
+        nextReaction = elapsed + 0.4;
+      }
+    } else {
+      sx = idle ? 0 : Math.max(-1, Math.min(1, (tx - x) * 1.3));
+      sy = idle ? 0 : Math.max(-1, Math.min(1, (ty - y) * 1.3));
+    }
+    vx = axisVelocity(
       vx,
-      sx * config.movement.lateralSpeed,
+      sx,
+      config.movement.lateralSpeed,
       config.movement.lateralResponse,
       dt,
     );
-    vy = damp(
+    vy = axisVelocity(
       vy,
-      sy * config.movement.verticalSpeed,
+      sy,
+      config.movement.verticalSpeed,
       config.movement.verticalResponse,
       dt,
     );
     speed = damp(
       speed,
-      (idle ? config.movement.cruiseSpeed : config.movement.accelerateSpeed) +
+      (idle || novice
+        ? config.movement.cruiseSpeed
+        : config.movement.accelerateSpeed) +
         (elapsed < burstUntil ? burstSpeed : 0),
       config.movement.speedResponse,
       dt,
@@ -177,6 +217,7 @@ function simulate(seed, stage, idle = false) {
   return {
     seed,
     stage,
+    pilot: novice ? "delayed-cruise" : idle ? "idle" : "expert",
     success:
       Math.hypot(x, y, z - config.destination.z) <= config.destination.radius &&
       battery > 0,
@@ -241,3 +282,25 @@ assert.equal(
 );
 assert(idle.hits >= 3, "Mandatory maneuvers must be meaningful");
 console.log("36 movement-limited route simulations passed; idle run fails.");
+
+for (let stage = 0; stage < 3; stage++) {
+  for (let seed = 1; seed <= 12; seed++) {
+    const novice = simulate(seed, stage, false, true);
+    assert(novice.success, JSON.stringify(novice));
+    assert(novice.boosters < 8, "Novice must miss some pickups");
+    assert(
+      novice.battery > config.obstacles.damageBattery * 3,
+      "Room for three additional mistakes",
+    );
+    assert(
+      novice.seconds > 120 && novice.seconds < 180,
+      JSON.stringify(novice),
+    );
+    console.log(JSON.stringify(novice));
+    const lowFrameRate = simulate(seed, stage, false, true, 1 / 30);
+    assert(lowFrameRate.success, JSON.stringify(lowFrameRate));
+  }
+}
+console.log(
+  "36 delayed cruise pilots and 36 at 30Hz pass with missed pickups; input release and brake priority pass.",
+);

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { GAME_CONFIG } from "@/game/config";
+import type { PilotCue } from "@/game/pilot";
 import { MISSIONS, nextMissionIndex } from "@/game/missions";
 import { awardsFor, finalScore } from "@/game/scoring";
 import { STAGES } from "@/game/stages";
@@ -46,6 +47,7 @@ interface HudSample {
   boosting: boolean;
   scanCooldown: number;
   altitude?: number;
+  pilotCue?: PilotCue | null;
 }
 
 interface GameState extends HudSample {
@@ -281,6 +283,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   boosting: false,
   scanCooldown: 0,
   altitude: 0,
+  pilotCue: null,
   eventScore: 0,
   score: 0,
   perfectRelays: 0,
@@ -385,6 +388,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       boosting: false,
       scanCooldown: 0,
       altitude: 0,
+      pilotCue: null,
       eventScore: 0,
       score: 0,
       perfectRelays: 0,

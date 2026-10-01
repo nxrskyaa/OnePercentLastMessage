@@ -10,16 +10,18 @@ The first run includes a three-step field guide. Later runs skip it. New players
 
 ## Controls
 
-| Input                 | Action                             |
-| --------------------- | ---------------------------------- |
-| W / Up                | Accelerate                         |
-| S / Down              | Brake                              |
-| A / D or Left / Right | Steer                              |
-| Q / E                 | Climb / dive                       |
-| Mouse                 | Optional subtle steering influence |
-| Shift                 | Boost at extra battery cost        |
-| Space                 | Scan the nearby network (cooldown) |
-| Escape                | Pause / resume                     |
+| Input                 | Action                                        |
+| --------------------- | --------------------------------------------- |
+| W / Up                | Accelerate                                    |
+| S / Down              | Brake                                         |
+| A / D or Left / Right | Steer                                         |
+| Q / E                 | Climb / dive                                  |
+| Mouse                 | Optional click-drag steering inside the world |
+| Shift                 | Boost at extra battery cost                   |
+| Space                 | Scan the nearby network (cooldown)            |
+| Escape                | Pause / resume                                |
+
+The course handles its bends automatically. A/D changes your lane offset and Q/E changes altitude; you do not need to manually steer every bend. Follow the cyan 3D line and aim for ◇. Live cues show the next direction; the desktop HUD and every briefing include the key guide. Braking overrides boost, released steering stops promptly, and cursor movement alone cannot steer the craft.
 
 On phones and small tablets, use the on-screen **Left**, **Right**, **Climb**, **Dive**, **Thrust**, **Brake**, **Boost**, and **Scan** controls. Hold flight buttons to move and tap Scan or Pause. Touch controls support simultaneous steering, altitude changes, and thrust/boost.
 
@@ -29,7 +31,7 @@ On phones and small tablets, use the on-screen **Left**, **Right**, **Climb**, *
 - Three original courier craft: the twin-pod Skimmer, delta-wing Needle, and triple-engine Comet. Each has its own hull, canopy, wing silhouette, nozzle layout, and exhaust color.
 - Hold Shift or touch Boost for white-hot engine jets, shock rings, peripheral speed streaks, and a wider chase camera. Exhaust remains visible on Low without bloom. Scan waves, relay pulses, and obstacle sparks appear when triggered; reduced motion disables speed streaks and impact sparks.
 - Each 1.8 km course has four acts: Departure, Sky Locks, Engine Room, and Last Approach. Later sectors demand vertical flight and precise timing. Prism inverts the climb/dive sequence and Solar mirrors lateral approaches; both tighten and accelerate the gates.
-- The spatial skyway winds through broad switchbacks, rises to a 58 m bridge crest, and descends toward the receiver. Stage variations mirror or widen its bends and vary its elevation. World meshes, gates, lanterns, the craft and chase camera share the same authored route; flight speed accounts for slope. Pilot controls operate relative to the corridor.
+- The spatial skyway winds through broad switchbacks, rises to a 52 m bridge crest, and descends toward the receiver. Stage variations mirror or widen its bends and vary its elevation. World meshes, gates, lanterns, the craft and chase camera share the same authored route; flight speed accounts for slope. Pilot controls operate relative to the corridor.
 - An in-game hangar menu previews the actual 3D courier and selected route. Flight instruments show speed, power, privacy, elevation and a route navigator. The results screen includes a flight recorder and route completion map; PNG cards remain a separate action.
 - A six-second opening follows the real courier from a DILI close-up through ignition and a harbor camera sweep. Skip with Escape or the on-screen button; replay it from Opening in the menu. The loader waits for the first rendered frame. Diagonal menu ribbons, countdown punches, rank reveals, and a score count-up share a cream, cyan and ink graphic style. Menu scene animation is capped at 30 FPS and suspended behind panels or in hidden tabs; reduced motion removes camera sweeps and UI motion.
 - Mechanical sky locks move their openings in two axes. Rotors require threading the gaps between their blades. Clean passes earn points; contact costs battery and privacy. Cyan boosters provide enough energy to finish if collected carefully.

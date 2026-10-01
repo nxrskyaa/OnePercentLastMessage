@@ -5,6 +5,12 @@ import { RefObject, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { localAdvisor } from "@/game/advisor";
 import { GAME_CONFIG } from "@/game/config";
+import {
+  axisVelocity,
+  flightControls,
+  pilotCue,
+  pilotTarget,
+} from "@/game/pilot";
 import { aperture, hitsObstacle, type GameNode } from "@/game/nodes";
 import { playSound, setAudioIntensity } from "@/lib/audio";
 import { useGameStore } from "@/store/gameStore";
@@ -156,7 +162,11 @@ export function Player({
 
     const delta = Math.min(frameDelta, 0.05);
     const input = keys.current;
-    const boosting = input.has("shift");
+    const controls = flightControls(
+      input,
+      mouseX.current * useSettingsStore.getState().mouseSensitivity,
+    );
+    const { boosting, steer, lift } = controls;
     signalState.boost.value = THREE.MathUtils.damp(
       signalState.boost.value,
       boosting ? 1 : 0,
@@ -169,17 +179,10 @@ export function Player({
       2.6,
       delta,
     );
-    const braking = input.has("s") || input.has("arrowdown");
-    const accelerating = input.has("w") || input.has("arrowup");
     const burst = elapsed.current < burstUntil.current ? burstSpeed.current : 0;
     const targetSpeed =
-      (boosting
-        ? GAME_CONFIG.movement.boostSpeed
-        : braking
-          ? GAME_CONFIG.movement.brakeSpeed
-          : accelerating
-            ? GAME_CONFIG.movement.accelerateSpeed
-            : GAME_CONFIG.movement.cruiseSpeed) + burst;
+      controls.targetSpeed +
+      (input.has("s") || input.has("arrowdown") ? 0 : burst);
     speed.current = THREE.MathUtils.damp(
       speed.current,
       targetSpeed,
@@ -187,17 +190,10 @@ export function Player({
       delta,
     );
 
-    const keySteer =
-      Number(input.has("d") || input.has("arrowright")) -
-      Number(input.has("a") || input.has("arrowleft"));
-    const steer = THREE.MathUtils.clamp(
-      keySteer + mouseX.current * useSettingsStore.getState().mouseSensitivity,
-      -1,
-      1,
-    );
-    sideSpeed.current = THREE.MathUtils.damp(
+    sideSpeed.current = axisVelocity(
       sideSpeed.current,
-      steer * GAME_CONFIG.movement.lateralSpeed,
+      steer,
+      GAME_CONFIG.movement.lateralSpeed,
       GAME_CONFIG.movement.lateralResponse,
       delta,
     );
@@ -213,10 +209,10 @@ export function Player({
         (speed.current * delta) /
           flightLengthScale(body.position.z, state.stageIndex),
     );
-    const lift = Number(input.has("q")) - Number(input.has("e"));
-    verticalSpeed.current = THREE.MathUtils.damp(
+    verticalSpeed.current = axisVelocity(
       verticalSpeed.current,
-      lift * GAME_CONFIG.movement.verticalSpeed,
+      lift,
+      GAME_CONFIG.movement.verticalSpeed,
       GAME_CONFIG.movement.verticalResponse,
       delta,
     );
@@ -500,6 +496,12 @@ export function Player({
         boosting,
         scanCooldown: scanCooldown.current,
         altitude: lane.current.y,
+        pilotCue: pilotCue(
+          pilotTarget(nodes, body.position.z, elapsed.current),
+          lane.current.x,
+          lane.current.y,
+          distance,
+        ),
       });
       hudInterval.current = 0;
     }

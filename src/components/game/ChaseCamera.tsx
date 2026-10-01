@@ -110,7 +110,11 @@ export function ChaseCamera({
           : GAME_CONFIG.camera.lookAhead),
     );
     if (menu || firstFlightFrame) lookTarget.current.copy(desired.current);
-    else lookTarget.current.lerp(desired.current, 1 - Math.exp(-4.5 * delta));
+    else
+      lookTarget.current.lerp(
+        desired.current,
+        1 - Math.exp(-GAME_CONFIG.camera.followResponse * delta),
+      );
     if (state.damagePulse !== lastDamage.current) {
       lastDamage.current = state.damagePulse;
       if (settings.cameraShake && !settings.reducedMotion) shake.current = 1;

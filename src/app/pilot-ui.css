@@ -1,0 +1,125 @@
+.flight-keys {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px 12px;
+  padding: 12px 0;
+}
+.flight-keys > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff3d6;
+  font:
+    11px/1.3 "Segoe UI",
+    sans-serif;
+}
+.flight-keys kbd,
+.pilot-guidance kbd {
+  min-width: 38px;
+  padding: 4px 5px;
+  border: 1px solid #b6fff077;
+  border-bottom-width: 2px;
+  background: #1c414c;
+  color: #c1fff1;
+  text-align: center;
+  font:
+    700 10px/1 Consolas,
+    monospace;
+}
+.flight-hud .flight-navigation {
+  width: 286px;
+}
+.flight-hud .flight-navigation > .flight-keys {
+  display: grid;
+}
+.flight-hud .flight-navigation .flight-keys > div {
+  justify-content: flex-start;
+  letter-spacing: 0;
+}
+.briefing-pilot-note {
+  margin: 16px 0 0;
+  color: #c1fff1;
+  font:
+    600 13px/1.5 "Segoe UI",
+    sans-serif;
+}
+.pilot-guidance {
+  position: absolute;
+  top: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  padding: 8px 12px;
+  border-left: 2px solid #b5fff0;
+  background: #102637d9;
+  color: #fff3d6;
+}
+.pilot-guidance header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font:
+    700 9px/1.3 Consolas,
+    monospace;
+}
+.pilot-guidance > div {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 34px;
+  padding-top: 5px;
+  font-size: 24px;
+}
+.pilot-guidance > div > span {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.pilot-guidance--aligned > div {
+  font:
+    700 11px/1.4 Consolas,
+    monospace;
+  color: #b5fff0;
+}
+@media (max-width: 900px) {
+  .flight-keys {
+    display: none;
+  }
+  .flight-hud .flight-navigation {
+    width: 125px;
+  }
+  .flight-hud .flight-navigation > .flight-keys {
+    display: none;
+  }
+  .pilot-guidance {
+    top: 91px;
+    width: 143px;
+    padding: 6px 9px;
+  }
+  .pilot-guidance > div {
+    min-height: 28px;
+    padding-top: 3px;
+    font-size: 21px;
+  }
+  .pilot-guidance kbd {
+    display: none;
+  }
+  .pilot-guidance--aligned > div {
+    font-size: 10px;
+  }
+  .briefing-pilot-note {
+    font-size: 11px;
+  }
+}
+@media (max-height: 520px) and (min-width: 901px) {
+  .flight-keys {
+    gap: 4px 12px;
+    padding: 7px 0;
+  }
+  .flight-hud .flight-navigation {
+    bottom: 16px;
+  }
+  .pilot-guidance {
+    top: 85px;
+  }
+}

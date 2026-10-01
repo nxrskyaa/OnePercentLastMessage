@@ -10,7 +10,7 @@ const STEPS = [
   {
     count: "01 / 03",
     title: "YOU ARE THE MESSAGE.",
-    body: "Fly left/right with A/D. Q climbs, E dives. Line up with the bright gate openings before you reach them. W accelerates; S brakes.",
+    body: "The route handles bends automatically. A/D moves inside the lane; Q climbs and E dives. Follow the cyan line and aim for ◇. W accelerates; S brakes.",
     chips: [
       ["W / ↑", "ACCELERATE"],
       ["A D / ← →", "STEER"],
@@ -40,7 +40,7 @@ const STEPS = [
   {
     count: "03 / 03",
     title: "READ THE NETWORK.",
-    body: "Scan with Space. Thread the moving openings and fly between rotor blades. Boost sparingly; cyan gates keep your battery alive.",
+    body: "Scan with Space. Follow the cyan line to ◇; the next direction appears above. Thread openings and fly between rotor blades. Brake to give yourself time to line up.",
     chips: [
       ["SPACE", "SCAN"],
       ["CENTER", "PERFECT RELAY"],
@@ -58,7 +58,7 @@ const STEPS_ID = [
   {
     count: "01 / 03",
     title: "KAMULAH PESANNYA.",
-    body: "A/D untuk belok, Q untuk naik, E untuk turun. Arahkan ke celah terang sebelum gerbang. W mempercepat; S mengerem.",
+    body: "Belokan jalur otomatis. A/D menggeser roket; Q untuk naik dan E untuk turun. Ikuti garis biru menuju ◇. W mempercepat; S mengerem.",
     chips: [
       ["W / ↑", "AKSELERASI"],
       ["A D / ← →", "BELOK"],
@@ -88,7 +88,7 @@ const STEPS_ID = [
   {
     count: "03 / 03",
     title: "BACA JARINGAN.",
-    body: "Spasi untuk memindai. Tembus celah bergerak dan ruang di antara bilah rotor. Pakai boost seperlunya; gerbang biru menjaga daya.",
+    body: "Spasi untuk memindai. Ikuti garis biru menuju ◇; arah tombol muncul di atas. Lewati celah dan ruang di antara bilah rotor. Rem memberi waktu untuk mengarah.",
     chips: [
       ["SPACE", "PINDAI"],
       ["TENGAH", "RELAY SEMPURNA"],

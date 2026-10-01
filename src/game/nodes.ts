@@ -94,42 +94,42 @@ export function generateNodes(runId: number, stageIndex = 0): GameNode[] {
   ) => {
     nodes.push({ id: `${type}-${z}-${x}`, type, z, x, y, radius, ...extra });
   };
-  const difficulty = 1 + Math.min(2, stageIndex) * 0.12;
+  const difficulty = 1 + Math.min(2, stageIndex) * 0.08;
   const gate = (z: number, x: number, y: number, moving = false) =>
-    add("shutter", z, x, y, 4.8 / difficulty, {
-      height: 3.7 / difficulty,
-      sway: moving ? 2 : 0,
-      rise: moving ? 1.2 : 0,
-      frequency: moving ? 0.36 * difficulty : 0,
+    add("shutter", z, x, y, 6 / difficulty, {
+      height: 4.8 / difficulty,
+      sway: moving ? 1.1 : 0,
+      rise: moving ? 0.6 : 0,
+      frequency: moving ? 0.22 * difficulty : 0,
       phase: runId * 0.47 + z * 0.01,
     });
   add("relay", -65, 0, 0, 5);
   add("tip", -110, -4, 2, 2.4);
-  add("relay", -165, -5, 4, 5);
-  gate(-235, -5, 5);
-  add("booster", -285, -5, 5, 4);
+  add("relay", -165, -3, 2, 5);
+  gate(-235, -3, 3);
+  add("booster", -285, -3, 3, 5);
   add("tracker", -345, 3, 2, 3);
-  gate(-415, 6, -3);
-  add("booster", -460, 6, -3, 4);
+  gate(-415, 4, 0);
+  add("booster", -460, 4, 0, 5);
   add("tip", -490, 5, -2, 2.6);
-  gate(-550, -6, 8, true);
-  add("booster", -595, -6, 8, 4.2);
+  gate(-550, -4, 5, true);
+  add("booster", -595, -4, 5, 5);
   add("relay", -650, 0, 4, 5);
   add("safe", GAME_CONFIG.course.splitZ, -9, 7, 6);
   add("public", GAME_CONFIG.course.splitZ, 9, -3, 6);
   add("tip", -790, 9, -3, 2.6);
   add("tracker", -835, 8, -2, 3);
-  gate(-895, 3, 8, true);
-  add("booster", -940, 3, 8, 4.4);
+  gate(-895, 3, 6, true);
+  add("booster", -940, 3, 6, 5);
   add("rotor", -1005, 0, 3, 15, {
-    frequency: 0.42 * difficulty,
+    frequency: GAME_CONFIG.obstacles.rotorSpeed * difficulty,
     phase: runId * 0.31,
   });
   add("relay", -1060, -9, -3, 5);
   add("booster", -1100, -9, -3, 4);
   gate(-1160, -7, -3, true);
   add("rotor", -1240, 0, 3, 15, {
-    frequency: -0.46 * difficulty,
+    frequency: -GAME_CONFIG.obstacles.rotorSpeed * difficulty,
     phase: runId * 0.51 + 1.4,
   });
   add("booster", -1290, 7, 7, 4.5);
@@ -139,7 +139,7 @@ export function generateNodes(runId: number, stageIndex = 0): GameNode[] {
   gate(-1495, -6, -3, true);
   add("booster", -1545, -6, -3, 4.5);
   add("rotor", -1610, 0, 3, 15, {
-    frequency: 0.5 * difficulty,
+    frequency: GAME_CONFIG.obstacles.rotorSpeed * difficulty,
     phase: runId * 0.6 + 0.8,
   });
   gate(-1680, 4, 5, true);
