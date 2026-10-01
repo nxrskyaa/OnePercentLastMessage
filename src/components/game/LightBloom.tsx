@@ -9,6 +9,7 @@ import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js"
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GAME_CONFIG } from "@/game/config";
 import { useSettingsStore } from "@/store/settingsStore";
+import { renderMetrics } from "@/rendering/metrics";
 
 export function LightBloom() {
   const { gl, scene, camera } = useThree();
@@ -50,10 +51,12 @@ export function LightBloom() {
     };
   }, [gl, scene, camera, enabled]);
   useFrame((state, delta) => {
+    const renderStart = performance.now();
     gl.info.reset();
     const current = pipeline.current;
     if (!current) {
       gl.render(scene, camera);
+      renderMetrics.renderCpuMs = performance.now() - renderStart;
       return;
     }
     const width = Math.round(state.size.width * gl.getPixelRatio());
@@ -69,6 +72,7 @@ export function LightBloom() {
       current.height = height;
     }
     current.composer.render(delta);
+    renderMetrics.renderCpuMs = performance.now() - renderStart;
   }, 1);
   return null;
 }

@@ -1,6 +1,7 @@
 export interface RenderMetrics {
   fps: number;
   frameMs: number;
+  renderCpuMs: number;
   backend: "webgpu" | "webgl2" | "unknown";
   drawCalls: number | null;
   triangles: number | null;
@@ -11,6 +12,7 @@ export interface RenderMetrics {
 export const renderMetrics: RenderMetrics = {
   fps: 0,
   frameMs: 0,
+  renderCpuMs: 0,
   backend: "unknown",
   drawCalls: 0,
   triangles: 0,

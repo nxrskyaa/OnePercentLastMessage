@@ -20,6 +20,9 @@ export function PerformanceHUD() {
       <span>
         {metrics.fps.toFixed(0)} FPS · {metrics.frameMs.toFixed(1)} MS
       </span>
+      <span title="CPU time submitting the scene, not GPU completion time">
+        DRAW CPU · {metrics.renderCpuMs.toFixed(1)} MS
+      </span>
       <span>
         {metrics.drawCalls === null || metrics.triangles === null
           ? "RENDER ACTIVE"

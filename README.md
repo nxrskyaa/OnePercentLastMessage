@@ -61,6 +61,8 @@ The renderer uses standard Three.js WebGL with hardware antialiasing, filmic ton
 
 The committed music file is used directly by the app. Regenerating it is optional and requires Python with NumPy and FFmpeg: `python tools/generate_music.py`.
 
+The diagnostic overlay also reports CPU time submitting scene draws. This is distinct from GPU completion time and is intended to help investigate slow frames, not certify a device's frame rate.
+
 ## Verify and build
 
 ```bash

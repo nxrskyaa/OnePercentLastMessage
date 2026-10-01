@@ -20,6 +20,7 @@ export function ChaseCamera({
   const desired = useRef(new THREE.Vector3());
   const lastDamage = useRef(0);
   const shake = useRef(0);
+  const flightReady = useRef(false);
 
   useFrame(({ camera, clock }, frameDelta) => {
     const player = playerRef.current;
@@ -90,7 +91,11 @@ export function ChaseCamera({
       back.y + localY + (menu ? 5 : 4.6),
       player.position.z + (menu ? 17 - launch * 6 : 11),
     );
-    if (menu) camera.position.copy(desired.current);
+    // A countdown can receive no frames in an occluded or busy browser.
+    // Initialize this run at its craft, never ease from the distant menu pose.
+    const firstFlightFrame = !menu && !flightReady.current;
+    if (firstFlightFrame) flightReady.current = true;
+    if (menu || firstFlightFrame) camera.position.copy(desired.current);
     else
       camera.position.lerp(
         desired.current,
@@ -104,7 +109,7 @@ export function ChaseCamera({
           ? GAME_CONFIG.camera.lookAhead * launch
           : GAME_CONFIG.camera.lookAhead),
     );
-    if (menu) lookTarget.current.copy(desired.current);
+    if (menu || firstFlightFrame) lookTarget.current.copy(desired.current);
     else lookTarget.current.lerp(desired.current, 1 - Math.exp(-4.5 * delta));
     if (state.damagePulse !== lastDamage.current) {
       lastDamage.current = state.damagePulse;
