@@ -34,8 +34,8 @@ export function LightBloom() {
     const bloom = new UnrealBloomPass(
       new THREE.Vector2(256, 144),
       GAME_CONFIG.world.bloomStrength,
-      0.5,
-      1.25,
+      GAME_CONFIG.world.bloomRadius,
+      GAME_CONFIG.world.bloomThreshold,
     );
     const output = new OutputPass();
     composer.addPass(render);

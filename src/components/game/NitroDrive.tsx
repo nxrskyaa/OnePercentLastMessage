@@ -17,8 +17,8 @@ void main(){
   float pulse=.88+.12*sin(along*27.-uTime*36.);
   float side=pow(max(0.,sin(vUv.x*3.14159)),.5);
   float fade=pow(max(0.,1.-along),1.15);
-  vec3 hot=mix(uColor,vec3(1.),pow(fade,2.)*.8);
-  gl_FragColor=vec4(hot*(1.6+uPower*1.8),fade*pulse*(.55+uPower*.45)*(.65+side*.35));
+  vec3 hot=mix(uColor,vec3(1.),pow(fade,2.)*.35);
+  gl_FragColor=vec4(hot*(.85+uPower*.65),fade*pulse*(.3+uPower*.25)*(.65+side*.35));
 }`;
 
 /** The jet starts at an actual socket; it does not rely on postprocessing bloom. */
@@ -47,14 +47,14 @@ export function NitroDrive({ craft }: { craft: CourierCraft }) {
       fragmentShader: flameFragment,
       transparent: true,
       depthWrite: false,
-      side: THREE.DoubleSide,
+      side: THREE.FrontSide,
       blending: THREE.AdditiveBlending,
       toneMapped: false,
     });
     const core = new THREE.MeshBasicMaterial({
       color: "#fff9df",
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.25,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
       toneMapped: false,
@@ -135,7 +135,7 @@ export function NitroDrive({ craft }: { craft: CourierCraft }) {
       ) * (idlePreview ? 0.5 : 1);
     live.flame.uniforms.uTime.value = reduced ? 0 : time;
     live.flame.uniforms.uPower.value = power;
-    live.core.opacity = (0.6 + power * 0.35) * (idlePreview ? 0.4 : 1);
+    live.core.opacity = (0.25 + power * 0.18) * (idlePreview ? 0.4 : 1);
     for (let i = 0; i < craft.engines.length; i++) {
       const group = jets.current[i];
       if (group)
@@ -145,7 +145,7 @@ export function NitroDrive({ craft }: { craft: CourierCraft }) {
           length * (reduced ? 1 : 1 + Math.sin(time * 38 + i) * 0.035),
         );
     }
-    live.ringMaterial.opacity = power * 0.58;
+    live.ringMaterial.opacity = power * 0.35;
     const object = live.object,
       count = GAME_CONFIG.nitro.shockRingsPerEngine;
     craft.engines.forEach(([x, y, z], engine) => {

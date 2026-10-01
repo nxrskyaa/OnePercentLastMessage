@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { dockHeight as channelHeight, HARBOR } from "@/game/harbor";
 const LIGHT_STOPS = HARBOR.lightStops;
+import { GAME_CONFIG } from "@/game/config";
 import { stageAt } from "@/game/stages";
 import { makeSoftLightTexture } from "@/rendering/lightTextures";
 import { useGameStore } from "@/store/gameStore";
@@ -49,7 +50,10 @@ function makeLanterns(stageIndex: number) {
         );
         metal.push(guard);
       }
-      const halo = new THREE.PlaneGeometry(20, 23);
+      const halo = new THREE.PlaneGeometry(
+        GAME_CONFIG.world.lanternHaloWidth,
+        GAME_CONFIG.world.lanternHaloHeight,
+      );
       halo.translate(x, h - 0.8, z + 2);
       glows.push(halo);
     }
@@ -82,7 +86,10 @@ export function RelayLanterns() {
   );
   const texture = useMemo(() => makeSoftLightTexture(), []);
   const hot = useMemo(
-    () => new THREE.Color(stage.accentSoft).multiplyScalar(3.2),
+    () =>
+      new THREE.Color(stage.accentSoft).multiplyScalar(
+        GAME_CONFIG.world.lanternCoreBrightness,
+      ),
     [stage],
   );
   useEffect(
@@ -126,7 +133,7 @@ export function RelayLanterns() {
           color={stage.accentSoft}
           map={texture}
           transparent
-          opacity={0.8}
+          opacity={GAME_CONFIG.world.lanternHaloOpacity}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
           toneMapped={false}

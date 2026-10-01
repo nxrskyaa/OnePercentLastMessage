@@ -187,7 +187,7 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
         gl={createRenderer}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.15;
+          gl.toneMappingExposure = GAME_CONFIG.world.exposure;
           gl.info.autoReset = false;
           gl.domElement.dataset.rendererBackend = "webgl2";
         }}
