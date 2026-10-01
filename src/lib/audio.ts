@@ -18,6 +18,23 @@ let context: AudioContext | null = null;
 let master: GainNode | null = null;
 let sfx: GainNode | null = null;
 let soundtrack: HTMLAudioElement | null = null;
+let musicSource: MediaElementAudioSourceNode | null = null;
+let musicGain: GainNode | null = null;
+let musicFilter: BiquadFilterNode | null = null;
+let unlocked = false;
+let boosted = false;
+let critical = false;
+const MUSIC = {
+  file: "/audio/afterglow-dispatch-v1.mp3",
+  menuGain: 0.62,
+  resultGain: 0.75,
+  boostGain: 1.06,
+  menuCutoff: 2400,
+  flightCutoff: 10000,
+  boostCutoff: 16000,
+  criticalCutoff: 6500,
+  fadeSeconds: 0.22,
+};
 let currentPhase: GamePhase = "loading";
 let settings: Pick<
   GameSettings,
@@ -33,7 +50,8 @@ function ensureAudio(): AudioContext | null {
   if (typeof window === "undefined") return null;
   try {
     if (context) {
-      if (context.state === "suspended") void context.resume();
+      if (context.state === "suspended" && !document.hidden)
+        void context.resume().catch(() => {});
       return context;
     }
     context = new AudioContext();
@@ -58,53 +76,137 @@ function applyVolume() {
     );
     sfx.gain.setTargetAtTime(settings.sfxVolume, now, 0.04);
   }
-  if (soundtrack)
-    soundtrack.volume = settings.mute
-      ? 0
-      : settings.masterVolume *
-        settings.musicVolume *
-        (currentPhase === "playing"
-          ? 1
-          : currentPhase === "paused"
-            ? 0.18
-            : 0.4);
+  if (!soundtrack) return;
+  const playing = currentPhase === "playing";
+  const result = currentPhase === "success" || currentPhase === "failed";
+  const level = playing
+    ? boosted
+      ? MUSIC.boostGain
+      : 1
+    : result
+      ? MUSIC.resultGain
+      : MUSIC.menuGain;
+  soundtrack.muted = settings.mute;
+  if (context && musicGain && musicFilter) {
+    musicGain.gain.setTargetAtTime(
+      settings.musicVolume * level,
+      context.currentTime,
+      MUSIC.fadeSeconds,
+    );
+    const cutoff = playing
+      ? boosted
+        ? MUSIC.boostCutoff
+        : critical
+          ? MUSIC.criticalCutoff
+          : MUSIC.flightCutoff
+      : MUSIC.menuCutoff;
+    musicFilter.frequency.setTargetAtTime(
+      cutoff,
+      context.currentTime,
+      MUSIC.fadeSeconds,
+    );
+  } else {
+    // Keep the score usable if this browser cannot attach a media source.
+    soundtrack.volume = Math.min(
+      1,
+      settings.masterVolume * settings.musicVolume * level,
+    );
+  }
+}
+
+function musicAllowed() {
+  return (
+    unlocked &&
+    currentPhase !== "paused" &&
+    !document.hidden &&
+    !settings.mute &&
+    settings.masterVolume > 0 &&
+    settings.musicVolume > 0
+  );
+}
+
+function syncMusic() {
+  const media = soundtrack;
+  if (!media) return;
+  if (!musicAllowed()) media.pause();
+  else if (media.paused) {
+    void media
+      .play()
+      .then(() => {
+        // A pause/mute/tab switch can occur before the play promise settles.
+        if (media !== soundtrack || !musicAllowed()) media.pause();
+      })
+      .catch(() => {
+        /* Gesture retry remains available; gameplay never waits. */
+      });
+  }
+}
+
+function onAudioVisibility() {
+  if (!document.hidden && context?.state === "suspended")
+    void context.resume().catch(() => {});
+  syncMusic();
 }
 
 export function configureAudio(next: typeof settings) {
   settings = next;
   applyVolume();
+  syncMusic();
 }
 export function unlockAudio() {
-  ensureAudio();
+  const ctx = ensureAudio();
+  unlocked = true;
   if (!soundtrack && typeof window !== "undefined") {
-    soundtrack = new Audio("/audio/signal-run.mp3");
-    soundtrack.loop = true;
-    soundtrack.preload = "auto";
-    soundtrack.hidden = true;
-    document.body.appendChild(soundtrack);
+    try {
+      soundtrack = new Audio(MUSIC.file);
+      soundtrack.loop = true;
+      soundtrack.preload = "auto";
+      soundtrack.hidden = true;
+      soundtrack.setAttribute("aria-hidden", "true");
+      document.body.appendChild(soundtrack);
+      document.addEventListener("visibilitychange", onAudioVisibility);
+      if (ctx && master) {
+        try {
+          const filter = ctx.createBiquadFilter();
+          const gain = ctx.createGain();
+          const source = ctx.createMediaElementSource(soundtrack);
+          musicFilter = filter;
+          musicGain = gain;
+          musicSource = source;
+          filter.type = "lowpass";
+          filter.Q.value = 0.5;
+          filter.frequency.value = MUSIC.menuCutoff;
+          gain.gain.value = 0;
+          source.connect(filter).connect(gain).connect(master);
+        } catch {
+          /* Direct HTML audio remains the lightweight fallback. */
+        }
+      }
+    } catch {
+      /* Missing audio support must not stop the game. */
+    }
   }
   applyVolume();
-  if (soundtrack && soundtrack.paused) void soundtrack.play().catch(() => {});
+  syncMusic();
 }
 
 export function setAudioPhase(phase: GamePhase) {
   // The score is started by the button gesture, so mobile autoplay rules hold.
   currentPhase = phase;
-  if (soundtrack) {
-    if (phase === "paused") soundtrack.pause();
-    else if (soundtrack.paused)
-      void soundtrack.play().catch(() => {
-        /* Audio never blocks gameplay. */
-      });
+  if (phase !== "playing") {
+    boosted = false;
+    critical = false;
   }
   applyVolume();
+  syncMusic();
 }
 
 export function setAudioIntensity(boosting: boolean, battery: number) {
-  if (!soundtrack) return;
-  const rate = boosting ? 1.065 : battery < 0.1 ? 0.94 : 1;
-  if (Math.abs(soundtrack.playbackRate - rate) > 0.01)
-    soundtrack.playbackRate = rate;
+  const nextCritical = battery < 0.1;
+  if (boosted === boosting && critical === nextCritical) return;
+  boosted = boosting;
+  critical = nextCritical;
+  applyVolume();
 }
 
 const SOUNDS: Record<Sound, [number, number, number, OscillatorType]> = {
@@ -122,6 +224,8 @@ const SOUNDS: Record<Sound, [number, number, number, OscillatorType]> = {
 };
 
 export function playSound(sound: Sound) {
+  if (typeof document === "undefined" || document.hidden || settings.mute)
+    return;
   const ctx = ensureAudio();
   if (!ctx || !sfx) return;
   const [start, end, duration, type] = SOUNDS[sound];
@@ -155,10 +259,23 @@ export function playSound(sound: Sound) {
 
 export function shutdownAudio() {
   soundtrack?.pause();
+  soundtrack?.removeAttribute("src");
+  soundtrack?.load();
   soundtrack?.remove();
   soundtrack = null;
-  if (context) void context.close();
+  musicSource?.disconnect();
+  musicFilter?.disconnect();
+  musicGain?.disconnect();
+  if (typeof document !== "undefined")
+    document.removeEventListener("visibilitychange", onAudioVisibility);
+  if (context) void context.close().catch(() => {});
   context = null;
   master = null;
   sfx = null;
+  musicSource = null;
+  musicFilter = null;
+  musicGain = null;
+  unlocked = false;
+  boosted = false;
+  critical = false;
 }

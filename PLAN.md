@@ -1,5 +1,14 @@
 # 1% — Last Message: implementation plan
 
+## Soundtrack revision — October 1, 2026
+
+- Replace the repetitive 38-second arpeggio with an original 64-bar, 116 BPM score: warm electric piano, syncopated bass, swung breakbeats and a recurring melodic hook. Arrange an introduction, flight groove, quieter bridge and final refrain.
+- Render and master offline; stream one compressed stereo file in the browser. Preserve musical tails across the loop boundary and check loudness, decoded peaks and stereo balance.
+- Remove playback-rate changes. Use a smoothly automated music filter and gain for menu, flight, boost and results. Preserve mute, separate volume controls, gesture unlock, pause and resource cleanup; stop audio in hidden tabs.
+- Verify actual media progress, pause/resume, mute, sliders, restart and refresh in the production build. Run lint/build and publish the verified asset with a new filename.
+
+Verification: the decoded track is 132.41379 seconds, 1,854,640 bytes, stereo 44.1 kHz; integrated loudness is -16.4 LUFS, range 4.5 LU and true peak -2.4 dBFS. No clipped samples; the loop boundary's sample changes are below ordinary transient slopes, with release tails wrapped rather than faded to silence. Local Chrome playback reached readyState 4 and advanced through a loop. Music-volume zero, mute/unmute, pause, opening settings while paused, resume and restart were observed; restart retained one audio element. The isolated lifecycle harness additionally checks hidden tabs, late play promises, fixed boost tempo, unsupported media-source fallback and teardown. Lint, formatting and production build passed. These checks verify playback behavior and signal levels, not subjective musical preference. Existing slow rendering in the reconnected Chrome session remains outside this audio change; no FPS improvement is claimed.
+
 ## Cinematic opening and kinetic game UI — October 1, 2026
 
 - Use the supplied graphic game UI references: bold diagonal menu ribbons, a central game hero, ink silhouettes and sequenced motion. Keep DILI and the original game world as the subjects.
