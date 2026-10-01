@@ -1,18 +1,28 @@
-export type NodeType =
-  "relay" | "tracker" | "booster" | "tip" | "safe" | "public" | "curtain";
+import { GAME_CONFIG } from "./config";
 
+export type NodeType =
+  | "relay"
+  | "tracker"
+  | "booster"
+  | "tip"
+  | "safe"
+  | "public"
+  | "curtain"
+  | "shutter"
+  | "rotor";
 export interface GameNode {
   id: string;
   type: NodeType;
   x: number;
+  y: number;
   z: number;
   radius: number;
+  height?: number;
   sway?: number;
+  rise?: number;
   frequency?: number;
   phase?: number;
 }
-
-/** The illuminated opening slides slowly; visual and collision code share this path. */
 export function curtainOpening(node: GameNode, elapsed: number): number {
   return Math.max(
     -10.5,
@@ -24,125 +34,124 @@ export function curtainOpening(node: GameNode, elapsed: number): number {
     ),
   );
 }
-
-const TEMPLATE: GameNode[] = [
-  { id: "relay-a", type: "relay", x: 0, z: -72, radius: 5 },
-  { id: "tip-a", type: "tip", x: -6, z: -111, radius: 2.2 },
-  { id: "tracker-a", type: "tracker", x: 0, z: -153, radius: 2.8 },
-  { id: "relay-b", type: "relay", x: -8, z: -202, radius: 5 },
-  { id: "booster-a", type: "booster", x: -10, z: -247, radius: 4 },
-  { id: "safe-gate", type: "safe", x: -10, z: -310, radius: 7 },
-  { id: "public-gate", type: "public", x: 10, z: -310, radius: 7 },
-  { id: "tip-b", type: "tip", x: 9, z: -350, radius: 2.2 },
-  { id: "tracker-b", type: "tracker", x: -6, z: -383, radius: 2.8 },
-  { id: "relay-c", type: "relay", x: 7, z: -427, radius: 5 },
-  { id: "tip-c", type: "tip", x: 6, z: -460, radius: 2.2 },
-  { id: "booster-b", type: "booster", x: 9, z: -505, radius: 4 },
-  { id: "relay-d", type: "relay", x: 0, z: -542, radius: 5 },
-  { id: "tracker-c", type: "tracker", x: 1, z: -580, radius: 2.8 },
-];
-
-const CURTAINS: readonly GameNode[][] = [
-  [
-    {
-      id: "curtain-1",
-      type: "curtain",
-      x: -8.5,
-      z: -218,
-      radius: 5.3,
-      sway: 2.1,
-      frequency: 0.44,
-    },
-    {
-      id: "curtain-2",
-      type: "curtain",
-      x: 8.5,
-      z: -466,
-      radius: 5.3,
-      sway: 2.1,
-      frequency: 0.48,
-    },
-  ],
-  [
-    {
-      id: "curtain-1",
-      type: "curtain",
-      x: 9,
-      z: -185,
-      radius: 5.2,
-      sway: 2.7,
-      frequency: 0.56,
-    },
-    {
-      id: "curtain-2",
-      type: "curtain",
-      x: -9,
-      z: -356,
-      radius: 5.2,
-      sway: 2.7,
-      frequency: 0.6,
-    },
-    {
-      id: "curtain-3",
-      type: "curtain",
-      x: 9,
-      z: -532,
-      radius: 5.2,
-      sway: 2.7,
-      frequency: 0.58,
-    },
-  ],
-  [
-    {
-      id: "curtain-1",
-      type: "curtain",
-      x: 9,
-      z: -180,
-      radius: 4.9,
-      sway: 3,
-      frequency: 0.64,
-    },
-    {
-      id: "curtain-2",
-      type: "curtain",
-      x: -9,
-      z: -300,
-      radius: 4.9,
-      sway: 3,
-      frequency: 0.68,
-    },
-    {
-      id: "curtain-3",
-      type: "curtain",
-      x: 9,
-      z: -420,
-      radius: 4.9,
-      sway: 3,
-      frequency: 0.7,
-    },
-    {
-      id: "curtain-4",
-      type: "curtain",
-      x: -9,
-      z: -550,
-      radius: 4.9,
-      sway: 3,
-      frequency: 0.72,
-    },
-  ],
-];
-
-export function generateNodes(runId: number, stageIndex = 0): GameNode[] {
-  const base = TEMPLATE.map((node, index) => {
-    if (node.type === "safe" || node.type === "public") return node;
-    const variation = Math.sin(runId * 13.37 + index * 7.11) * 1.6;
-    return { ...node, x: Math.max(-12, Math.min(12, node.x + variation)) };
-  });
-  const curtains = CURTAINS[stageIndex % CURTAINS.length].map(
-    (node, index) => ({
-      ...node,
-      phase: runId * 0.73 + index * 1.9,
-    }),
+export function aperture(node: GameNode, elapsed: number) {
+  return {
+    x: curtainOpening(node, elapsed),
+    y:
+      node.y +
+      Math.sin(elapsed * (node.frequency ?? 0) + (node.phase ?? 0) + 0.8) *
+        (node.rise ?? 0),
+  };
+}
+export function rotorAngle(node: GameNode, elapsed: number) {
+  return (
+    elapsed * (node.frequency ?? GAME_CONFIG.obstacles.rotorSpeed) +
+    (node.phase ?? 0)
   );
-  return [...base, ...curtains];
+}
+/** Visual and collision code share these paths, with clearance for the packet shell. */
+export function hitsObstacle(
+  node: GameNode,
+  x: number,
+  y: number,
+  elapsed: number,
+) {
+  const packet = GAME_CONFIG.movement.collisionRadius;
+  if (node.type === "curtain")
+    return Math.abs(x - curtainOpening(node, elapsed)) + packet > node.radius;
+  if (node.type === "shutter") {
+    const opening = aperture(node, elapsed);
+    return (
+      Math.abs(x - opening.x) + packet > node.radius ||
+      Math.abs(y - opening.y) + packet > (node.height ?? 3.5)
+    );
+  }
+  if (node.type === "rotor") {
+    const dx = x - node.x,
+      dy = y - node.y;
+    const angle = rotorAngle(node, elapsed);
+    const localX = Math.cos(angle) * dx + Math.sin(angle) * dy;
+    const localY = -Math.sin(angle) * dx + Math.cos(angle) * dy;
+    const width = GAME_CONFIG.obstacles.rotorHalfWidth + packet;
+    const blade = node.radius + packet;
+    return (
+      (Math.abs(localY) < width && Math.abs(localX) < blade) ||
+      (Math.abs(localX) < width && Math.abs(localY) < blade)
+    );
+  }
+  return false;
+}
+/** Authored beats leave time to read, steer and change altitude; seeds alter gentle gate motion. */
+export function generateNodes(runId: number, stageIndex = 0): GameNode[] {
+  const nodes: GameNode[] = [];
+  const add = (
+    type: NodeType,
+    z: number,
+    x: number,
+    y: number,
+    radius: number,
+    extra: Partial<GameNode> = {},
+  ) => {
+    nodes.push({ id: `${type}-${z}-${x}`, type, z, x, y, radius, ...extra });
+  };
+  const difficulty = 1 + Math.min(2, stageIndex) * 0.12;
+  const gate = (z: number, x: number, y: number, moving = false) =>
+    add("shutter", z, x, y, 4.8 / difficulty, {
+      height: 3.7 / difficulty,
+      sway: moving ? 2 : 0,
+      rise: moving ? 1.2 : 0,
+      frequency: moving ? 0.36 * difficulty : 0,
+      phase: runId * 0.47 + z * 0.01,
+    });
+  add("relay", -65, 0, 0, 5);
+  add("tip", -110, -4, 2, 2.4);
+  add("relay", -165, -5, 4, 5);
+  gate(-235, -5, 5);
+  add("booster", -285, -5, 5, 4);
+  add("tracker", -345, 3, 2, 3);
+  gate(-415, 6, -3);
+  add("booster", -460, 6, -3, 4);
+  add("tip", -490, 5, -2, 2.6);
+  gate(-550, -6, 8, true);
+  add("booster", -595, -6, 8, 4.2);
+  add("relay", -650, 0, 4, 5);
+  add("safe", GAME_CONFIG.course.splitZ, -9, 7, 6);
+  add("public", GAME_CONFIG.course.splitZ, 9, -3, 6);
+  add("tip", -790, 9, -3, 2.6);
+  add("tracker", -835, 8, -2, 3);
+  gate(-895, 3, 8, true);
+  add("booster", -940, 3, 8, 4.4);
+  add("rotor", -1005, 0, 3, 15, {
+    frequency: 0.42 * difficulty,
+    phase: runId * 0.31,
+  });
+  add("relay", -1060, -9, -3, 5);
+  add("booster", -1100, -9, -3, 4);
+  gate(-1160, -7, -3, true);
+  add("rotor", -1240, 0, 3, 15, {
+    frequency: -0.46 * difficulty,
+    phase: runId * 0.51 + 1.4,
+  });
+  add("booster", -1290, 7, 7, 4.5);
+  add("tip", -1320, 7, 7, 2.6);
+  gate(-1380, 7, 8, true);
+  add("relay", -1435, 0, 3, 5);
+  gate(-1495, -6, -3, true);
+  add("booster", -1545, -6, -3, 4.5);
+  add("rotor", -1610, 0, 3, 15, {
+    frequency: 0.5 * difficulty,
+    phase: runId * 0.6 + 0.8,
+  });
+  gate(-1680, 4, 5, true);
+  add("booster", -1725, 4, 5, 4.5);
+  add("relay", -1760, 0, 0, 5);
+  return nodes
+    .map((node) => {
+      if (node.z > -200 || node.type === "safe" || node.type === "public")
+        return node;
+      if (stageIndex % 3 === 1) return { ...node, y: 5 - node.y };
+      if (stageIndex % 3 === 2) return { ...node, x: -node.x };
+      return node;
+    })
+    .sort((a, b) => b.z - a.z);
 }

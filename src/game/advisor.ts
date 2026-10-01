@@ -1,5 +1,6 @@
 import type { GameNode } from "@/game/nodes";
 import type { Language } from "@/store/settingsStore";
+import { GAME_CONFIG } from "./config";
 
 export interface AdvisorState {
   battery: number;
@@ -42,20 +43,29 @@ export class LocalRuleAdvisor implements AIAdvisor {
       return id
         ? "Privasi rendah. Hindari cincin pelacak merah."
         : "Privacy low. Keep clear of the red tracker rings.";
-    if (state.playerZ > -340 && state.playerZ < -200)
+    if (
+      state.playerZ > GAME_CONFIG.course.splitEnd &&
+      state.playerZ < GAME_CONFIG.course.splitStart
+    )
       return id
         ? "Persimpangan di depan. Kiri menjaga privasi; kanan lebih cepat dengan risiko."
         : "Split ahead. Left preserves privacy; right grants speed at a cost.";
     const curtain = nodes.find(
       (node) =>
-        node.type === "curtain" &&
+        (node.type === "curtain" ||
+          node.type === "shutter" ||
+          node.type === "rotor") &&
         node.z < state.playerZ &&
         state.playerZ - node.z < 115,
     );
     if (curtain)
       return id
-        ? `Tirai pelacak ${Math.round(state.playerZ - curtain.z)}m di depan. Ikuti celah terang yang bergerak.`
-        : `Tracker curtain ${Math.round(state.playerZ - curtain.z)}m ahead. Follow the moving bright gap.`;
+        ? curtain.type === "rotor"
+          ? "Rotor di depan. Lewati ruang di antara bilah."
+          : `Gerbang ${Math.round(state.playerZ - curtain.z)}m di depan. Q/E untuk naik/turun ke celah terang.`
+        : curtain.type === "rotor"
+          ? "Rotor ahead. Fly between the blades."
+          : `Gate ${Math.round(state.playerZ - curtain.z)}m ahead. Q/E to climb/dive into the bright aperture.`;
     const tracker = nodes.find(
       (node) =>
         node.type === "tracker" &&

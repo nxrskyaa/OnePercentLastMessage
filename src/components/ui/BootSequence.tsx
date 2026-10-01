@@ -5,6 +5,7 @@ import type { GamePhase } from "@/store/gameStore";
 import { GameButton } from "@/components/ui/GameButton";
 import { copyFor } from "@/game/copy";
 import { useSettingsStore } from "@/store/settingsStore";
+import { GameLogo } from "./GameLogo";
 
 export function BootSequence({
   phase,
@@ -55,10 +56,7 @@ export function BootSequence({
       )}
       {phase === "title" && (
         <div className="boot-center boot-title" key="title">
-          <strong>
-            1<span>%</span>
-          </strong>
-          <b>LAST MESSAGE</b>
+          <GameLogo className="opening-logo" />
           <p>
             {language === "id"
               ? "Satu persen baterai. Satu pesan terakhir."

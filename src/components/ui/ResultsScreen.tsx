@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { GameButton } from "@/components/ui/GameButton";
+import Image from "next/image";
+import { GameLogo } from "./GameLogo";
 import { ResultCardDialog } from "@/components/ui/ResultCardDialog";
 import { missionAt } from "@/game/missions";
 import { copyFor } from "@/game/copy";
@@ -81,98 +82,139 @@ export function ResultsScreen() {
       setCopyStatus("error");
     }
   };
+  const grade = !success
+    ? "X"
+    : trackerHits === 0 && privacy >= 90
+      ? "S"
+      : privacy >= 75
+        ? "A"
+        : privacy >= 50
+          ? "B"
+          : "C";
   return (
     <section
-      className={`results-screen ${success ? "results-screen--success" : "results-screen--failed"}`}
+      className={`receipt-screen ${success ? "receipt-success" : "receipt-failed"}`}
       aria-label="Run result"
     >
-      <div className="result-heading">
-        <span className="micro-label">
-          {stage.number} / {language === "id" ? stage.nameId : stage.name} ·{" "}
-          {playerName}
+      <header className="receipt-top">
+        <GameLogo />
+        <span>
+          {stage.number} / {language === "id" ? stage.nameId : stage.name}
+        </span>
+        <button onClick={goMenu} aria-label={t.mainMenu}>
+          ×
+        </button>
+      </header>
+      <div className="receipt-poster">
+        <div className="receipt-halftone" aria-hidden="true" />
+        <div className="receipt-character" aria-hidden="true">
+          <span>{success ? "SENT!" : "RETRY!"}</span>
+          <Image
+            src="/brand/dili-blue-cutout.png"
+            width={650}
+            height={975}
+            alt=""
+            unoptimized
+          />
+        </div>
+        <div className="receipt-banner">
+          <span>{success ? "✓" : "×"}</span>
+          <h2>{success ? t.delivered : t.lost}</h2>
+        </div>
+        <div className="receipt-record">
+          <div className="receipt-identity">
+            <span className="receipt-avatar">
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  width={52}
+                  height={52}
+                  alt=""
+                  unoptimized
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                  }}
+                />
+              ) : null}
+              <b>{playerName.slice(0, 2).toUpperCase()}</b>
+            </span>
+            <div>
+              <strong>{playerName}</strong>
+              <small>{xHandle ? `@${xHandle}` : "DLICOM SIGNAL COURIER"}</small>
+            </div>
+          </div>
+          <div className="receipt-grade">
+            <b>{grade}</b>
+            <div>
+              <span>{language === "id" ? "PERINGKAT" : "RUN RANK"}</span>
+              <strong>{privacyRank(privacy)}</strong>
+              <small>
+                {newBest
+                  ? `✦ ${t.newBest}`
+                  : success
+                    ? `${t.reached} ${mission.receiver}`
+                    : `${Math.ceil(distance)}m ${language === "id" ? "dari" : "from"} ${mission.receiver}`}
+              </small>
+            </div>
+          </div>
+          <div className="receipt-score">
+            <span>{t.score}</span>
+            <strong>{score.toLocaleString()}</strong>
+            <span>PTS</span>
+          </div>
+          <div className="receipt-stats">
+            <div>
+              <span>{t.time}</span>
+              <strong>{formatTime(elapsed)}</strong>
+            </div>
+            <div>
+              <span>{t.battery}</span>
+              <strong>{battery.toFixed(2)}%</strong>
+              <i>
+                <b style={{ width: `${battery * 100}%` }} />
+              </i>
+            </div>
+            <div>
+              <span>{t.privacy}</span>
+              <strong>{Math.round(privacy)}%</strong>
+              <i>
+                <b style={{ width: `${privacy}%` }} />
+              </i>
+            </div>
+            <div>
+              <span>{t.trackers} / TIPS</span>
+              <strong>
+                {trackerHits} / {tipsCollected}
+              </strong>
+            </div>
+          </div>
+          {awards.length > 0 && (
+            <div className="receipt-awards">
+              {awards.map((award) => (
+                <span key={award}>✦ {award}</span>
+              ))}
+            </div>
+          )}
+        </div>
+        <span className="receipt-stamp">
+          {success ? "DELIVERY CONFIRMED" : "SIGNAL INTERRUPTED"}
+          <small>NXR × DLICOM</small>
         </span>
       </div>
-      <div className="result-body">
-        <div className="result-intro">
-          <div className="result-seal" aria-hidden="true">
-            {success ? "◇" : "×"}
-          </div>
-          <div>
-            {newBest && <span className="personal-best">✦ {t.newBest}</span>}
-            <h2>
-              {success ? (
-                <>
-                  {language === "id" ? "PESAN" : "MESSAGE"}
-                  <br />
-                  <em>{language === "id" ? "TERKIRIM." : "DELIVERED."}</em>
-                </>
-              ) : (
-                <>
-                  {language === "id" ? "SINYAL" : "SIGNAL"}
-                  <br />
-                  <em>{language === "id" ? "HILANG." : "LOST."}</em>
-                </>
-              )}
-            </h2>
-            <p>
-              {success
-                ? `${t.reached} ${mission.receiver}.`
-                : `${t.depleted} ${Math.ceil(distance)}${t.awayFrom} ${mission.receiver}.`}
-            </p>
-          </div>
-        </div>
-        <div className="result-score">
-          <span>{t.score}</span>
-          <strong>{score.toLocaleString()}</strong>
-          <small>{privacyRank(privacy)}</small>
-        </div>
-        <div className="result-grid">
-          <div>
-            <span>{t.time}</span>
-            <strong>{formatTime(elapsed)}</strong>
-          </div>
-          <div>
-            <span>{t.battery}</span>
-            <strong>{battery.toFixed(2)}%</strong>
-          </div>
-          <div>
-            <span>{t.privacy}</span>
-            <strong>{Math.round(privacy)}%</strong>
-          </div>
-          <div>
-            <span>{t.trackers}</span>
-            <strong>{trackerHits}</strong>
-          </div>
-        </div>
-        {awards.length > 0 && (
-          <div className="result-awards">
-            {awards.map((award) => (
-              <span key={award}>✦ {award}</span>
-            ))}
-          </div>
-        )}
-        <div className="result-actions">
-          <GameButton variant="primary" onClick={retry}>
-            {t.retry} <span aria-hidden="true">↗</span>
-          </GameButton>
-          <GameButton variant="primary" onClick={() => setCardOpen(true)}>
-            {t.downloadCard} <span aria-hidden="true">↓</span>
-          </GameButton>
-          <GameButton variant="menu" onClick={() => openBriefing(true)}>
-            {t.newMessage} <span aria-hidden="true">→</span>
-          </GameButton>
-        </div>
-        <div className="result-secondary">
-          <GameButton onClick={goMenu}>{t.mainMenu}</GameButton>
-          <GameButton onClick={copyResult}>
-            {copyStatus === "ready"
-              ? t.copyResult
-              : copyStatus === "copied"
-                ? t.copied
-                : t.copyUnavailable}
-          </GameButton>
-        </div>
-      </div>
+      <nav className="receipt-actions" aria-label="Result actions">
+        <button onClick={retry} className="receipt-retry">
+          ↗ {t.retry}
+        </button>
+        <button onClick={() => setCardOpen(true)}>↓ {t.downloadCard}</button>
+        <button onClick={() => openBriefing(true)}>→ {t.newMessage}</button>
+        <button onClick={copyResult}>
+          {copyStatus === "ready"
+            ? t.copyResult
+            : copyStatus === "copied"
+              ? t.copied
+              : t.copyUnavailable}
+        </button>
+      </nav>
       {cardOpen && (
         <ResultCardDialog data={cardData} onClose={() => setCardOpen(false)} />
       )}

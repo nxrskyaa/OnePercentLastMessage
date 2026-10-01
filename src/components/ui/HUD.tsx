@@ -5,6 +5,7 @@ import { GAME_CONFIG } from "@/game/config";
 import { missionAt } from "@/game/missions";
 import { copyFor } from "@/game/copy";
 import { formatTime } from "@/lib/format";
+import { courseAct } from "@/game/course";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
 
@@ -23,6 +24,8 @@ export function HUD() {
   const mission = missionAt(missionIndex, language);
   const pause = useGameStore((state) => state.pause);
   const critical = battery < 0.1;
+  const act = courseAct(distance);
+  const altitude = useGameStore((state) => state.altitude ?? 0);
   return (
     <div
       className={`game-hud ${critical ? "game-hud--critical" : ""}`}
@@ -72,22 +75,44 @@ export function HUD() {
       <div className="hud-reticle" aria-hidden="true">
         <span />
       </div>
-      {distance < 440 && distance > 300 && (
-        <div className="route-choice" role="status">
-          <div>
-            <span>←</span>
-            <strong>{t.safe}</strong>
-            <small>{t.private}</small>
+      <div className="course-readout">
+        <b>{act.mark}</b>
+        <span>{language === "id" ? act.nameId : act.name}</span>
+        <i
+          style={{
+            width: `${(1 - distance / Math.abs(GAME_CONFIG.destination.z)) * 100}%`,
+          }}
+        />
+      </div>
+      <div className="altitude-readout">
+        <span>{language === "id" ? "KETINGGIAN" : "ALTITUDE"}</span>
+        <b>
+          {altitude >= 0 ? "+" : ""}
+          {altitude.toFixed(1)}
+        </b>
+        <small>Q ↑ / E ↓</small>
+      </div>
+      {distance <
+        Math.abs(GAME_CONFIG.destination.z) +
+          GAME_CONFIG.course.splitStart +
+          50 &&
+        distance >
+          Math.abs(GAME_CONFIG.destination.z) + GAME_CONFIG.course.splitZ && (
+          <div className="route-choice" role="status">
+            <div>
+              <span>←</span>
+              <strong>{t.safe}</strong>
+              <small>{t.private}</small>
+            </div>
+            <div>
+              <strong>{t.fast}</strong>
+              <small>
+                −{GAME_CONFIG.nodes.publicPrivacyDamage}% {t.privacy}
+              </small>
+              <span>→</span>
+            </div>
           </div>
-          <div>
-            <strong>{t.fast}</strong>
-            <small>
-              −{GAME_CONFIG.nodes.publicPrivacyDamage}% {t.privacy}
-            </small>
-            <span>→</span>
-          </div>
-        </div>
-      )}
+        )}
       {feedback && (
         <div
           key={`event-${feedback.id}`}

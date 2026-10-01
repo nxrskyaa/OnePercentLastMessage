@@ -49,7 +49,7 @@ export function HarborLife({
     for (let i = 0; i < COUNT; i++) {
       const side = i % 2 ? -1 : 1,
         x = side * (19 + (i % 3) * 2.7),
-        z = 20 - Math.floor(i / 2) * 43;
+        z = 20 - Math.floor(i / 2) * 112;
       const playerZ = playerRef.current?.position.z ?? 0;
       const playerX = playerRef.current?.position.x ?? 0;
       const proximity =
@@ -90,7 +90,7 @@ export function HarborLife({
       bulbs.current?.setMatrixAt(i, object.matrix);
     }
     for (let i = 0; i < 8; i++) {
-      const z = -75 - i * 76,
+      const z = -75 - i * 220,
         direction = i % 2 ? 1 : -1;
       object.position.set(
         Math.sin(t * 0.13 + i * 2) * 70,

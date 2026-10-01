@@ -45,6 +45,7 @@ interface HudSample {
   speed: number;
   boosting: boolean;
   scanCooldown: number;
+  altitude?: number;
 }
 
 interface GameState extends HudSample {
@@ -248,7 +249,7 @@ function feedbackFor(
     case "curtainHit":
       return {
         title: id ? "TERJERAT PEMINDAI" : "SCANNER CAUGHT YOU",
-        detail: `-${GAME_CONFIG.nodes.curtainPrivacyDamage}% ${id ? "PRIVASI" : "PRIVACY"} · -${GAME_CONFIG.nodes.curtainBatteryDamage.toFixed(3)}% ${id ? "BATERAI" : "BATTERY"}`,
+        detail: `-${GAME_CONFIG.obstacles.damagePrivacy}% ${id ? "PRIVASI" : "PRIVACY"} · -${GAME_CONFIG.obstacles.damageBattery.toFixed(3)}% ${id ? "BATERAI" : "BATTERY"}`,
         tone: "red",
         points: -200,
       };
@@ -278,6 +279,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   speed: GAME_CONFIG.movement.cruiseSpeed,
   boosting: false,
   scanCooldown: 0,
+  altitude: 0,
   eventScore: 0,
   score: 0,
   perfectRelays: 0,
@@ -373,6 +375,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       speed: GAME_CONFIG.movement.cruiseSpeed,
       boosting: false,
       scanCooldown: 0,
+      altitude: 0,
       eventScore: 0,
       score: 0,
       perfectRelays: 0,

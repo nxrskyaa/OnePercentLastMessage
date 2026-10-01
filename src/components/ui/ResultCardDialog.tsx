@@ -25,9 +25,11 @@ export function ResultCardDialog({
     let mounted = true;
     const mascot = new Image();
     const logo = new Image();
+    const wordmark = new Image();
     const avatar = new Image();
     mascot.src = "/brand/dili-blue-cutout.png";
     logo.src = "/brand/dlicom-mark-reference.jpg";
+    wordmark.src = "/brand/last-message-logo.svg";
     if (data.avatarUrl) {
       avatar.crossOrigin = "anonymous";
       avatar.referrerPolicy = "no-referrer";
@@ -44,10 +46,15 @@ export function ResultCardDialog({
           ),
         ])
       : Promise.resolve(null);
-    Promise.all([mascot.decode(), logo.decode(), avatarReady])
+    Promise.all([
+      mascot.decode(),
+      logo.decode(),
+      avatarReady,
+      wordmark.decode(),
+    ])
       .then(([, , photo]) => {
         if (!mounted || !canvasRef.current) return;
-        drawResultCard(canvasRef.current, data, mascot, logo, photo);
+        drawResultCard(canvasRef.current, data, mascot, logo, photo, wordmark);
         setStatus("ready");
       })
       .catch(() => {

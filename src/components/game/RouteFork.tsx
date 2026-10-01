@@ -2,14 +2,23 @@
 
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
+import { GAME_CONFIG } from "@/game/config";
 
 function route(side: number) {
   return new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, -11, -215),
-    new THREE.Vector3(side * 7, -8, -255),
-    new THREE.Vector3(side * 11, -6, -304),
-    new THREE.Vector3(side * 8, -9, -344),
-    new THREE.Vector3(0, -11, -370),
+    new THREE.Vector3(0, 0, GAME_CONFIG.course.splitStart),
+    new THREE.Vector3(
+      side * 7,
+      side < 0 ? 3 : -5,
+      GAME_CONFIG.course.splitZ + 45,
+    ),
+    new THREE.Vector3(side * 11, side < 0 ? 4 : -6, GAME_CONFIG.course.splitZ),
+    new THREE.Vector3(
+      side * 8,
+      side < 0 ? 3 : -5,
+      GAME_CONFIG.course.splitZ - 45,
+    ),
+    new THREE.Vector3(0, 0, GAME_CONFIG.course.splitEnd),
   ]);
 }
 

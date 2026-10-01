@@ -8,6 +8,9 @@ import { curtainOpening, type GameNode } from "@/game/nodes";
 import { energySurface } from "@/rendering/materials";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
+import { FlightObstacle } from "./FlightObstacle";
+import { signalState } from "@/rendering/signalState";
+import { GAME_CONFIG } from "@/game/config";
 
 const hull = new THREE.MeshStandardMaterial({
   color: "#526ba0",
@@ -56,7 +59,7 @@ function CurtainGate({ node, low }: { node: GameNode; low: boolean }) {
   const bridge = useRef<THREE.Mesh>(null);
   const scan = useRef<THREE.Mesh>(null);
   useFrame(() => {
-    const time = useGameStore.getState().elapsed;
+    const time = signalState.flightTime;
     const opening = curtainOpening(node, time);
     const gapLeft = opening - node.radius;
     const gapRight = opening + node.radius;
@@ -230,7 +233,7 @@ function NodeVisual({ node, low }: { node: GameNode; low: boolean }) {
   useEffect(() => () => energy.dispose(), [energy]);
   if (node.type === "tip")
     return (
-      <group position={[node.x, 0, node.z]}>
+      <group position={[node.x, node.y, node.z]}>
         <mesh rotation={[0.35, 0.6, 0]} material={energy}>
           <octahedronGeometry args={[1.1, 0]} />
         </mesh>
@@ -238,7 +241,7 @@ function NodeVisual({ node, low }: { node: GameNode; low: boolean }) {
     );
   if (node.type === "tracker")
     return (
-      <group position={[node.x, 0, node.z]}>
+      <group position={[node.x, node.y, node.z]}>
         <PolygonFrame radius={3.65} sides={8} energy={energy} />
         {!low && (
           <mesh position={[0, 4.15, 0]} material={dark}>
@@ -251,7 +254,7 @@ function NodeVisual({ node, low }: { node: GameNode; low: boolean }) {
   const radius =
     node.type === "booster" ? 4.35 : node.type === "relay" ? 5.2 : 6;
   return (
-    <group position={[node.x, 0, node.z]}>
+    <group position={[node.x, node.y, node.z]}>
       <PolygonFrame
         radius={radius}
         sides={node.type === "booster" ? 8 : 6}
@@ -290,7 +293,7 @@ export function NodeManager({
       const ahead = playerZ - node.z;
       // Devices leave the scene as the player crosses them, before the chase
       // camera reaches their plane. No field can clip through the near plane.
-      group.visible = ahead > -1.5 && ahead < 230;
+      group.visible = ahead > -1.5 && ahead < GAME_CONFIG.course.visibleAhead;
     });
   });
   return (
@@ -302,7 +305,9 @@ export function NodeManager({
             groups.current[index] = group;
           }}
         >
-          {node.type === "curtain" ? (
+          {node.type === "shutter" || node.type === "rotor" ? (
+            <FlightObstacle node={node} />
+          ) : node.type === "curtain" ? (
             <CurtainGate node={node} low={low} />
           ) : (
             <NodeVisual node={node} low={low} />

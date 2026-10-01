@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { stageAt } from "@/game/stages";
 import { harborHorizon } from "@/game/harbor";
@@ -8,6 +9,10 @@ import { useGameStore } from "@/store/gameStore";
 
 /** Distant atmosphere only; all stations, lamps, water and moving objects are geometry. */
 export function HarborSky() {
+  const sky = useRef<THREE.Mesh>(null);
+  useFrame(({ camera }) => {
+    sky.current?.position.copy(camera.position);
+  });
   const stage = stageAt(useGameStore((s) => s.stageIndex));
   const uniforms = useMemo(
     () => ({
@@ -21,6 +26,7 @@ export function HarborSky() {
   );
   return (
     <mesh
+      ref={sky}
       onUpdate={(object) => object.layers.enable(1)}
       position={[0, 0, -320]}
       frustumCulled={false}

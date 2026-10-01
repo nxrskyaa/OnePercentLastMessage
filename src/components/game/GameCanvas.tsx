@@ -5,6 +5,7 @@ import {
   Component,
   type ReactNode,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -70,7 +71,7 @@ function GameScene() {
         intensity={0.22}
         position={[30, -12, -35]}
       />
-      <NetworkStage />
+      <NetworkStage playerRef={playerRef} />
       <MaterialLighting />
       <RelayLanterns />
       <SignalWater playerRef={playerRef} />
@@ -124,6 +125,18 @@ class RendererBoundary extends Component<
 export default function GameCanvas({ onReady }: { onReady?: () => void }) {
   const quality = useSettingsStore((state) => state.runtimeQuality);
   const phase = useGameStore((state) => state.phase);
+  const [endEffectComplete, setEndEffectComplete] = useState(false);
+  useEffect(() => {
+    if (phase !== "success" && phase !== "failed") return;
+    const timeout = window.setTimeout(
+      () => setEndEffectComplete(true),
+      phase === "success" ? 1800 : 600,
+    );
+    return () => {
+      window.clearTimeout(timeout);
+      setEndEffectComplete(false);
+    };
+  }, [phase]);
   const staticScene = [
     "menu",
     "paused",
@@ -152,14 +165,14 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
   return (
     <RendererBoundary>
       <Canvas
-        frameloop={staticScene ? "demand" : "always"}
+        frameloop={staticScene || endEffectComplete ? "demand" : "always"}
         className="game-canvas"
         shadows={{ enabled: false, type: THREE.PCFShadowMap }}
         dpr={budgetedDpr(window.innerWidth, window.innerHeight, quality)}
         camera={{
           fov: GAME_CONFIG.camera.baseFov,
           near: 0.1,
-          far: 1100,
+          far: 2300,
           position: [0, 5, 13],
         }}
         gl={createRenderer}

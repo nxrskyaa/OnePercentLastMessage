@@ -17,8 +17,13 @@ const NETWORK = [
   ["tip", "TIP NODE", "Collect gold packets quickly to build a combo."],
   [
     "curtain",
-    "TRACKER CURTAIN",
-    "Steer through its moving bright opening. A clean pass earns points.",
+    "SKY LOCK",
+    "Climb or dive through the bright moving opening. Clean passes earn points.",
+  ],
+  [
+    "tracker",
+    "ROTOR",
+    "Time your approach through the gaps between rotating blades.",
   ],
 ] as const;
 const NETWORK_ID = [
@@ -41,8 +46,13 @@ const NETWORK_ID = [
   ["tip", "NODE TIP", "Kumpulkan paket emas dengan cepat untuk membuat kombo."],
   [
     "curtain",
-    "TIRAI PELACAK",
-    "Arahkan paket melalui celah terang yang bergerak. Lewat bersih memberi poin.",
+    "GERBANG LANGIT",
+    "Naik atau turun melalui celah terang yang bergerak. Lewat bersih memberi poin.",
+  ],
+  [
+    "tracker",
+    "ROTOR",
+    "Atur waktu masuk melalui celah di antara bilah yang berputar.",
   ],
 ] as const;
 
@@ -81,6 +91,10 @@ export function HowToPlay() {
             <span>{id ? "Rem" : "Brake"}</span>
           </div>
           <div className="guide-control">
+            <kbd>Q / E</kbd>
+            <span>{id ? "Naik / Turun" : "Climb / Dive"}</span>
+          </div>
+          <div className="guide-control">
             <kbd>SHIFT</kbd>
             <span>{id ? "Boost · boros daya" : "Boost · costly"}</span>
           </div>
@@ -110,6 +124,14 @@ export function HowToPlay() {
             <span>{id ? "Perlambat" : "Slow down"}</span>
           </div>
           <div className="guide-control">
+            <kbd>↑ ↓</kbd>
+            <span>
+              {id
+                ? "Naik / Turun (tombol kiri)"
+                : "Climb / Dive (left controls)"}
+            </span>
+          </div>
+          <div className="guide-control">
             <kbd>BOOST</kbd>
             <span>
               {id
@@ -137,7 +159,7 @@ export function HowToPlay() {
             {id ? "SINYAL JARINGAN" : "NETWORK SIGNALS"}
           </span>
           {(id ? NETWORK_ID : NETWORK).map(([type, title, description]) => (
-            <div className="network-item" key={type}>
+            <div className="network-item" key={title}>
               <span className={`node-icon node-icon--${type}`} />
               <div>
                 <strong>{title}</strong>

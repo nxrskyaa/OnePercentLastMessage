@@ -8,6 +8,7 @@ import "./mobile.css";
 import "./brand.css";
 import "./art-direction.css";
 import "./profile.css";
+import "./dispatch.css";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??

@@ -15,17 +15,19 @@ The first run includes a three-step field guide. Later runs skip it. New players
 | W / Up                | Accelerate                         |
 | S / Down              | Brake                              |
 | A / D or Left / Right | Steer                              |
+| Q / E                 | Climb / dive                       |
 | Mouse                 | Optional subtle steering influence |
 | Shift                 | Boost at extra battery cost        |
 | Space                 | Scan the nearby network (cooldown) |
 | Escape                | Pause / resume                     |
 
-On phones and small tablets, use the on-screen **Left**, **Right**, **Thrust**, **Brake**, **Boost**, and **Scan** controls. Hold flight buttons to move and tap Scan or Pause. Touch controls support simultaneous steering and thrust/boost.
+On phones and small tablets, use the on-screen **Left**, **Right**, **Climb**, **Dive**, **Thrust**, **Brake**, **Boost**, and **Scan** controls. Hold flight buttons to move and tap Scan or Pause. Touch controls support simultaneous steering, altitude changes, and thrust/boost.
 
 ## Features
 
 - Three selectable stage looks — Tidal Conduit, Prism Archive, and Solar Relay — with distinct colors, landmarks, moving motifs, and seeded node layouts. New Message advances to the next stage.
-- Stage-specific tracker curtains slide their safe openings across the channel. Thread the gap for points or lose battery and privacy on contact.
+- Each 1.8 km course has four acts: Departure, Sky Locks, Engine Room, and Last Approach. Later sectors demand vertical flight and precise timing. Prism inverts the climb/dive sequence and Solar mirrors lateral approaches; both tighten and accelerate the gates.
+- Mechanical sky locks move their openings in two axes. Rotors require threading the gaps between their blades. Clean passes earn points; contact costs battery and privacy. Cyan boosters provide enough energy to finish if collected carefully.
 - One continuous procedural network scene with reusable relay, tracker, booster, tip, and route nodes.
 - Twelve message scenarios, seeded node variation, battery and privacy resources, combo tips, near misses, and perfect relay bursts.
 - Dlicom and DILI art in the opening, menu, live HUD, advice panel, and downloadable 1080 × 1350 PNG result card. The result card includes the user-supplied Dlicom mark and Dili-inspired character art.
@@ -58,6 +60,7 @@ The committed music file is used directly by the app. Regenerating it is optiona
 
 ```bash
 npm run lint
+npm run test:course
 npm run format:check
 npm run build
 npm run start

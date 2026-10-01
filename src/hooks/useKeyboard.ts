@@ -7,6 +7,12 @@ import { useGameStore } from "@/store/gameStore";
 export function useKeyboard() {
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
+      if (
+        event.target instanceof HTMLElement &&
+        (event.target.isContentEditable ||
+          ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName))
+      )
+        return;
       const key = event.key.toLowerCase();
       if (
         useGameStore.getState().phase === "playing" &&

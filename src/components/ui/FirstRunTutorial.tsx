@@ -10,16 +10,16 @@ const STEPS = [
   {
     count: "01 / 03",
     title: "YOU ARE THE MESSAGE.",
-    body: "The packet flies forward. Steer through the network and keep it moving.",
+    body: "Fly left/right with A/D. Q climbs, E dives. Line up with the bright gate openings before you reach them. W accelerates; S brakes.",
     chips: [
       ["W / ↑", "ACCELERATE"],
       ["A D / ← →", "STEER"],
-      ["S / ↓", "BRAKE"],
+      ["Q / E", "CLIMB / DIVE"],
     ],
     touchChips: [
       ["THRUST", "ACCELERATE"],
       ["◀ ▶", "STEER"],
-      ["BRAKE", "SLOW DOWN"],
+      ["↑ ↓", "CLIMB / DIVE"],
     ],
   },
   {
@@ -40,7 +40,7 @@ const STEPS = [
   {
     count: "03 / 03",
     title: "READ THE NETWORK.",
-    body: "Press Space to scan. Thread the moving gaps in tracker curtains. At the split, choose a private route or a faster public one.",
+    body: "Scan with Space. Thread the moving openings and fly between rotor blades. Boost sparingly; cyan gates keep your battery alive.",
     chips: [
       ["SPACE", "SCAN"],
       ["CENTER", "PERFECT RELAY"],
@@ -58,16 +58,16 @@ const STEPS_ID = [
   {
     count: "01 / 03",
     title: "KAMULAH PESANNYA.",
-    body: "Packet bergerak maju. Arahkan melewati jaringan dan terus melaju.",
+    body: "A/D untuk belok, Q untuk naik, E untuk turun. Arahkan ke celah terang sebelum gerbang. W mempercepat; S mengerem.",
     chips: [
       ["W / ↑", "AKSELERASI"],
       ["A D / ← →", "BELOK"],
-      ["S / ↓", "REM"],
+      ["Q / E", "NAIK / TURUN"],
     ],
     touchChips: [
       ["MAJU", "AKSELERASI"],
       ["◀ ▶", "BELOK"],
-      ["REM", "PERLAMBAT"],
+      ["↑ ↓", "NAIK / TURUN"],
     ],
   },
   {
@@ -88,7 +88,7 @@ const STEPS_ID = [
   {
     count: "03 / 03",
     title: "BACA JARINGAN.",
-    body: "Tekan Spasi untuk memindai. Tembus celah bergerak pada tirai pelacak. Pilih jalur privat atau jalur publik yang lebih cepat.",
+    body: "Spasi untuk memindai. Tembus celah bergerak dan ruang di antara bilah rotor. Pakai boost seperlunya; gerbang biru menjaga daya.",
     chips: [
       ["SPACE", "PINDAI"],
       ["TENGAH", "RELAY SEMPURNA"],

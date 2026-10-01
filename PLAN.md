@@ -1,5 +1,15 @@
 # 1% — Last Message: implementation plan
 
+## Vertical flight and graphic UI — October 1, 2026
+
+- Expand the authored route to 1.8 km with four acts, power pickups, vertical aperture gates and rotating mechanical obstacles. Target a 2-minute skilled run; rebalance battery and scoring.
+- Add Q/E climb/dive and matching touch controls. Share collision paths and the simulation clock with obstacle visuals.
+- Extend the harbor with lift, turbine and receiver architecture using merged geometry and visibility culling.
+- Rebuild menu/logo and result with diagonal plates, ink outlines, halftone texture, Dili art and compact stats. Preserve profiles, language and PNG export.
+- Verify reachable routes, desktop/mobile controls, completion, pause/retry, card download, console, lint and production build before pushing and deploying.
+
+Verification: `test:course` passes 36 movement-limited simulations (three stages, twelve seeds), including two-axis gate clearance, rotor contacts, booster pickup, the receiver's 3D radius and idle-run failure. Skilled simulated runs finish in approximately 114 seconds; this is reachability evidence, not a human playtest. Browser QA verified touch climb/dive altitude changes, boost input, scan cooldown, pause/resume, obstacle battery/privacy damage, battery failure, retry, stage selection and a real 1080 × 1350 PNG download. Actual 391px-wide menu/results fit without horizontal document overflow; exported text stays inside the frame. Sampled warmed-up local rendering was approximately 55–83 FPS on Low with adaptive resolution; initial shader warmup was slower. Physical phones and other browser engines were not tested. Browser logs contained extension errors and nonfatal Three.js/shader warnings, with no observed app-origin errors. End animations now stop continuous 3D rendering after 0.6 seconds on failure or 1.8 seconds on delivery; the sky follows the camera across the full course.
+
 ## Lantern and material revision — September 29, 2026
 
 - Reference review: study the compact hot lamp cores, soft amber falloff, cool environmental fill, and readable material edges in Lost Marbles.

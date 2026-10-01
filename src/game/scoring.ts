@@ -21,7 +21,13 @@ export function finalScore(input: ScoreInput): number {
           2000,
       );
   const speed = input.success
-    ? Math.max(0, Math.round((75 - input.elapsed) * 80))
+    ? Math.max(
+        0,
+        Math.round(
+          (GAME_CONFIG.scoring.targetSeconds - input.elapsed) *
+            GAME_CONFIG.scoring.timeMultiplier,
+        ),
+      )
     : 0;
   const battery = input.success ? Math.round(input.battery * 3000) : 0;
   const privacy = input.success ? Math.round(input.privacy * 18) : 0;
@@ -46,7 +52,8 @@ export function awardsFor(input: ScoreInput): string[] {
   if (input.privacy >= 90) awards.push("GHOST");
   if (input.trackerHits === 0) awards.push("CLEAN ROUTE");
   if (input.battery <= 0.05) awards.push("LAST SECOND");
-  if (input.elapsed < 50) awards.push("FAST PACKET");
+  if (input.elapsed < GAME_CONFIG.scoring.fastSeconds)
+    awards.push("FAST PACKET");
   if (input.perfectRelays >= 3) awards.push("PERFECT SIGNAL");
   return awards;
 }

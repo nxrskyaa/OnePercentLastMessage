@@ -102,6 +102,15 @@ export function MobileControls() {
           <HoldButton input="a" label={id ? "Kiri" : "Left"} symbol="◀" />
           <HoldButton input="d" label={id ? "Kanan" : "Right"} symbol="▶" />
         </div>
+        <div className="mobile-control-row">
+          <HoldButton
+            input="q"
+            label={id ? "Naik" : "Climb"}
+            symbol="↑"
+            tone="cyan"
+          />
+          <HoldButton input="e" label={id ? "Turun" : "Dive"} symbol="↓" />
+        </div>
       </div>
       <div className="mobile-control-cluster mobile-control-cluster--drive">
         <span className="mobile-control-caption">FLIGHT</span>

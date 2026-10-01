@@ -5,7 +5,7 @@ import { RefObject, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { localAdvisor } from "@/game/advisor";
 import { GAME_CONFIG } from "@/game/config";
-import { curtainOpening, type GameNode } from "@/game/nodes";
+import { aperture, hitsObstacle, type GameNode } from "@/game/nodes";
 import { playSound, setAudioIntensity } from "@/lib/audio";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -58,6 +58,7 @@ export function Player({
   );
   const speed = useRef<number>(GAME_CONFIG.movement.cruiseSpeed);
   const sideSpeed = useRef(0);
+  const verticalSpeed = useRef(0);
   const battery = useRef<number>(GAME_CONFIG.battery.start);
   const privacy = useRef(100);
   const elapsed = useRef(0);
@@ -179,8 +180,29 @@ export function Player({
       GAME_CONFIG.movement.lateralLimit,
     );
     const previousZ = body.position.z;
-    body.position.z -= speed.current * delta;
-    body.position.y = Math.sin(clock.elapsedTime * 4.6) * 0.13;
+    body.position.z = Math.max(
+      GAME_CONFIG.destination.z,
+      body.position.z - speed.current * delta,
+    );
+    const lift = Number(input.has("q")) - Number(input.has("e"));
+    verticalSpeed.current = THREE.MathUtils.damp(
+      verticalSpeed.current,
+      lift * GAME_CONFIG.movement.verticalSpeed,
+      GAME_CONFIG.movement.verticalResponse,
+      delta,
+    );
+    body.position.y = THREE.MathUtils.clamp(
+      body.position.y + verticalSpeed.current * delta,
+      GAME_CONFIG.movement.minAltitude,
+      GAME_CONFIG.movement.maxAltitude,
+    );
+    model.position.y = Math.sin(clock.elapsedTime * 4.6) * 0.1;
+    model.rotation.x = THREE.MathUtils.damp(
+      model.rotation.x,
+      -verticalSpeed.current * 0.025,
+      6,
+      delta,
+    );
     model.rotation.z = THREE.MathUtils.damp(
       model.rotation.z,
       (-sideSpeed.current * GAME_CONFIG.movement.bankAmount) /
@@ -232,6 +254,7 @@ export function Player({
     if (boosting && !boostHeld.current) playSound("boost");
     boostHeld.current = boosting;
     elapsed.current += delta;
+    signalState.flightTime = elapsed.current;
     battery.current = Math.max(
       0,
       battery.current -
@@ -269,17 +292,25 @@ export function Player({
       )
         continue;
       crossed.current.add(node.id);
-      const gap = Math.abs(body.position.x - node.x);
-      if (node.type === "curtain") {
-        const opening = curtainOpening(node, elapsed.current);
-        if (Math.abs(body.position.x - opening) > node.radius) {
+      const gap = Math.hypot(
+        body.position.x - node.x,
+        body.position.y - node.y,
+      );
+      if (
+        node.type === "curtain" ||
+        node.type === "shutter" ||
+        node.type === "rotor"
+      ) {
+        if (
+          hitsObstacle(node, body.position.x, body.position.y, elapsed.current)
+        ) {
           privacy.current = Math.max(
             0,
-            privacy.current - GAME_CONFIG.nodes.curtainPrivacyDamage,
+            privacy.current - GAME_CONFIG.obstacles.damagePrivacy,
           );
           battery.current = Math.max(
             0,
-            battery.current - GAME_CONFIG.nodes.curtainBatteryDamage,
+            battery.current - GAME_CONFIG.obstacles.damageBattery,
           );
           state.recordEvent("curtainHit");
           hitUntil.current = elapsed.current + 0.42;
@@ -358,21 +389,31 @@ export function Player({
 
     const nextCurtain = nodes.find(
       (node) =>
-        node.type === "curtain" &&
+        ["curtain", "shutter", "rotor"].includes(node.type) &&
         !curtainAdvised.current.has(node.id) &&
         body.position.z - node.z > 0 &&
         body.position.z - node.z < 75,
     );
     if (nextCurtain) {
       curtainAdvised.current.add(nextCurtain.id);
+      const gap = aperture(nextCurtain, elapsed.current);
+      const climb = gap.y > body.position.y + 1.5;
+      const dive = gap.y < body.position.y - 1.5;
       state.setAdvisor(
         useSettingsStore.getState().language === "id"
-          ? "Tirai pelacak di depan. Ikuti celah yang menyala saat bergerak."
-          : "Tracker curtain ahead. Follow the moving illuminated gap.",
+          ? nextCurtain.type === "rotor"
+            ? "Rotor di depan. Lewati ruang di antara bilah."
+            : `${climb ? "Naik (Q)" : dive ? "Turun (E)" : "Jaga ketinggian"}. Tembus celah terang.`
+          : nextCurtain.type === "rotor"
+            ? "Rotor ahead. Fly between the blades."
+            : `${climb ? "Climb (Q)" : dive ? "Dive (E)" : "Hold altitude"}. Thread the bright aperture.`,
       );
     }
 
-    if (!splitAdvised.current && body.position.z < -215) {
+    if (
+      !splitAdvised.current &&
+      body.position.z < GAME_CONFIG.course.splitStart
+    ) {
       splitAdvised.current = true;
       state.setAdvisor(
         useSettingsStore.getState().language === "id"
@@ -395,7 +436,15 @@ export function Player({
     }
 
     const distance = Math.max(0, body.position.z - GAME_CONFIG.destination.z);
-    if (distance <= GAME_CONFIG.destination.radius) {
+    const receiverDistance = Math.hypot(
+      body.position.x,
+      body.position.y,
+      distance,
+    );
+    if (
+      battery.current > 0 &&
+      receiverDistance <= GAME_CONFIG.destination.radius
+    ) {
       state.sample({
         battery: battery.current,
         privacy: privacy.current,
@@ -404,6 +453,7 @@ export function Player({
         speed: speed.current,
         boosting: false,
         scanCooldown: scanCooldown.current,
+        altitude: body.position.y,
       });
       state.finish(elapsed.current, battery.current, privacy.current);
       playSound("success");
@@ -418,6 +468,7 @@ export function Player({
         speed: speed.current,
         boosting: false,
         scanCooldown: scanCooldown.current,
+        altitude: body.position.y,
       });
       state.fail(elapsed.current, distance, privacy.current);
       playSound("fail");
@@ -434,6 +485,7 @@ export function Player({
         speed: speed.current,
         boosting,
         scanCooldown: scanCooldown.current,
+        altitude: body.position.y,
       });
       hudInterval.current = 0;
     }

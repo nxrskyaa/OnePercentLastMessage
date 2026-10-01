@@ -20,9 +20,6 @@ export interface ResultCardData {
 export const CARD_WIDTH = 1080;
 export const CARD_HEIGHT = 1350;
 
-const ink = "#061522";
-const cyan = "#8cecff";
-const ivory = "#f1f8fb";
 const muted = "#a9c5d1";
 
 function line(
@@ -77,239 +74,176 @@ function label(
   ctx.fillText(value, x, y);
 }
 
-function orb(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  radius: number,
-) {
-  const glow = ctx.createRadialGradient(x, y, 12, x, y, radius);
-  glow.addColorStop(0, "#a1eaff55");
-  glow.addColorStop(0.42, "#516dff25");
-  glow.addColorStop(1, "#516dff00");
-  ctx.fillStyle = glow;
-  ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
-}
-
+/** Matches the in-game courier poster; foiled details are drawn only once at export. */
 export function drawResultCard(
   canvas: HTMLCanvasElement,
   data: ResultCardData,
   mascot: HTMLImageElement,
   logo: HTMLImageElement,
   avatar: HTMLImageElement | null,
+  wordmark: HTMLImageElement,
 ) {
   canvas.width = CARD_WIDTH;
   canvas.height = CARD_HEIGHT;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas 2D unavailable");
-
-  // The same drawing function supplies both the preview and the downloaded PNG.
-  ctx.fillStyle = ink;
-  ctx.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT);
-  const background = ctx.createLinearGradient(0, 0, 1080, 1350);
-  background.addColorStop(0, "#061e32");
-  background.addColorStop(0.44, "#0b1536");
-  background.addColorStop(0.72, "#12152d");
-  background.addColorStop(1, "#031d2b");
-  ctx.fillStyle = background;
-  ctx.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT);
-
-  orb(ctx, 805, 520, 640);
-  orb(ctx, 202, 1105, 420);
-  const foil = ctx.createLinearGradient(170, 130, 990, 930);
-  foil.addColorStop(0, "#83e9ff00");
-  foil.addColorStop(0.38, "#54b4ff16");
-  foil.addColorStop(0.48, "#d79eff29");
-  foil.addColorStop(0.55, "#ffe49d23");
-  foil.addColorStop(0.68, "#7ce5ff12");
-  foil.addColorStop(1, "#7ce5ff00");
+  const paper = "#f8f8eb",
+    navy = "#111f36",
+    gold = "#ffe697",
+    accent = data.success ? "#8de3dd" : "#ffa180";
+  const id = data.language === "id";
+  const plate = (points: number[], fill: string, stroke = navy, width = 6) => {
+    ctx.beginPath();
+    ctx.moveTo(points[0], points[1]);
+    for (let i = 2; i < points.length; i += 2)
+      ctx.lineTo(points[i], points[i + 1]);
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = width;
+    ctx.stroke();
+  };
+  ctx.fillStyle = navy;
+  ctx.fillRect(0, 0, 1080, 1350);
+  plate([33, 40, 1047, 40, 1047, 1310, 33, 1310], accent, paper, 3);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(38, 45, 1004, 1260);
+  ctx.clip();
+  for (let y = 50; y < 1300; y += 13)
+    for (let x = 43; x < 1040; x += 13) {
+      ctx.fillStyle = "#18395633";
+      ctx.beginPath();
+      ctx.arc(x, y, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  plate([35, 625, 1045, 1158, 1045, 1308, 35, 770], navy, navy, 0);
+  plate([35, 250, 760, 42, 1045, 42, 1045, 116, 35, 370], paper, paper, 0);
+  const foil = ctx.createLinearGradient(140, 210, 1050, 1020);
+  foil.addColorStop(0, "#82e6ff00");
+  foil.addColorStop(0.33, "#d4b5ff33");
+  foil.addColorStop(0.47, "#f7f7f2aa");
+  foil.addColorStop(0.55, "#fff0a466");
+  foil.addColorStop(0.72, "#8ee9ee00");
   ctx.fillStyle = foil;
-  ctx.beginPath();
-  ctx.moveTo(298, 0);
-  ctx.lineTo(1080, 0);
-  ctx.lineTo(1080, 1115);
-  ctx.lineTo(689, 1050);
-  ctx.closePath();
-  ctx.fill();
-  const spectrum = ctx.createLinearGradient(92, 0, 990, 0);
-  spectrum.addColorStop(0, "#7fe7ff");
-  spectrum.addColorStop(0.35, "#88a9ff");
-  spectrum.addColorStop(0.65, "#eaa1f4");
-  spectrum.addColorStop(1, "#f6d486");
-  ctx.fillStyle = spectrum;
-  ctx.fillRect(78, 176, 664, 4);
-  ctx.globalAlpha = 0.43;
-  ctx.fillRect(78, 184, 405, 1);
-  ctx.globalAlpha = 1;
-
-  // Etched network tracks and restrained interference marks make the foil legible.
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(38, 38, 1004, 1274);
-  ctx.clip();
-  for (let i = 0; i < 11; i++) {
-    const x = 400 + i * 73;
-    line(ctx, [x, 216, x + 203, 647, x + 110, 798], "#95dbff17");
-  }
-  for (let i = 0; i < 9; i++) {
-    const y = 420 + i * 54;
-    line(ctx, [97, y, 342, y, 421, y + 46], "#95dbff13");
-  }
+  ctx.fillRect(38, 45, 1004, 1260);
+  for (let i = 0; i < 6; i++)
+    line(ctx, [800 + i * 19, 45, 250 + i * 19, 1305], "#f8f8eb36", 1);
   ctx.restore();
-  line(ctx, [37, 124, 37, 37, 310, 37], "#80e4f999", 2);
-  line(ctx, [770, 37, 1043, 37, 1043, 306], "#80e4f999", 2);
-  line(ctx, [37, 1030, 37, 1313, 330, 1313], "#80e4f999", 2);
-  line(ctx, [755, 1313, 1043, 1313, 1043, 1054], "#80e4f999", 2);
-
-  ctx.fillStyle = cyan;
-  ctx.font = "700 22px Arial, sans-serif";
-  ctx.fillText("01 / LAST MESSAGE", 78, 100);
-  label(ctx, "DLICOM AI GAME JAM", 78, 137);
-  // The mark is the exact supplied reference, never an AI redraw.
+  ctx.drawImage(wordmark, 62, 70, 455, 176);
+  ctx.drawImage(logo, 135, 245, 1010, 800, 890, 83, 120, 95);
+  ctx.fillStyle = navy;
+  textFit(ctx, "DLICOM × NXR", 685, 222, 326, 21, 800, 18);
   ctx.save();
-  ctx.beginPath();
-  ctx.roundRect(860, 73, 145, 118, 17);
-  ctx.clip();
-  ctx.fillStyle = "#071418";
-  ctx.fillRect(860, 73, 145, 118);
-  ctx.drawImage(logo, 135, 245, 1010, 800, 861, 74, 143, 116);
+  ctx.translate(730, 487);
+  ctx.rotate(0.12);
+  ctx.fillStyle = "#162d4930";
+  textFit(ctx, data.success ? "SENT!" : "RETRY!", -250, 0, 560, 150, 900, 110);
   ctx.restore();
-
-  ctx.fillStyle = ivory;
+  ctx.save();
+  ctx.translate(819, 710);
+  ctx.rotate(-0.14);
+  ctx.drawImage(mascot, -255, -370, 485, 727);
+  ctx.restore();
+  // Hard ink keyline and skewed panels remain readable over the character art.
+  plate([51, 302, 1000, 260, 1010, 370, 61, 412], navy, paper, 5);
+  ctx.save();
+  ctx.translate(90, 382);
+  ctx.rotate(-0.044);
+  ctx.fillStyle = paper;
   textFit(
     ctx,
-    data.language === "id"
+    id
       ? data.success
-        ? "PESAN"
-        : "SINYAL"
+        ? "PESAN TERKIRIM"
+        : "SINYAL HILANG"
       : data.success
-        ? "MESSAGE"
-        : "SIGNAL",
-    78,
-    272,
-    760,
-    101,
-    800,
-    76,
+        ? "MESSAGE DELIVERED"
+        : "SIGNAL LOST",
+    0,
+    0,
+    860,
+    68,
+    900,
+    37,
   );
-  const titleGradient = ctx.createLinearGradient(70, 285, 724, 358);
-  titleGradient.addColorStop(0, data.success ? "#bff9ff" : "#ffcfca");
-  titleGradient.addColorStop(0.54, data.success ? "#86bfff" : "#ff9bc3");
-  titleGradient.addColorStop(1, "#eee4ff");
-  ctx.fillStyle = titleGradient;
-  textFit(
-    ctx,
-    data.language === "id"
-      ? data.success
-        ? "TERKIRIM."
-        : "HILANG."
-      : data.success
-        ? "DELIVERED."
-        : "LOST.",
-    78,
-    366,
-    760,
-    102,
-    800,
-    76,
-  );
-  line(ctx, [78, 402, 1002, 402], "#9ddbf34d", 2);
-
-  label(
-    ctx,
-    data.language === "id" ? "KE / PENERIMA" : "TO / RECEIVER",
-    78,
-    461,
-  );
-  ctx.fillStyle = ivory;
-  textFit(ctx, data.receiver.toUpperCase(), 78, 513, 535, 46, 700, 27);
-  ctx.fillStyle = "#c3dce3";
-  ctx.font = "400 24px Arial, sans-serif";
-  ctx.fillText(
-    data.language === "id"
-      ? data.success
-        ? "Paket terakhir berhasil sampai."
-        : "Paket terakhir tertahan di jaringan."
-      : data.success
-        ? "The final packet made it through."
-        : "The network kept the final packet.",
-    78,
-    552,
-  );
-
-  // Character art is loaded only after a run ends; the gameplay renderer stays unchanged.
-  ctx.save();
-  ctx.shadowColor = "#6be1ff88";
-  ctx.shadowBlur = 65;
-  ctx.drawImage(mascot, 560, 412, 410, 615);
   ctx.restore();
-  ctx.strokeStyle = "#a7eeff55";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.ellipse(741, 789, 283, 343, -0.15, 0.24 * Math.PI, 1.74 * Math.PI);
-  ctx.stroke();
-  ctx.strokeStyle = "#d7b6ff44";
-  ctx.beginPath();
-  ctx.ellipse(753, 788, 313, 372, -0.15, 0.91 * Math.PI, 1.94 * Math.PI);
-  ctx.stroke();
-  ctx.fillStyle = "#f2c7ed";
-  ctx.beginPath();
-  ctx.arc(947, 488, 4, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#f4dc93";
-  ctx.beginPath();
-  ctx.arc(1001, 704, 3, 0, Math.PI * 2);
-  ctx.fill();
-
-  // The opaque telemetry panel protects small text over the character silhouette.
-  const panel = ctx.createLinearGradient(58, 610, 469, 1006);
-  panel.addColorStop(0, "#091727fa");
-  panel.addColorStop(1, "#0c1930e8");
-  ctx.fillStyle = panel;
-  ctx.beginPath();
-  ctx.roundRect(58, 620, 434, 367, 22);
-  ctx.fill();
-  ctx.strokeStyle = "#a5e8ff77";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  label(ctx, data.language === "id" ? "TELEMETRI" : "RUN TELEMETRY", 83, 671);
-  line(ctx, [83, 687, 464, 687], "#7bd0e763");
-  const rows: [string, string][] = [
-    [data.language === "id" ? "WAKTU" : "TIME", formatTime(data.elapsed)],
+  const grade = !data.success
+    ? "X"
+    : data.trackerHits === 0 && data.privacy >= 90
+      ? "S"
+      : data.privacy >= 75
+        ? "A"
+        : data.privacy >= 50
+          ? "B"
+          : "C";
+  plate([62, 461, 583, 440, 602, 641, 82, 660], navy, paper, 5);
+  ctx.fillStyle = gold;
+  textFit(ctx, grade, 86, 620, 170, 175, 900, 140);
+  label(ctx, id ? "PERINGKAT" : "RUN RANK", 276, 493);
+  ctx.fillStyle = paper;
+  textFit(ctx, privacyRank(data.privacy), 276, 542, 295, 35, 900, 23);
+  ctx.fillStyle = accent;
+  textFit(ctx, data.receiver, 276, 588, 285, 23, 800, 17);
+  ctx.fillStyle = paper;
+  textFit(ctx, data.stageName, 276, 622, 285, 17, 700, 14);
+  plate([70, 701, 633, 684, 643, 842, 80, 859], gold, navy, 6);
+  ctx.fillStyle = navy;
+  textFit(ctx, id ? "SKOR AKHIR" : "FINAL SCORE", 94, 736, 235, 20, 800, 18);
+  textFit(ctx, data.score.toLocaleString("en-US"), 91, 829, 510, 104, 900, 60);
+  const rows: [string, string, number | null][] = [
+    [id ? "WAKTU" : "TIME", formatTime(data.elapsed), null],
+    [id ? "BATERAI" : "BATTERY", `${data.battery.toFixed(2)}%`, data.battery],
     [
-      data.language === "id" ? "BATERAI" : "BATTERY LEFT",
-      `${data.battery.toFixed(2)}%`,
-    ],
-    [
-      data.language === "id" ? "PRIVASI" : "PRIVACY",
+      id ? "PRIVASI" : "PRIVACY",
       `${Math.round(data.privacy)}%`,
+      data.privacy / 100,
     ],
-    [data.language === "id" ? "PELACAK" : "TRACKERS", `${data.trackerHits}`],
-    ["TIPS", `${data.tipsCollected}`],
+    [
+      id ? "PELACAK / TIPS" : "TRACKERS / TIPS",
+      `${data.trackerHits} / ${data.tipsCollected}`,
+      null,
+    ],
   ];
-  rows.forEach(([name, value], index) => {
-    const y = 743 + index * 49;
-    ctx.fillStyle = muted;
-    ctx.font = "700 20px Arial, sans-serif";
-    ctx.fillText(name, 83, y);
-    ctx.fillStyle = ivory;
-    ctx.textAlign = "right";
-    textFit(ctx, value, 463, y + 1, 170, 28, 700, 20);
-    ctx.textAlign = "left";
+  rows.forEach(([name, value, progress], i) => {
+    const x = 76 + (i % 2) * 282,
+      y = 893 + Math.floor(i / 2) * 99;
+    plate([x, y, x + 263, y - 8, x + 263, y + 72, x, y + 80], navy, paper, 3);
+    ctx.fillStyle = accent;
+    textFit(ctx, name, x + 15, y + 22, 220, 17, 800, 15);
+    ctx.fillStyle = paper;
+    textFit(ctx, value, x + 15, y + 61, 225, 35, 800, 25);
+    if (progress !== null) {
+      ctx.fillStyle = "#ffffff26";
+      ctx.fillRect(x + 15, y + 69, 232, 3);
+      ctx.fillStyle = accent;
+      ctx.fillRect(x + 15, y + 69, 232 * Math.max(0, Math.min(1, progress)), 3);
+    }
   });
-
-  // The identity plate belongs to the player, separate from Dili's illustration.
-  ctx.fillStyle = "#0c2041ea";
-  ctx.fillRect(525, 863, 477, 138);
-  ctx.strokeStyle = "#a8dff3a8";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(525, 863, 477, 138);
+  plate([696, 969, 991, 928, 1002, 993, 707, 1034], navy, paper, 4);
+  ctx.save();
+  ctx.translate(721, 1008);
+  ctx.rotate(-0.13);
+  ctx.fillStyle = accent;
+  textFit(
+    ctx,
+    data.success ? "DELIVERY CONFIRMED" : "SIGNAL INTERRUPTED",
+    0,
+    0,
+    255,
+    21,
+    900,
+    15,
+  );
+  ctx.restore();
+  plate([68, 1126, 1007, 1104, 1012, 1222, 74, 1243], paper, navy, 5);
   ctx.save();
   ctx.beginPath();
-  ctx.arc(593, 932, 47, 0, Math.PI * 2);
+  ctx.arc(135, 1181, 42, 0, Math.PI * 2);
   ctx.clip();
-  ctx.fillStyle = "#5a79bd";
-  ctx.fillRect(546, 885, 94, 94);
+  ctx.fillStyle = "#385986";
+  ctx.fillRect(93, 1139, 84, 84);
   if (avatar) {
     const size = Math.min(avatar.naturalWidth, avatar.naturalHeight);
     ctx.drawImage(
@@ -318,65 +252,40 @@ export function drawResultCard(
       (avatar.naturalHeight - size) / 2,
       size,
       size,
-      546,
-      885,
-      94,
-      94,
+      93,
+      1139,
+      84,
+      84,
     );
   } else {
-    ctx.fillStyle = ivory;
-    ctx.textAlign = "center";
-    ctx.font = "800 40px Arial, sans-serif";
-    ctx.fillText(data.playerName.slice(0, 2).toUpperCase(), 593, 946);
-    ctx.textAlign = "left";
+    ctx.fillStyle = paper;
+    textFit(
+      ctx,
+      data.playerName.slice(0, 2).toUpperCase(),
+      105,
+      1195,
+      67,
+      34,
+      900,
+      22,
+    );
   }
   ctx.restore();
-  ctx.fillStyle = muted;
-  ctx.font = "700 16px Arial, sans-serif";
-  ctx.fillText(
-    data.language === "id" ? "OPERATOR / TAHAP" : "OPERATOR / STAGE",
-    660,
-    895,
-  );
-  ctx.fillStyle = ivory;
-  textFit(ctx, data.playerName.toUpperCase(), 660, 935, 315, 35, 800, 22);
-  ctx.fillStyle = "#a4e7f3";
+  ctx.fillStyle = navy;
+  textFit(ctx, data.playerName, 200, 1174, 756, 45, 900, 24);
+  ctx.fillStyle = "#385986";
   textFit(
     ctx,
-    `${data.xHandle ? `@${data.xHandle}  ·  ` : ""}${data.stageName}`,
-    660,
-    975,
-    315,
-    20,
-    700,
-    16,
-  );
-
-  line(ctx, [78, 1030, 1002, 1030], "#9ddbf37a", 2);
-  ctx.fillStyle = spectrum;
-  ctx.fillRect(78, 1029, 924, 3);
-  label(ctx, data.language === "id" ? "SKOR AKHIR" : "FINAL SCORE", 78, 1083);
-  ctx.fillStyle = ivory;
-  textFit(ctx, data.score.toLocaleString("en-US"), 76, 1199, 590, 122, 800, 66);
-  ctx.fillStyle = "#8ee8f7";
-  ctx.font = "700 22px Arial, sans-serif";
-  textFit(
-    ctx,
-    `${data.language === "id" ? "PERINGKAT PRIVASI" : "PRIVACY RANK"} / ${privacyRank(data.privacy)}`,
-    80,
-    1250,
-    625,
-    22,
+    data.xHandle ? `@${data.xHandle}` : "DLICOM SIGNAL COURIER",
+    202,
+    1209,
+    755,
+    23,
     700,
     18,
   );
-
-  ctx.fillStyle = "#d5edf4";
-  ctx.textAlign = "right";
-  ctx.font = "700 21px Arial, sans-serif";
-  ctx.fillText("BUILT BY NXR", 1002, 1244);
-  ctx.fillStyle = muted;
-  ctx.font = "700 16px Arial, sans-serif";
-  ctx.fillText("#LastMessage  #DlicomGameJam", 1002, 1274);
-  ctx.textAlign = "left";
+  plate([64, 1254, 1014, 1254, 1014, 1302, 64, 1302], paper, navy, 3);
+  ctx.fillStyle = navy;
+  textFit(ctx, "#LastMessage  #DlicomGameJam", 80, 1284, 620, 18, 800, 16);
+  textFit(ctx, "1% / LAST MESSAGE", 760, 1284, 234, 18, 800, 14);
 }

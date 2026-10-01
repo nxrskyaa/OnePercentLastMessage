@@ -1,10 +1,10 @@
 /** Gameplay tuning. Distances are Three.js world units. */
 export const GAME_CONFIG = {
-  destination: { z: -640, radius: 13, name: "MOM" },
+  destination: { z: -1800, radius: 13, name: "MOM" },
   battery: {
     start: 1,
-    drainPerSecond: 0.0145,
-    boostExtraDrainPerSecond: 0.031,
+    drainPerSecond: 0.012,
+    boostExtraDrainPerSecond: 0.022,
   },
   movement: {
     cruiseSpeed: 8.7,
@@ -15,6 +15,11 @@ export const GAME_CONFIG = {
     lateralSpeed: 13,
     lateralResponse: 7,
     lateralLimit: 15,
+    verticalSpeed: 9,
+    verticalResponse: 6,
+    minAltitude: -7,
+    maxAltitude: 12,
+    collisionRadius: 0.65,
     bankAmount: 0.18,
   },
   camera: { baseFov: 70, boostFov: 79, followResponse: 3.8, lookAhead: 22 },
@@ -26,6 +31,14 @@ export const GAME_CONFIG = {
     bloomMaxHeight: 240,
   },
   scan: { cooldown: 5 },
+  course: { splitZ: -740, splitStart: -640, splitEnd: -860, visibleAhead: 260 },
+  obstacles: {
+    damageBattery: 0.045,
+    damagePrivacy: 9,
+    rotorSpeed: 0.48,
+    rotorHalfWidth: 1.3,
+  },
+  scoring: { targetSeconds: 160, fastSeconds: 110, timeMultiplier: 50 },
   nodes: {
     trackerPrivacyDamage: 12,
     trackerBatteryDamage: 0.04,

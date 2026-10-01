@@ -8,7 +8,9 @@ type Surface = "stone" | "metal" | "glass" | "light";
 type V3 = [number, number, number];
 
 /** Four material batches. Detail is modeled once, not hundreds of React objects. */
-export function makeHarbor(stage: StageDefinition) {
+export function makeHarbor(stage: StageDefinition, section = 0) {
+  const inSection = (z: number) =>
+    Math.min(3, Math.floor(Math.abs(z) / 450)) === section;
   const parts: Record<Surface, THREE.BufferGeometry[]> = {
     stone: [],
     metal: [],
@@ -103,6 +105,7 @@ export function makeHarbor(stage: StageDefinition) {
     );
   }
   HARBOR.districts.forEach(({ x, z, radius, tower }, i) => {
+    if (!inSection(z)) return;
     const h = tower + (stage.motif === "prisms" ? 12 : 0);
     const side = Math.sign(x);
     // Stacked tidal platforms give each station a shore, lip, and submerged foundation.
@@ -300,7 +303,7 @@ export function makeHarbor(stage: StageDefinition) {
     }
   });
   // Three memorable crossings separated by long open views of the water.
-  [-160, -355, -555].forEach((z, index) => {
+  [-180, -560, -940, -1400, -1700].filter(inSection).forEach((z, index) => {
     const height = index === 1 ? 51 : 29;
     for (const dz of [-3, 3]) {
       tube(
@@ -342,8 +345,12 @@ export function makeHarbor(stage: StageDefinition) {
   // Purposeful service conduit follows the player corridor, disappearing underwater.
   for (const side of [-1, 1]) {
     const pts: V3[] = [];
-    for (let j = 0; j <= 28; j++)
-      pts.push([side * (24 + Math.sin(j * 0.9) * 2), -12.5, 35 - j * 26]);
+    for (let j = 0; j <= 18; j++)
+      pts.push([
+        side * (24 + Math.sin(j * 0.9) * 2),
+        -12.5,
+        -section * 450 + 15 - j * 26,
+      ]);
     tube("metal", pts, 0.75);
     tube(
       "light",
@@ -352,12 +359,74 @@ export function makeHarbor(stage: StageDefinition) {
       stage.accent,
     );
     HARBOR.lightStops.forEach((z) => {
+      if (!inSection(z)) return;
       add("stone", new THREE.CylinderGeometry(6, 4, 4, 20), [
         side * 31,
         dockHeight(z) - 15,
         z,
       ]);
     });
+  }
+  // Each act has its own architectural silhouette, still in the same four batches.
+  if (section === 1) {
+    for (const z of [-455, -570, -685]) {
+      for (const side of [-1, 1]) {
+        box("metal", [3, 52, 7], [side * 24, 9, z], "#b49c75");
+        box("glass", [4.5, 17, 8], [side * 24, 20, z]);
+        box("light", [0.3, 46, 0.4], [side * 22.3, 9, z + 3.6], stage.accent);
+      }
+      box("stone", [52, 3, 8], [0, 36, z]);
+      box("light", [43, 0.2, 1.4], [0, 34.4, z], stage.accentSoft);
+    }
+  }
+  if (section === 2) {
+    for (const z of [-1005, -1240]) {
+      for (const side of [-1, 1]) {
+        add(
+          "metal",
+          new THREE.TorusGeometry(21, 2, 8, 32),
+          [side * 43, 17, z],
+          "#b49b75",
+          [0, side * 0.4, 0],
+        );
+        box("stone", [11, 29, 15], [side * 43, -2, z]);
+        for (let k = 0; k < 6; k++)
+          box(
+            "light",
+            [6, 0.4, 0.4],
+            [side * 43, k * 3, z + 8],
+            stage.accentSoft,
+          );
+      }
+    }
+  }
+  if (section === 3) {
+    for (let i = 0; i < 5; i++) {
+      const z = -1480 - i * 57;
+      for (const side of [-1, 1]) {
+        box("stone", [3.5, 47 + i * 4, 4], [side * (32 - i), 7 + i * 2, z]);
+        tube(
+          "metal",
+          [
+            [side * 30, 30, z],
+            [side * 21, 43, z],
+            [0, 49 + i * 2, z],
+          ],
+          0.7,
+          "#b49b75",
+        );
+        tube(
+          "light",
+          [
+            [side * 30, 29, z],
+            [side * 21, 42, z],
+            [0, 48 + i * 2, z],
+          ],
+          0.12,
+          stage.accent,
+        );
+      }
+    }
   }
   return Object.fromEntries(
     Object.entries(parts).map(([name, geometries]) => {
