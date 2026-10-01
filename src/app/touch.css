@@ -1,0 +1,165 @@
+/* Keep touch controls and flight telemetry in separate vertical bands. */
+@media (any-pointer: coarse), (max-width: 900px) {
+  .game-shell {
+    min-height: 0;
+  }
+  .game-canvas {
+    touch-action: none;
+  }
+  .desktop-instructions,
+  .flight-hud .flight-navigation > .flight-keys {
+    display: none;
+  }
+  .touch-instructions {
+    display: grid;
+  }
+  .mobile-controls {
+    position: absolute;
+    z-index: 7;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 max(16px, env(safe-area-inset-right))
+      calc(12px + env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+    pointer-events: none;
+    gap: 12px;
+  }
+  .flight-stick {
+    position: relative;
+    width: 124px;
+    height: 124px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid #b5fff099;
+    background: radial-gradient(
+      circle,
+      #153646cc 0 32%,
+      #10263799 33% 65%,
+      #b5fff01c 66%
+    );
+    box-shadow:
+      inset 0 0 20px #76daca16,
+      0 4px 15px #07172355;
+    pointer-events: auto;
+    touch-action: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .flight-stick-cross {
+    position: absolute;
+    inset: 25%;
+    border: 1px solid #b5fff02a;
+    border-radius: 50%;
+  }
+  .flight-stick-knob {
+    position: absolute;
+    left: calc(50% - 23px);
+    top: calc(50% - 23px);
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid #d5fff3;
+    background: linear-gradient(145deg, #a9ece7, #377586);
+    color: #102637;
+    box-shadow: 0 3px 12px #0006;
+    font-size: 22px;
+    pointer-events: none;
+  }
+  .flight-stick.is-active {
+    border-color: #d5fff3;
+  }
+  .touch-actions {
+    display: grid;
+    gap: 7px;
+  }
+  .mobile-control-row {
+    display: flex;
+    gap: 7px;
+  }
+  .mobile-controls .touch-button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 54px;
+    height: 52px;
+    padding: 0;
+    gap: 2px;
+    border-radius: 12px;
+    border: 1px solid #b5fff080;
+    background: #102637d9;
+    color: #fff3d6;
+    font:
+      600 9px/1 Consolas,
+      monospace;
+    pointer-events: auto;
+    touch-action: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-controls .touch-button strong {
+    font:
+      600 23px/1 "Segoe UI",
+      sans-serif;
+  }
+  .mobile-controls .touch-button--amber {
+    background: #765339e8;
+    border-color: #ffe185;
+  }
+  .mobile-controls .touch-button.is-active {
+    background: #b5fff0;
+    color: #102637;
+  }
+  .mobile-controls .touch-button:disabled {
+    opacity: 0.48;
+  }
+  .flight-hud .flight-navigation {
+    left: max(16px, env(safe-area-inset-left));
+    bottom: calc(150px + env(safe-area-inset-bottom));
+    width: 124px;
+    padding: 7px;
+  }
+  .flight-hud .flight-navigation header {
+    font-size: 7px;
+  }
+  .flight-hud .flight-navigation > div > b {
+    font-size: 20px;
+  }
+  .flight-hud .dili-hint {
+    right: max(16px, env(safe-area-inset-right));
+    left: auto;
+    bottom: calc(150px + env(safe-area-inset-bottom));
+    width: min(180px, 43vw);
+    font-size: 10px;
+  }
+  .flight-hud .hud-footer {
+    display: none;
+  }
+  .flight-hud .altitude-readout small {
+    display: none;
+  }
+  .pilot-guidance kbd {
+    display: none;
+  }
+}
+@media (max-height: 500px) and (any-pointer: coarse),
+  (max-height: 500px) and (max-width: 900px) {
+  .flight-stick {
+    width: 104px;
+    height: 104px;
+  }
+  .mobile-controls .touch-button {
+    height: 44px;
+    width: 50px;
+  }
+  .flight-hud .flight-navigation,
+  .flight-hud .dili-hint {
+    bottom: calc(124px + env(safe-area-inset-bottom));
+  }
+}

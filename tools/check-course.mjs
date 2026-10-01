@@ -72,6 +72,29 @@ assert(
   axisVelocity(7, 0, 7, 12, 0.2) < 0.1,
   "Released altitude input stops promptly",
 );
+const analog = flightControls(new Set(["shift"]), 0, { x: 0.35, y: 0.65 });
+assert.equal(analog.steer, 0.35, "Touch steering remains proportional");
+assert.equal(analog.lift, 0.65, "Analog climbs while steering");
+assert.equal(analog.boosting, true, "Nitro works with both analog axes");
+assert.equal(flightControls(new Set(), 0, { x: -0.5, y: -0.8 }).lift, -0.8);
+assert.equal(flightControls(new Set(["a", "e"]), 0, { x: 1, y: 1 }).steer, -1);
+assert.equal(flightControls(new Set(["e"]), 0, { x: 1, y: 1 }).lift, -1);
+const { gameInput } = load("src/game/input.ts");
+gameInput.touchAxis.current.x = 1;
+gameInput.touchAxis.current.y = -1;
+gameInput.pressed.current.add("shift");
+gameInput.clear();
+assert.equal(
+  gameInput.touchAxis.current.x,
+  0,
+  "Pause clears horizontal touch input",
+);
+assert.equal(
+  gameInput.touchAxis.current.y,
+  0,
+  "Pause clears vertical touch input",
+);
+assert.equal(gameInput.pressed.current.size, 0, "Pause clears held actions");
 const damp = (value, target, response, dt) =>
   target + (value - target) * Math.exp(-response * dt);
 

@@ -33,3 +33,12 @@ Earlier gameplay repair QA covered scan, keyboard climb/release, braking, pause/
 Performance depends on the browser, hardware and quality setting. No universal 60 FPS, bug-free or all-browser certification is claimed. Browser console warnings from extensions and the dependency's deprecated Three.Clock are separate from app errors. Profile-image exports may fall back to initials if the remote host blocks cross-origin loading.
 
 The launch video is a cinematic gameplay demonstration with editorial typography and telemetry overlays. It does not show the complete in-game HUD or every mechanic.
+
+## Touch analog update — October 1
+
+- Replaced directional buttons with a radial analog stick; steering and climb/dive are proportional and can be combined with held Nitro, Thrust or Brake.
+- Browser drag moved altitude from 0.0 to +1.0; the stick returned to center after release. Pause/resume removed and restored controls.
+- Inspected 390 × 844 portrait, 844 × 390 landscape and 820 × 1180 tablet layouts. Measured stick and navigation bounds are separated; actions stay within the viewport.
+- Touch layouts also activate with `any-pointer: coarse` for larger touchscreen tablets. Physical-device multitouch was not available in this session.
+- Input assertions cover analog diagonals, Nitro with both axes, keyboard priority and clearing on pause. Existing course simulations, lint and production build pass.
+- Dragging updates mutable input and the knob directly, without a React render on every pointer movement.

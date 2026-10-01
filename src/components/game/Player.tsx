@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { RefObject, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { localAdvisor } from "@/game/advisor";
+import { gameInput } from "@/game/input";
 import { GAME_CONFIG } from "@/game/config";
 import {
   axisVelocity,
@@ -165,6 +166,7 @@ export function Player({
     const controls = flightControls(
       input,
       mouseX.current * useSettingsStore.getState().mouseSensitivity,
+      gameInput.touchAxis.current,
     );
     const { boosting, steer, lift } = controls;
     signalState.boost.value = THREE.MathUtils.damp(

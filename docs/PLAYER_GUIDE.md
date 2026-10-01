@@ -19,7 +19,7 @@ Choose a channel, press **Transmit**, read the message and launch. The skyway fo
 
 The HUD keeps a PC key diagram visible. Direction cues show which key moves toward the next opening or power node. **AVOID RED** points around a tracker. When the cue says **HOLD YOUR LINE**, release the steering/climb keys.
 
-On smaller screens, hold Left/Right and Climb/Dive. Thrust, Brake and Boost can be held together with steering. Tap Scan or Pause.
+On phones and touchscreen tablets, drag the left analog stick to steer and climb/dive. Small movements make fine adjustments; release to stop steering. Hold Thrust, Brake or Nitro with your other thumb. Tap Scan or Pause.
 
 ## What to look for
 

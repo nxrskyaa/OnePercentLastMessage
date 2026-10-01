@@ -13,6 +13,7 @@ import "./flight-ui.css";
 import "./kinetic-ui.css";
 import "./cinematic.css";
 import "./pilot-ui.css";
+import "./touch.css";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??

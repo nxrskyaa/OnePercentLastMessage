@@ -15,7 +15,11 @@ export interface PilotCue {
 }
 
 /** Course bends are automatic; pilot input changes offsets inside the skyway. */
-export function flightControls(keys: Set<string>, mouse = 0) {
+export function flightControls(
+  keys: Set<string>,
+  mouse = 0,
+  touch = { x: 0, y: 0 },
+) {
   const braking = keys.has("s") || keys.has("arrowdown");
   const boosting = keys.has("shift") && !braking;
   const accelerating = keys.has("w") || keys.has("arrowup");
@@ -30,10 +34,13 @@ export function flightControls(keys: Set<string>, mouse = 0) {
         1,
         ["a", "d", "arrowleft", "arrowright"].some((key) => keys.has(key))
           ? keyboard
-          : mouse,
+          : touch.x || mouse,
       ),
     ),
-    lift: Number(keys.has("q")) - Number(keys.has("e")),
+    lift:
+      keys.has("q") || keys.has("e")
+        ? Number(keys.has("q")) - Number(keys.has("e"))
+        : touch.y,
     targetSpeed: braking
       ? GAME_CONFIG.movement.brakeSpeed
       : boosting

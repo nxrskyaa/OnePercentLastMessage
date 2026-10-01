@@ -18,8 +18,8 @@ const STEPS = [
     ],
     touchChips: [
       ["THRUST", "ACCELERATE"],
-      ["◀ ▶", "STEER"],
-      ["↑ ↓", "CLIMB / DIVE"],
+      ["ANALOG ↔", "STEER"],
+      ["ANALOG ↕", "CLIMB / DIVE"],
     ],
   },
   {
@@ -32,7 +32,7 @@ const STEPS = [
       ["RED", "DANGER"],
     ],
     touchChips: [
-      ["BOOST", "HOLD"],
+      ["NITRO", "HOLD"],
       ["CYAN", "POWER"],
       ["RED", "DANGER"],
     ],
@@ -66,8 +66,8 @@ const STEPS_ID = [
     ],
     touchChips: [
       ["MAJU", "AKSELERASI"],
-      ["◀ ▶", "BELOK"],
-      ["↑ ↓", "NAIK / TURUN"],
+      ["ANALOG ↔", "BELOK"],
+      ["ANALOG ↕", "NAIK / TURUN"],
     ],
   },
   {
@@ -80,7 +80,7 @@ const STEPS_ID = [
       ["MERAH", "BAHAYA"],
     ],
     touchChips: [
-      ["BOOST", "TAHAN"],
+      ["NITRO", "TAHAN"],
       ["BIRU", "DAYA"],
       ["MERAH", "BAHAYA"],
     ],

@@ -112,7 +112,7 @@ export function HowToPlay() {
             {id ? "KONTROL SENTUH" : "TOUCH CONTROLS"}
           </span>
           <div className="guide-control">
-            <kbd>◀ ▶</kbd>
+            <kbd>ANALOG ↔</kbd>
             <span>{id ? "Belok" : "Steer"}</span>
           </div>
           <div className="guide-control">
@@ -124,15 +124,15 @@ export function HowToPlay() {
             <span>{id ? "Perlambat" : "Slow down"}</span>
           </div>
           <div className="guide-control">
-            <kbd>↑ ↓</kbd>
+            <kbd>ANALOG ↕</kbd>
             <span>
               {id
-                ? "Naik / Turun (tombol kiri)"
-                : "Climb / Dive (left controls)"}
+                ? "Geser atas / bawah untuk naik / turun"
+                : "Drag up / down to climb / dive"}
             </span>
           </div>
           <div className="guide-control">
-            <kbd>BOOST</kbd>
+            <kbd>NITRO</kbd>
             <span>
               {id
                 ? "Tahan untuk cepat · boros daya"
