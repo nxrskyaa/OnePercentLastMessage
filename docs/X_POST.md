@@ -1,6 +1,7 @@
 # X launch post
 
 🔋 1% — LAST MESSAGE
+
 My entry for the @DlicomApp AI Game Jam.
 
 I built this around a familiar problem: your phone is at 1%, and there's still one message you need to send.
@@ -13,13 +14,13 @@ Nitro buys you speed but spends extra battery. Trackers take privacy. Power pick
 
 ✦ On your flight
 
-• Three channels: Tidal Conduit, Prism Archive and Solar Relay
-• Three courier craft: Skimmer, Needle and Comet
-• Curved skyways, climbs, dives, moving gates and rotors
-• DILI guidance, scan pulses and nitro
-• Keyboard and touch controls; English and Indonesian
-• Downloadable result cards with your profile and flight stats
-• An original soundtrack and synthesized SFX
+- Three channels: Tidal Conduit, Prism Archive and Solar Relay
+- Three courier craft: Skimmer, Needle and Comet
+- Curved skyways, climbs, dives, moving gates and rotors
+- DILI guidance, scan pulses and nitro
+- Keyboard and touch controls; English and Indonesian
+- Downloadable result cards with your profile and flight stats
+- An original soundtrack and synthesized SFX
 
 Built with Codex for the Dlicom AI Game Jam. Free to play in your browser.
 
