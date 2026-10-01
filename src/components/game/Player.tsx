@@ -1,7 +1,7 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { RefObject, useEffect, useMemo, useRef } from "react";
+import { RefObject, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { localAdvisor } from "@/game/advisor";
 import { GAME_CONFIG } from "@/game/config";
@@ -9,8 +9,8 @@ import { aperture, hitsObstacle, type GameNode } from "@/game/nodes";
 import { playSound, setAudioIntensity } from "@/lib/audio";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
-import { energySurface } from "@/rendering/materials";
-import { createChatGeometry } from "@/rendering/chatGeometry";
+import { craftAt } from "@/game/crafts";
+import { CourierRocket } from "./CourierRocket";
 import { signalState } from "@/rendering/signalState";
 
 interface PlayerProps {
@@ -21,10 +21,6 @@ interface PlayerProps {
   nodes: GameNode[];
 }
 
-function createPacketShell() {
-  return createChatGeometry(1.75, 1.15, 0.7);
-}
-
 export function Player({
   playerRef,
   keys,
@@ -33,29 +29,7 @@ export function Player({
   nodes,
 }: PlayerProps) {
   const visual = useRef<THREE.Group>(null);
-  const trail = useRef<THREE.Group>(null);
-  const core = useRef<THREE.Mesh>(null);
-  const shellGeometry = useMemo(() => createPacketShell(), []);
-  const materials = useMemo(() => {
-    const shell = new THREE.MeshPhysicalMaterial({
-      color: "#5277cb",
-      metalness: 0.12,
-      roughness: 0.24,
-      clearcoat: 1,
-      clearcoatRoughness: 0.08,
-      emissive: "#3158af",
-      emissiveIntensity: 0.18,
-    });
-    return { core: energySurface("#d6f5ff", 3.2, true), shell };
-  }, []);
-  useEffect(
-    () => () => {
-      materials.core.dispose();
-      materials.shell.dispose();
-      shellGeometry.dispose();
-    },
-    [materials, shellGeometry],
-  );
+  const craft = craftAt(useGameStore((state) => state.stageIndex));
   const speed = useRef<number>(GAME_CONFIG.movement.cruiseSpeed);
   const sideSpeed = useRef(0);
   const verticalSpeed = useRef(0);
@@ -76,6 +50,11 @@ export function Player({
   const hitUntil = useRef(0);
   const relayPulseUntil = useRef(0);
 
+  useEffect(() => {
+    signalState.boost.value = 0;
+    signalState.flightTime = 0;
+  }, []);
+
   useFrame(({ clock }, frameDelta) => {
     const body = playerRef.current;
     const model = visual.current;
@@ -83,7 +62,6 @@ export function Player({
     const state = useGameStore.getState();
     if (state.phase !== "playing") {
       if (state.phase === "failed") {
-        if (trail.current) trail.current.visible = false;
         model.scale.setScalar(
           THREE.MathUtils.damp(
             model.scale.x,
@@ -102,7 +80,6 @@ export function Player({
           ),
         );
       } else if (state.phase !== "paused") {
-        if (trail.current) trail.current.visible = true;
         model.scale.setScalar(
           THREE.MathUtils.damp(
             model.scale.x,
@@ -226,31 +203,6 @@ export function Player({
         delta,
       ),
     );
-    if (trail.current) {
-      const trailScale = boosting
-        ? 1.75
-        : relayPulse
-          ? 1.45
-          : battery.current < 0.15
-            ? 0.55
-            : 1;
-      trail.current.scale.z = THREE.MathUtils.damp(
-        trail.current.scale.z,
-        trailScale,
-        6,
-        delta,
-      );
-      trail.current.visible =
-        !struck &&
-        (battery.current > 0.035 || Math.sin(clock.elapsedTime * 17) > 0);
-    }
-    if (core.current) {
-      const pulse = battery.current < 0.15 ? 0.78 : 1;
-      core.current.scale.setScalar(
-        pulse + (boosting ? 0.16 : 0) + Math.sin(clock.elapsedTime * 7) * 0.07,
-      );
-    }
-
     if (boosting && !boostHeld.current) playSound("boost");
     boostHeld.current = boosting;
     elapsed.current += delta;
@@ -494,123 +446,8 @@ export function Player({
   return (
     <group ref={playerRef}>
       <group ref={visual}>
-        <mesh position={[0, 0, -0.8]} scale={[1.1, 0.66, 1.4]}>
-          <icosahedronGeometry args={[1.6, 2]} />
-          <meshPhysicalMaterial
-            color="#c2e1f4"
-            metalness={0.12}
-            roughness={0.28}
-            clearcoat={1}
-            emissive="#6b9ed0"
-            emissiveIntensity={0.1}
-          />
-        </mesh>
-        <mesh position={[0, 0.66, -0.74]} scale={[0.72, 0.24, 1.05]}>
-          <icosahedronGeometry args={[1.25, 1]} />
-          <meshStandardMaterial
-            color="#ecf7ff"
-            metalness={0.2}
-            roughness={0.3}
-          />
-        </mesh>
-        <mesh
-          position={[0, 0, 1.72]}
-          geometry={shellGeometry}
-          material={materials.shell}
-        />
-        <mesh position={[0, 0, 0.25]}>
-          <sphereGeometry args={[2.05, 20, 14]} />
-          <meshPhysicalMaterial
-            color="#bde9ff"
-            metalness={0.05}
-            roughness={0.12}
-            clearcoat={1}
-            transparent
-            opacity={0.11}
-            depthWrite={false}
-          />
-        </mesh>
-        <mesh position={[0, 0.98, -0.75]}>
-          <boxGeometry args={[0.14, 0.08, 2.5]} />
-          <meshBasicMaterial color="#ffdfa9" toneMapped={false} />
-        </mesh>
-        {[-1, 1].map((side) => (
-          <group
-            key={side}
-            position={[side * 1.5, -0.18, 0.18]}
-            rotation={[0, side * 0.34, side * -0.22]}
-          >
-            <mesh scale={[0.6, 0.29, 1.8]}>
-              <icosahedronGeometry args={[1, 1]} />
-              <meshStandardMaterial
-                color="#83bee5"
-                metalness={0.25}
-                roughness={0.3}
-                emissive="#356b9c"
-                emissiveIntensity={0.13}
-              />
-            </mesh>
-            <mesh position={[0, 0, 1.35]}>
-              <sphereGeometry args={[0.2, 8, 6]} />
-              <meshBasicMaterial color="#fff1d4" toneMapped={false} />
-            </mesh>
-          </group>
-        ))}
-        {[-1, 1].map((side) => (
-          <group
-            key={`eye-${side}`}
-            position={[side * 0.52, 0.16, 2.15]}
-            rotation={[0, 0, side * -0.52]}
-          >
-            <mesh>
-              <boxGeometry args={[0.29, 0.42, 0.08]} />
-              <meshBasicMaterial color="#f8f9ed" toneMapped={false} />
-            </mesh>
-            <mesh position={[side * 0.035, 0, 0.052]}>
-              <boxGeometry args={[0.13, 0.27, 0.05]} />
-              <meshBasicMaterial color="#19365c" />
-            </mesh>
-          </group>
-        ))}
-        <mesh position={[0, -0.25, 2.19]} rotation={[0, 0, Math.PI]}>
-          <torusGeometry args={[0.17, 0.035, 4, 12, Math.PI]} />
-          <meshBasicMaterial color="#19365c" />
-        </mesh>
-        <mesh ref={core} position={[0, -0.02, 2.3]} material={materials.core}>
-          <octahedronGeometry args={[0.18, 0]} />
-        </mesh>
+        <CourierRocket craft={craft} />
       </group>
-      <group ref={trail}>
-        <mesh position={[0, 0, 3]} rotation={[-Math.PI / 2, 0, 0]}>
-          <coneGeometry args={[0.13, 5, 6, 1, true]} />
-          <meshBasicMaterial
-            color="#4ac8e9"
-            transparent
-            opacity={0.18}
-            depthWrite={false}
-            side={THREE.DoubleSide}
-            toneMapped={false}
-          />
-        </mesh>
-        {[-1, 1].map((side) => (
-          <mesh
-            key={side}
-            position={[side * 0.34, 0, 2.4]}
-            rotation={[-Math.PI / 2, 0, 0]}
-          >
-            <coneGeometry args={[0.045, 3.7, 4, 1, true]} />
-            <meshBasicMaterial
-              color="#9aeaf9"
-              transparent
-              opacity={0.42}
-              depthWrite={false}
-              side={THREE.DoubleSide}
-              toneMapped={false}
-            />
-          </mesh>
-        ))}
-      </group>
-      <pointLight color="#a2e9ff" intensity={17} distance={25} decay={2} />
     </group>
   );
 }

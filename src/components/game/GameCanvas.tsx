@@ -21,6 +21,7 @@ import { RouteFork } from "@/components/game/RouteFork";
 import { ScanPulse } from "@/components/game/ScanPulse";
 import { SignalWater } from "@/components/game/SignalWater";
 import { HarborLife } from "@/components/game/HarborLife";
+import { FlightFeedback } from "@/components/game/FlightFeedback";
 import { StageLighting } from "@/components/game/StageLighting";
 
 import { RelayLanterns } from "@/components/game/RelayLanterns";
@@ -90,6 +91,7 @@ function GameScene() {
         nodes={nodes}
       />
       <ScanPulse playerRef={playerRef} />
+      <FlightFeedback key={`feedback-${runId}`} playerRef={playerRef} />
       <ChaseCamera key={`camera-${runId}`} playerRef={playerRef} />
       <QualityMonitor />
       <LightBloom />

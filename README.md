@@ -26,6 +26,8 @@ On phones and small tablets, use the on-screen **Left**, **Right**, **Climb**, *
 ## Features
 
 - Three selectable stage looks — Tidal Conduit, Prism Archive, and Solar Relay — with distinct colors, landmarks, moving motifs, and seeded node layouts. New Message advances to the next stage.
+- Three original courier craft: the twin-pod Skimmer, delta-wing Needle, and triple-engine Comet. Each has its own hull, canopy, wing silhouette, nozzle layout, and exhaust color.
+- Hold Shift or touch Boost for white-hot engine jets, shock rings, peripheral speed streaks, and a wider chase camera. Exhaust remains visible on Low without bloom. Scan waves, relay pulses, and obstacle sparks appear when triggered; reduced motion disables speed streaks and impact sparks.
 - Each 1.8 km course has four acts: Departure, Sky Locks, Engine Room, and Last Approach. Later sectors demand vertical flight and precise timing. Prism inverts the climb/dive sequence and Solar mirrors lateral approaches; both tighten and accelerate the gates.
 - Mechanical sky locks move their openings in two axes. Rotors require threading the gaps between their blades. Clean passes earn points; contact costs battery and privacy. Cyan boosters provide enough energy to finish if collected carefully.
 - One continuous procedural network scene with reusable relay, tracker, booster, tip, and route nodes.
@@ -52,7 +54,7 @@ npm run dev
 
 Open <http://localhost:3000> in a modern browser. Desktop offers the widest view; portrait and landscape mobile layouts include touch flight controls and cap runtime rendering at Low for playability.
 
-The renderer uses standard Three.js WebGL with hardware antialiasing, filmic tone mapping, and an adaptive pixel budget. Stage lighting pairs cool signal surfaces with authored warm or cyan fixtures, baked light pools, and small batched floor markings; no real-time shadows are required. `?perf=1` displays FPS, frame time, draw calls, triangles, render scale, and quality, including in production when diagnosing a device. GPU pixel count is capped before the first frame on large screens. Postprocessing bloom and ambient packet particles were removed to keep the stage responsive.
+The renderer uses standard Three.js WebGL with hardware antialiasing, filmic tone mapping, and an adaptive pixel budget. Stage lighting pairs cool signal surfaces with authored warm or cyan fixtures, baked light pools, and small batched floor markings; no real-time shadows are required. `?perf=1` displays FPS, frame time, draw calls, triangles, render scale, and quality, including in production when diagnosing a device. GPU pixel count is capped before the first frame on large screens. Medium and High use restrained bloom and selective water reflections. Low skips those passes. Ambient packet particles are omitted; effect geometry is pooled or batched to limit render cost.
 
 The committed music file is used directly by the app. Regenerating it is optional and requires Python with NumPy and FFmpeg: `python tools/generate_music.py`.
 
@@ -61,6 +63,7 @@ The committed music file is used directly by the app. Regenerating it is optiona
 ```bash
 npm run lint
 npm run test:course
+node tools/check-crafts.mjs
 npm run format:check
 npm run build
 npm run start

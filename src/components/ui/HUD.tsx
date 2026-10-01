@@ -6,6 +6,7 @@ import { missionAt } from "@/game/missions";
 import { copyFor } from "@/game/copy";
 import { formatTime } from "@/lib/format";
 import { courseAct } from "@/game/course";
+import { craftAt } from "@/game/crafts";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
 
@@ -26,6 +27,7 @@ export function HUD() {
   const critical = battery < 0.1;
   const act = courseAct(distance);
   const altitude = useGameStore((state) => state.altitude ?? 0);
+  const craft = craftAt(useGameStore((state) => state.stageIndex));
   return (
     <div
       className={`game-hud ${critical ? "game-hud--critical" : ""}`}
@@ -90,7 +92,7 @@ export function HUD() {
           {altitude >= 0 ? "+" : ""}
           {altitude.toFixed(1)}
         </b>
-        <small>Q ↑ / E ↓</small>
+        <small>{craft.name} · Q ↑ / E ↓</small>
       </div>
       {distance <
         Math.abs(GAME_CONFIG.destination.z) +
@@ -153,7 +155,24 @@ export function HUD() {
             {scanCooldown <= 0 ? t.scanReady : `${scanCooldown.toFixed(1)}s`}
           </small>
         </div>
-        {boosting && <span className="boost-active">{t.boosting}</span>}
+        <span
+          className={`nitro-status ${boosting ? "nitro-status--active" : ""}`}
+          aria-label={
+            boosting ? "Nitro active" : "Nitro ready. Hold Shift or Boost."
+          }
+        >
+          <b aria-hidden="true">»</b>
+          <span>
+            NITRO{" "}
+            <small>
+              {boosting
+                ? language === "id"
+                  ? "AKTIF"
+                  : "ENGAGED"
+                : "SHIFT / BOOST"}
+            </small>
+          </span>
+        </span>
       </footer>
     </div>
   );

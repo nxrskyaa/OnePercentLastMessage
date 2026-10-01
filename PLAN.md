@@ -1,5 +1,16 @@
 # 1% — Last Message: implementation plan
 
+## Rocket silhouettes and visible nitro — October 1, 2026
+
+- Replace the shared bulb-like packet with three original courier craft: rounded twin-pod Skimmer, faceted delta Needle, and broad three-engine Comet. Keep the DILI message visor and authored material accents.
+- Add nozzle-anchored bright exhaust, shock rings, and a bounded pool of peripheral velocity streaks. Effects must remain visible on Low without bloom, freeze on pause, and disappear on failure.
+- Keep motion, camera FOV, battery cost and controls intact. Animate nozzle heat, exhaust and boost light directly in the canvas; avoid per-frame React state and extra light sources.
+- Check each craft in normal/boost views, keyboard and touch boost, pause/retry, render cost, lint, build and production deployment.
+
+Design intake: original stylized game props, not image reconstruction. The img2threejs intake requires an object reference for likeness gates; the supplied mascot and game UI references establish brand identity but do not define a rocket. No exact reconstruction or completed skill fidelity pipeline is claimed. Quality contract: clearly different silhouettes, continuous fuselage, attached engine sockets, identifiable nozzles, readable DILI visor, and approximately 5k or fewer craft triangles with reusable effect buffers.
+
+Verification: geometry budget/finite-attribute checks pass for Skimmer (2,784 triangles), Needle (2,656), and Comet (3,384), all four material batches. Chrome production-build checks covered all three craft, touch boost, keyboard scan, battery failure/results, pause/resume and stage switching at 1280×720 and 391×844 CSS viewports. Needle nozzle placement was corrected after visual QA on Low. Sampled warmed frames ranged 55–83 FPS; one transition/scan sample fell to 48 FPS. These are local Chrome measurements, not a universal 60 FPS guarantee or physical-phone certification. Lint, formatting, production build and all 36 movement-limited course simulations pass. No additional runtime dependencies or real-time light sources were added.
+
 ## Vertical flight and graphic UI — October 1, 2026
 
 - Expand the authored route to 1.8 km with four acts, power pickups, vertical aperture gates and rotating mechanical obstacles. Target a 2-minute skilled run; rebalance battery and scoring.

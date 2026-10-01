@@ -23,6 +23,16 @@ export const GAME_CONFIG = {
     bankAmount: 0.18,
   },
   camera: { baseFov: 70, boostFov: 79, followResponse: 3.8, lookAhead: 22 },
+  nitro: {
+    idleJetLength: 1.25,
+    boostJetLength: 4.7,
+    shockRingsPerEngine: 4,
+    streakCount: 24,
+    streakLength: 3.4,
+    streakTravel: 48,
+    idleLight: 14,
+    boostLight: 42,
+  },
   world: {
     fogDensity: 0.00078,
     fixtureLightIntensity: 1050,

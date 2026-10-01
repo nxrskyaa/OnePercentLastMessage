@@ -450,3 +450,52 @@
     top: 8px;
   }
 }
+.nitro-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e5ddc3;
+  padding: 7px 10px;
+  background: #132c42dc;
+  border-left: 2px solid #d0ae73;
+  font:
+    800 11px/1.1 Arial,
+    sans-serif;
+  transform: skewX(-7deg);
+  transition:
+    color 0.12s,
+    background 0.12s;
+}
+.nitro-status > b {
+  font-size: 26px;
+  line-height: 1;
+  color: #e5c687;
+}
+.nitro-status small {
+  display: block;
+  margin-top: 3px;
+  font:
+    700 8px/1 Consolas,
+    monospace;
+  opacity: 0.7;
+}
+.nitro-status--active {
+  color: #15334e;
+  background: #baf2ef;
+  border-color: #fff6d7;
+}
+.nitro-status--active > b {
+  color: #276b88;
+}
+@media (max-width: 900px) {
+  .nitro-status {
+    padding: 4px 7px;
+    font-size: 9px;
+  }
+  .nitro-status > b {
+    font-size: 18px;
+  }
+  .nitro-status small {
+    font-size: 7px;
+  }
+}
