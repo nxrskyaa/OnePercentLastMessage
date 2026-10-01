@@ -11,7 +11,7 @@ This launch includes three channels, three courier craft, a curved 1.8 km route,
 - **last-message-launch.mp4:** 33-second introduction and gameplay film, 1920 × 1080 at 30 FPS, with the original game score and synthesized SFX. Ready to attach to X.
 - **last-message-poster.png:** full-resolution still from the introduction.
 - **last-message-video-source.zip:** editable Remotion project, prepared footage, matching telemetry, brand art and audio. Unzip, run `npm install`, then `npm run dev` or `npm run render`.
-- **last-message-launch-docs.zip:** player guide, technical notes, credits, verification report, submission steps and one X paragraph.
+- **last-message-launch-docs.zip:** player guide, technical notes, credits, verification report, submission steps and the X launch post.
 
 The footage uses the real renderer and gameplay rules with scripted controls. The edit combines multiple flights; it is not an uninterrupted human speedrun. No stock gameplay or generated video is used.
 

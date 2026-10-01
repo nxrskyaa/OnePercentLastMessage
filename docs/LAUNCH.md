@@ -27,7 +27,7 @@ No wallet connection, transaction signing, seed phrases, private keys, payments 
 - [Player guide](PLAYER_GUIDE.md): controls, route reading and survival tips.
 - [Technical notes](TECHNICAL.md): architecture, setup, checks and deployment.
 - [Credits and asset provenance](CREDITS.md): art, soundtrack and AI assistance.
-- [X paragraph](X_POST.md): ready to copy.
+- [X launch post](X_POST.md): ready to copy.
 - [Launch verification](QA.md): checks and their practical limits.
 - [Release notes](RELEASE_NOTES.md): downloadable assets and playable link.
 - `launch-video/`: editable Remotion source and capture instructions.
