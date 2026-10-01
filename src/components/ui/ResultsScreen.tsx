@@ -14,6 +14,7 @@ import { usePlayerProfileStore } from "@/store/playerProfileStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { RouteMap } from "./RouteMap";
 import { craftAt } from "@/game/crafts";
+import { AnimatedNumber } from "./AnimatedNumber";
 
 export function ResultsScreen() {
   const phase = useGameStore((state) => state.phase);
@@ -95,7 +96,7 @@ export function ResultsScreen() {
           : "C";
   return (
     <section
-      className={`receipt-screen flight-results ${success ? "receipt-success" : "receipt-failed"}`}
+      className={`receipt-screen flight-results kinetic-results ${success ? "receipt-success" : "receipt-failed"}`}
       aria-label="Run result"
     >
       <header className="receipt-top">
@@ -176,7 +177,7 @@ export function ResultsScreen() {
           </div>
           <div className="receipt-score">
             <span>{t.score}</span>
-            <strong>{score.toLocaleString()}</strong>
+            <AnimatedNumber value={score} />
             <span>PTS</span>
           </div>
           <div className="receipt-stats">

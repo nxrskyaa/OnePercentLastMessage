@@ -1,0 +1,783 @@
+/* Original signal-courier graphics: diagonal ink ribbons and a live 3D hero. */
+.kinetic-menu {
+  --ink: #102637;
+  --paper: #fff3d6;
+  --signal: #ffe185;
+  background: linear-gradient(
+    106deg,
+    #102637f7 0 31%,
+    #1026378c 45%,
+    #10263700 65%
+  );
+  isolation: isolate;
+}
+.menu-impact-art {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.menu-impact-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #b2edeb;
+  clip-path: polygon(44% 0, 49% 0, 57% 18%, 73% 0, 80% 0, 56% 31%);
+  opacity: 0.85;
+  animation: ink-cut-in 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.menu-impact-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(#ffe9b680 1px, transparent 1.5px) 0 0 / 9px 9px;
+  clip-path: polygon(76% 54%, 100% 32%, 100% 78%, 84% 73%);
+  opacity: 0.5;
+}
+.menu-impact-art > span {
+  position: absolute;
+  top: 20%;
+  right: -2%;
+  font:
+    1000 italic clamp(70px, 11vw, 160px)/0.82 Arial,
+    sans-serif;
+  color: transparent;
+  -webkit-text-stroke: 1px #fff3d62c;
+  letter-spacing: -0.06em;
+  transform: rotate(-12deg);
+}
+.kinetic-menu .dispatch-header {
+  align-items: center;
+  animation: ribbon-in 0.45s 0.15s both;
+}
+.opening-replay {
+  margin-left: auto;
+  margin-right: 25px;
+  border: 1px solid #fff3d660;
+  padding: 7px 11px;
+  background: #102637a0;
+  color: #fff3d6;
+  font:
+    800 10px Consolas,
+    monospace;
+  transform: rotate(-2deg);
+  transition:
+    background 0.15s,
+    transform 0.15s;
+}
+.opening-replay:hover {
+  background: #fff3d6;
+  color: #102637;
+  transform: rotate(0);
+}
+.kinetic-menu .dispatch-content {
+  width: 38%;
+  max-width: 500px;
+  padding: 15px 0;
+}
+.kinetic-menu .dispatch-kicker {
+  display: inline-block;
+  padding: 7px 12px;
+  border: 0;
+  color: #102637;
+  background: #b2edeb;
+  transform: rotate(-2deg);
+  font-weight: 900;
+  animation: ribbon-in 0.45s 0.05s both;
+}
+.kinetic-menu .dispatch-content h1 {
+  margin: 22px 0 15px;
+  transform: rotate(-3deg);
+  animation: title-strike 0.65s 0.12s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.kinetic-menu .flight-logo {
+  gap: 12px;
+}
+.kinetic-menu .logo-charge {
+  font-family: Arial, sans-serif;
+  font-style: italic;
+  font-weight: 1000;
+  font-size: clamp(90px, 10vw, 150px);
+  color: #ffe185;
+  -webkit-text-stroke: 1px #fff3d6;
+  text-shadow: 6px 6px 0 #071721;
+}
+.kinetic-menu .logo-charge i {
+  background: #b2edeb;
+  height: 5px;
+  transform: skewX(-25deg);
+}
+.kinetic-menu .logo-wordmark {
+  font:
+    1000 italic clamp(27px, 3.5vw, 52px)/0.87 Arial,
+    sans-serif;
+  color: #fff3d6;
+  text-shadow: 4px 4px 0 #071721;
+}
+.kinetic-menu .logo-wordmark small {
+  color: #b2edeb;
+  font-style: normal;
+  margin-top: 15px;
+  text-shadow: none;
+}
+.kinetic-menu .dispatch-content > p {
+  font-size: 14px;
+  margin: 0 0 17px;
+  animation: ribbon-in 0.4s 0.3s both;
+}
+.kinetic-menu .dispatch-launch {
+  min-height: 65px;
+  padding: 14px 20px;
+  border: 3px solid #102637;
+  border-radius: 0;
+  background: #ffe185;
+  color: #102637;
+  transform: rotate(-2deg) skewX(-8deg);
+  box-shadow: 5px 5px 0 #fff3d6;
+  animation: ribbon-in 0.5s 0.28s both;
+}
+.kinetic-menu .dispatch-launch b {
+  font:
+    1000 italic clamp(22px, 2.5vw, 34px)/1 Arial,
+    sans-serif;
+}
+.kinetic-menu .dispatch-launch > span {
+  font-weight: 900;
+}
+.kinetic-menu .dispatch-launch:hover {
+  transform: rotate(-1deg) skewX(-8deg) translate(4px, -3px);
+  background: #fff3d6;
+  box-shadow: 2px 7px 0 #b2edeb;
+}
+.kinetic-menu .dispatch-tools {
+  border: 0;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 22px;
+}
+.kinetic-menu .dispatch-tools button {
+  padding: 10px 12px;
+  min-height: 43px;
+  border: 2px solid #fff3d6;
+  background: #102637;
+  color: #fff3d6;
+  font:
+    900 11px Arial,
+    sans-serif;
+  transform: skewX(-8deg) rotate(-2deg);
+  box-shadow: 3px 3px 0 #071721;
+  animation: ribbon-in 0.45s 0.4s both;
+}
+.kinetic-menu .dispatch-tools button:nth-child(2) {
+  animation-delay: 0.47s;
+}
+.kinetic-menu .dispatch-tools button:nth-child(3) {
+  animation-delay: 0.54s;
+}
+.kinetic-menu .dispatch-tools button:nth-child(4) {
+  animation-delay: 0.61s;
+}
+.kinetic-menu .dispatch-tools button > span {
+  font-size: 21px;
+  color: #b2edeb;
+}
+.kinetic-menu .dispatch-tools button:hover {
+  transform: skewX(-8deg) rotate(0) translateY(-3px);
+  background: #b2edeb;
+  color: #102637;
+}
+.kinetic-menu .dispatch-tools button:hover > span {
+  color: #102637;
+}
+.kinetic-menu .hangar-label {
+  display: inline-block;
+  border: 0;
+  background: #102637;
+  padding: 8px 13px;
+  transform: rotate(-2deg);
+  animation: ribbon-in 0.5s 0.4s both;
+}
+.kinetic-menu .hangar-craft {
+  top: 9%;
+  right: 0;
+  gap: 5px;
+  animation: hero-label-in 0.6s 0.45s both;
+}
+.kinetic-menu .hangar-craft i {
+  font:
+    900 9px Consolas,
+    monospace;
+  font-style: normal;
+  color: #102637;
+  background: #b2edeb;
+  padding: 5px 9px;
+  justify-self: end;
+  transform: rotate(3deg);
+}
+.kinetic-menu .hangar-craft b {
+  font:
+    1000 italic clamp(32px, 4.3vw, 68px)/1 Arial,
+    sans-serif;
+  text-shadow: 4px 4px 0 #102637;
+  transform: rotate(-3deg);
+}
+.kinetic-menu .hangar-craft > span {
+  padding-top: 5px;
+}
+.kinetic-menu .hangar-plan {
+  border-radius: 0;
+  border: 2px solid #b2edeb;
+  background: #102637d9;
+  transform: rotate(2deg);
+  box-shadow: 5px 5px 0 #102637;
+  animation: hero-label-in 0.55s 0.65s both;
+}
+.kinetic-menu .dispatch-stages {
+  animation: route-rise 0.55s 0.6s both;
+}
+.kinetic-menu .dispatch-stage-list {
+  gap: 14px;
+}
+.kinetic-menu .dispatch-stage-list button {
+  border-radius: 0;
+  border: 2px solid #fff3d6;
+  background: #102637e8;
+  color: #fff3d6;
+  transform: skewX(-5deg);
+  box-shadow: 4px 4px 0 #071721;
+  transition:
+    transform 0.18s,
+    background 0.18s;
+}
+.kinetic-menu .dispatch-stage-list button.selected {
+  background: #b2edeb;
+  border-color: #102637;
+  color: #102637;
+  box-shadow: 4px 4px 0 #fff3d6;
+}
+.kinetic-menu .dispatch-stage-list button:hover {
+  transform: skewX(-5deg) translateY(-4px);
+}
+.kinetic-menu .dispatch-stage-list button.selected i {
+  animation: selected-arrow 1.8s ease-in-out infinite;
+}
+.kinetic-menu .dispatch-footer {
+  animation: ribbon-in 0.4s 0.8s both;
+}
+/* Mission panels and countdown inherit the same ink cuts. */
+.flight-briefing .briefing-card {
+  border-radius: 0;
+  border: 2px solid #fff3d6;
+  box-shadow: 7px 7px 0 #102637;
+  animation: ribbon-in 0.55s both;
+}
+.flight-briefing .briefing-message {
+  font-style: italic;
+}
+.flight-briefing .game-button--primary {
+  border-radius: 0;
+  transform: skewX(-6deg);
+  box-shadow: 4px 4px 0 #fff3d6;
+}
+.briefing-route {
+  animation: hero-label-in 0.6s 0.15s both;
+}
+.countdown-screen {
+  background: #10263718;
+  backdrop-filter: none;
+}
+.countdown-core {
+  transform: rotate(-5deg);
+}
+.countdown-core > strong {
+  color: #ffe185;
+  font:
+    1000 italic clamp(130px, 23vw, 260px)/0.9 Arial,
+    sans-serif;
+  -webkit-text-stroke: 3px #102637;
+  text-shadow: 7px 7px 0 #fff3d6;
+  animation: number-punch 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.countdown-core .micro-label,
+.countdown-core > span:last-child {
+  background: #102637;
+  padding: 8px 14px;
+  color: #fff3d6;
+}
+.flight-hud .hud-energy,
+.flight-hud .hud-destination,
+.flight-hud .hud-clock,
+.flight-hud .flight-navigation {
+  border: 1px solid #fff3d68c;
+  border-radius: 0;
+  background: #102637eb;
+  box-shadow: 3px 3px 0 #ffe18538;
+}
+.flight-hud .hud-energy > strong,
+.flight-hud .hud-destination strong {
+  font-weight: 900;
+  font-style: italic;
+}
+.flight-hud .hud-clock button {
+  border-radius: 0;
+}
+.flight-hud .event-feedback {
+  border-radius: 0;
+  border: 1px solid #fff3d6;
+  background: #102637;
+  transform: rotate(-2deg);
+  animation: event-strike 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.flight-hud .nitro-status--active {
+  animation: drive-beat 0.65s ease-in-out infinite;
+}
+/* Utility screens retain their real controls and join the flight poster style. */
+.flight-pause .pause-card {
+  border: 2px solid #fff3d6;
+  border-radius: 0;
+  background: #102637;
+  box-shadow: 7px 7px 0 #ffe185;
+  animation: ribbon-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.flight-pause h2,
+.panel-screen h2 {
+  color: #fff3d6;
+  font-weight: 900;
+  font-style: italic;
+}
+.flight-pause .game-button--primary,
+.panel-screen .game-button--primary {
+  border-radius: 0;
+  background: #ffe185;
+  color: #102637;
+  box-shadow: 3px 3px 0 #fff3d6;
+}
+.panel-backdrop {
+  background: #102637db;
+  backdrop-filter: none;
+}
+.panel-screen {
+  border: 2px solid #fff3d6;
+  border-top: 7px solid #b2edeb;
+  background: #102637;
+  box-shadow: 7px 7px 0 #ffe185;
+  animation: ribbon-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.profile-screen {
+  background: linear-gradient(115deg, #102637f5, #193c55ec 60%, #2c657cdb);
+}
+.profile-layout {
+  animation: hero-label-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.profile-identity-art {
+  background:
+    repeating-linear-gradient(-25deg, #b2edeb22 0 12px, transparent 12px 25px),
+    #102637;
+  box-shadow: none;
+}
+/* Results resolve in the same visual language, with real rank and score. */
+.kinetic-results {
+  background: linear-gradient(110deg, #102637ee 15%, #10263799);
+  --result-accent: #b2edeb;
+}
+.kinetic-results.receipt-failed {
+  --result-accent: #ffb18a;
+}
+.kinetic-results .receipt-top {
+  animation: ribbon-in 0.45s both;
+}
+.kinetic-results .receipt-poster {
+  background: #fff3d6;
+  border: 3px solid #102637;
+  border-radius: 0;
+  box-shadow: 9px 9px 0 #102637;
+  animation: result-swipe 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.kinetic-results .receipt-halftone {
+  display: block;
+  opacity: 0.35;
+  background: radial-gradient(#10263760 1px, transparent 1.7px) 0 0/8px 8px;
+  clip-path: polygon(63% 0, 100% 0, 100% 100%, 83% 100%);
+}
+.kinetic-results .receipt-halftone::after {
+  display: none;
+}
+.kinetic-results .receipt-banner {
+  background: #102637;
+  color: #fff3d6;
+  border: 0;
+  padding-block: 19px;
+  animation: ribbon-in 0.4s 0.12s both;
+}
+.kinetic-results .receipt-banner > span {
+  color: var(--result-accent);
+}
+.kinetic-results .receipt-banner h2 {
+  font-style: italic;
+  letter-spacing: -0.05em;
+}
+.kinetic-results .receipt-identity {
+  animation: ribbon-in 0.45s 0.25s both;
+}
+.kinetic-results .receipt-identity > div {
+  color: #102637;
+}
+.kinetic-results .receipt-avatar {
+  background: #102637;
+  color: #fff3d6;
+  border: 2px solid #102637;
+  border-radius: 0;
+  transform: rotate(-3deg);
+}
+.kinetic-results .receipt-grade {
+  background: #102637;
+  border: 2px solid #102637;
+  padding: 10px 17px;
+  transform: rotate(-1deg);
+  box-shadow: 4px 4px 0 var(--result-accent);
+  animation: rank-stamp 0.55s 0.3s both;
+}
+.kinetic-results .receipt-grade > b {
+  color: var(--result-accent);
+  font-style: italic;
+}
+.kinetic-results .receipt-score {
+  background: var(--result-accent);
+  border-radius: 0;
+  border: 2px solid #102637;
+  transform: rotate(1deg);
+  animation: ribbon-in 0.45s 0.4s both;
+}
+.kinetic-results .receipt-stats {
+  color: #102637;
+  animation: route-rise 0.5s 0.5s both;
+}
+.kinetic-results .receipt-stats > div {
+  border-bottom: 1px solid #10263740;
+}
+.kinetic-results .receipt-stats > div > span {
+  color: #102637;
+}
+.kinetic-results .receipt-stats > div > strong {
+  color: #102637;
+}
+.kinetic-results .result-flight-log {
+  color: #102637;
+  animation: hero-label-in 0.65s 0.3s both;
+}
+.kinetic-results .result-flight-log .route-map {
+  max-width: 72%;
+  opacity: 0.8;
+  color: #102637;
+}
+.kinetic-results .route-map path[pathLength] {
+  stroke: #ad4a20;
+}
+.kinetic-results .result-flight-log h3 {
+  color: #102637;
+  font-style: italic;
+}
+.kinetic-results .result-flight-log img {
+  width: 160px;
+  height: 240px;
+  bottom: -40px;
+  right: -10px;
+  transform: rotate(6deg);
+  filter: drop-shadow(5px 5px 0 #10263730);
+}
+.kinetic-results .receipt-actions {
+  animation: route-rise 0.5s 0.65s both;
+}
+.kinetic-results .receipt-actions button {
+  border-radius: 0;
+  border: 2px solid #fff3d6;
+  transform: skewX(-5deg);
+  box-shadow: 4px 4px 0 #102637;
+}
+.kinetic-results .receipt-actions .receipt-retry {
+  background: #ffe185;
+  border-color: #102637;
+}
+.kinetic-results .receipt-actions button:hover {
+  transform: skewX(-5deg) translateY(-4px);
+  background: #b2edeb;
+  color: #102637;
+}
+@keyframes ribbon-in {
+  from {
+    opacity: 0;
+    translate: -40px 9px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes hero-label-in {
+  from {
+    opacity: 0;
+    translate: 45px -10px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes ink-cut-in {
+  from {
+    translate: 0 -100%;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+@keyframes title-strike {
+  from {
+    opacity: 0;
+    translate: -50px 0;
+    scale: 1.12;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+@keyframes route-rise {
+  from {
+    opacity: 0;
+    translate: 0 25px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes selected-arrow {
+  50% {
+    translate: 2px -2px;
+  }
+}
+@keyframes number-punch {
+  from {
+    opacity: 0;
+    scale: 1.6;
+  }
+  35% {
+    opacity: 1;
+    scale: 0.95;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@keyframes event-strike {
+  from {
+    opacity: 0;
+    scale: 1.15;
+    translate: 0 8px;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+  }
+}
+@keyframes drive-beat {
+  50% {
+    border-color: #fff3d6;
+    color: #fff3d6;
+  }
+}
+@keyframes result-swipe {
+  from {
+    opacity: 0;
+    translate: 70px 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes rank-stamp {
+  from {
+    opacity: 0;
+    scale: 1.2;
+  }
+  65% {
+    opacity: 1;
+    scale: 0.97;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@media (max-width: 700px) {
+  .kinetic-menu {
+    padding: 18px 23px;
+    background: linear-gradient(105deg, #102637ed, #10263788 45%, #10263730);
+  }
+  .kinetic-menu .dispatch-content {
+    width: 100%;
+    padding: 20px 0 0;
+  }
+  .kinetic-menu .logo-charge {
+    font-size: 86px;
+  }
+  .kinetic-menu .logo-wordmark {
+    font-size: 30px;
+  }
+  .kinetic-menu .dispatch-content > p {
+    font-size: 12px;
+  }
+  .kinetic-menu .dispatch-tools {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 7px;
+    margin-top: 15px;
+  }
+  .kinetic-menu .dispatch-tools button {
+    padding: 8px 2px;
+    font-size: 7px;
+    border-width: 1px;
+  }
+  .opening-replay {
+    font-size: 8px;
+    padding: 6px;
+    margin-right: 10px;
+  }
+  .kinetic-menu .dispatch-brand {
+    font-size: 8px;
+    gap: 5px;
+  }
+  .kinetic-menu .dispatch-brand img {
+    width: 26px;
+    height: 26px;
+  }
+  .kinetic-menu .dispatch-best {
+    font-size: 7px;
+  }
+  .kinetic-menu .dispatch-best b {
+    font-size: 18px;
+  }
+  .kinetic-menu .hangar-view {
+    height: 125px;
+    min-height: 125px;
+    margin: 15px 0;
+  }
+  .kinetic-menu .hangar-craft {
+    top: 0;
+  }
+  .kinetic-menu .hangar-craft b {
+    font-size: 28px;
+  }
+  .kinetic-menu .hangar-craft i {
+    display: none;
+  }
+  .kinetic-menu .hangar-plan {
+    padding: 5px 8px;
+  }
+  .kinetic-menu .hangar-plan .route-map {
+    height: 70px;
+  }
+  .kinetic-menu .dispatch-stage-list button {
+    min-height: 46px;
+    padding: 7px 10px;
+  }
+  .kinetic-menu .dispatch-stage-list strong {
+    font-size: 10px;
+  }
+  .kinetic-menu .menu-impact-art > span {
+    top: 42%;
+    font-size: 80px;
+  }
+  .kinetic-results .receipt-grade {
+    padding: 9px 12px;
+  }
+  .kinetic-results .result-flight-log .route-map {
+    max-width: 70%;
+  }
+  .kinetic-results .result-flight-log img {
+    width: 85px;
+    height: 125px;
+    right: 0;
+    bottom: 0;
+  }
+  .kinetic-results .receipt-top .flight-logo {
+    max-width: 135px;
+  }
+  .kinetic-results .receipt-banner {
+    padding-block: 17px;
+  }
+}
+@media (max-height: 600px) and (min-width: 701px) {
+  .kinetic-menu .dispatch-content {
+    padding: 5px 0;
+  }
+  .kinetic-menu .logo-charge {
+    font-size: 85px;
+  }
+  .kinetic-menu .logo-wordmark {
+    font-size: 30px;
+  }
+  .kinetic-menu .dispatch-content h1 {
+    margin: 15px 0;
+  }
+  .kinetic-menu .dispatch-launch {
+    min-height: 52px;
+    padding-block: 10px;
+  }
+  .kinetic-menu .dispatch-tools {
+    margin-top: 16px;
+    gap: 7px;
+  }
+  .kinetic-menu .dispatch-tools button {
+    min-height: 32px;
+    padding-block: 6px;
+  }
+  .kinetic-menu .dispatch-stage-list button {
+    min-height: 50px;
+    padding-block: 8px;
+  }
+  .kinetic-menu .hangar-plan {
+    width: 42%;
+  }
+  .kinetic-results .receipt-banner {
+    padding-block: 13px;
+  }
+  .kinetic-results .receipt-grade {
+    padding-block: 5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kinetic-menu *,
+  .kinetic-menu *::before,
+  .kinetic-menu *::after,
+  .kinetic-results *,
+  .flight-briefing *,
+  .flight-pause *,
+  .panel-screen,
+  .profile-layout,
+  .countdown-core *,
+  .flight-hud .event-feedback,
+  .flight-hud .nitro-status--active {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+.game-shell--reduced .kinetic-menu *,
+.game-shell--reduced .kinetic-menu *::before,
+.game-shell--reduced .kinetic-menu *::after,
+.game-shell--reduced .kinetic-results *,
+.game-shell--reduced .flight-briefing *,
+.game-shell--reduced .flight-pause *,
+.game-shell--reduced .panel-screen,
+.game-shell--reduced .profile-layout,
+.game-shell--reduced .countdown-core *,
+.game-shell--reduced .flight-hud .event-feedback,
+.game-shell--reduced .flight-hud .nitro-status--active {
+  animation: none !important;
+  transition: none !important;
+}

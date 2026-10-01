@@ -82,6 +82,7 @@ interface GameState extends HudSample {
   openPanel: (panel: MenuPanel) => void;
   closePanel: () => void;
   finishIntro: () => void;
+  replayIntro: () => void;
   openBriefing: (newMission?: boolean) => void;
   selectStage: (index: number) => void;
   completeProfile: () => void;
@@ -333,6 +334,14 @@ export const useGameStore = create<GameState>((set, get) => ({
       phase: usePlayerProfileStore.getState().complete ? "menu" : "profile",
     });
   },
+  replayIntro: () =>
+    set((state) => ({
+      phase: "ident",
+      panel: "none",
+      runId: state.runId + 1,
+      feedback: null,
+      advisor: null,
+    })),
   completeProfile: () => set({ phase: "menu", panel: "none" }),
   selectStage: (index) => {
     set({ stageIndex: Math.max(0, Math.min(STAGES.length - 1, index)) });

@@ -16,6 +16,7 @@ import { Destination } from "@/components/game/Destination";
 import { NetworkStage } from "@/components/game/NetworkStage";
 import { NodeManager } from "@/components/game/NodeManager";
 import { Player } from "@/components/game/Player";
+import { PresentationDirector } from "@/components/game/PresentationDirector";
 import { QualityMonitor } from "@/components/game/QualityMonitor";
 import { RouteFork } from "@/components/game/RouteFork";
 import { ScanPulse } from "@/components/game/ScanPulse";
@@ -36,7 +37,7 @@ import { useKeyboard } from "@/hooks/useKeyboard";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
 
-function GameScene() {
+function GameScene({ onReady }: { onReady?: () => void }) {
   const playerRef = useRef<THREE.Group>(null);
   const input = useKeyboard();
   const runId = useGameStore((state) => state.runId);
@@ -49,6 +50,7 @@ function GameScene() {
 
   return (
     <>
+      <PresentationDirector onReady={onReady} />
       <color attach="background" args={[stage.sky[1]]} />
       <fogExp2
         attach="fog"
@@ -140,6 +142,9 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
     };
   }, [phase]);
   const staticScene = [
+    "ident",
+    "title",
+    "countdown",
     "menu",
     "paused",
     "profile",
@@ -183,10 +188,9 @@ export default function GameCanvas({ onReady }: { onReady?: () => void }) {
           gl.toneMappingExposure = 1.15;
           gl.info.autoReset = false;
           gl.domElement.dataset.rendererBackend = "webgl2";
-          onReady?.();
         }}
       >
-        <GameScene />
+        <GameScene onReady={onReady} />
       </Canvas>
     </RendererBoundary>
   );

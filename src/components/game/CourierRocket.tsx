@@ -6,8 +6,10 @@ import type { CourierCraft } from "@/game/crafts";
 import { buildCraft } from "@/rendering/craftGeometry";
 import { signalState } from "@/rendering/signalState";
 import { NitroDrive } from "./NitroDrive";
+import { useGameStore } from "@/store/gameStore";
 
 export function CourierRocket({ craft }: { craft: CourierCraft }) {
+  const phase = useGameStore((s) => s.phase);
   const geometry = useMemo(() => buildCraft(craft), [craft]);
   const materials = useMemo(
     () => ({
@@ -33,6 +35,10 @@ export function CourierRocket({ craft }: { craft: CourierCraft }) {
         vertexColors: true,
         toneMapped: false,
       }),
+      ink: new THREE.MeshBasicMaterial({
+        color: "#102637",
+        side: THREE.BackSide,
+      }),
     }),
     [],
   );
@@ -53,6 +59,16 @@ export function CourierRocket({ craft }: { craft: CourierCraft }) {
   });
   return (
     <group name={`courier-${craft.kind}`} dispose={null}>
+      <group
+        visible={["ident", "title", "menu", "briefing", "countdown"].includes(
+          phase,
+        )}
+        scale={1.035}
+      >
+        <mesh geometry={geometry.hull} material={materials.ink} />
+        <mesh geometry={geometry.metal} material={materials.ink} />
+        <mesh geometry={geometry.glass} material={materials.ink} />
+      </group>
       <mesh geometry={geometry.hull} material={materials.hull} />
       <mesh geometry={geometry.metal} material={materials.metal} />
       <mesh geometry={geometry.glass} material={materials.glass} />

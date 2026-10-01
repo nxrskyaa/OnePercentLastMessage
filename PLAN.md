@@ -1,5 +1,15 @@
 # 1% — Last Message: implementation plan
 
+## Cinematic opening and kinetic game UI — October 1, 2026
+
+- Use the supplied graphic game UI references: bold diagonal menu ribbons, a central game hero, ink silhouettes and sequenced motion. Keep DILI and the original game world as the subjects.
+- Animate an approximately six-second real-time opening: visor close-up, ignition, harbor camera sweep, then hero framing. Show an honest loading state while the renderer prepares; support skip, replay and reduced motion.
+- Give the menu a capped 30 FPS live 3D presentation, with floating craft and pointer response. Pause background rendering when hidden or when panels are open. Keep gameplay render cost unchanged.
+- Animate menu reveals, selected routes, briefing/countdown, HUD events and result rank/score panels using bounded CSS transforms and opacity. Preserve profile, language, accessibility, controls and card export.
+- Verify first-load/replay/skip, menu motion, reduced motion, desktop/mobile framing, gameplay handoff, pause/retry/results, console and build before pushing and deploying.
+
+Verification: lint, formatting, strict production build, the three craft geometry checks, and all 36 course simulations pass. Local Chrome checks exercised first boot, returning profile persistence, replay, Escape skip, reduced-motion opening/menu, mission/tutorial/countdown, actual gameplay, scan cooldown, pause/resume, battery failure, results and retry. Desktop 1280 × 720 and portrait 391 × 844 layouts fit without horizontal document overflow. Portrait close-up framing, idle exhaust brightness, result-map contrast and countdown blur were corrected after observing rendered frames. A warmed desktop Low sample was 83 FPS; an earlier portrait sample ranged 55–83 FPS. These are development-machine samples, not physical-phone or cross-browser guarantees. Browser logs contained wallet-extension conflicts and a nonfatal Three.Clock deprecation warning, with no observed app runtime errors. Presentation uses the existing renderer, a capped menu frame timer and cleaned-up timers; battery/collision updates only run in gameplay.
+
 ## Curved skyway and flight UI — October 1, 2026
 
 - Replace the straight world axis with one authored continuous spatial route, shared by world geometry, craft, lighting, navigation and collision coordinates. Preserve lateral/vertical control relative to the route; account for its slope in forward travel.

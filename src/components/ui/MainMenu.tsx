@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect } from "react";
 import { GameLogo } from "./GameLogo";
 import { formatTime } from "@/lib/format";
 import { copyFor } from "@/game/copy";
@@ -10,6 +11,8 @@ import { usePlayerProfileStore } from "@/store/playerProfileStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { RouteMap } from "./RouteMap";
 import { craftAt } from "@/game/crafts";
+import { presentationState } from "@/game/presentation";
+import { playSound, unlockAudio } from "@/lib/audio";
 
 export function MainMenu() {
   const openBriefing = useGameStore((s) => s.openBriefing);
@@ -23,8 +26,38 @@ export function MainMenu() {
   const t = copyFor(language);
   const id = language === "id";
   const craft = craftAt(stageIndex);
+  const replayIntro = useGameStore((s) => s.replayIntro);
+  const reduced = useSettingsStore((s) => s.reducedMotion);
+  useEffect(
+    () => () => {
+      presentationState.pointer.x = 0;
+      presentationState.pointer.y = 0;
+    },
+    [],
+  );
   return (
-    <section className="dispatch-menu flight-menu" aria-label="Main menu">
+    <section
+      className="dispatch-menu flight-menu kinetic-menu"
+      aria-label="Main menu"
+      onPointerMove={(event) => {
+        if (reduced || event.pointerType !== "mouse") return;
+        presentationState.pointer.x =
+          (event.clientX / window.innerWidth - 0.5) * 2;
+        presentationState.pointer.y =
+          (event.clientY / window.innerHeight - 0.5) * 2;
+      }}
+      onPointerLeave={() => {
+        presentationState.pointer.x = 0;
+        presentationState.pointer.y = 0;
+      }}
+    >
+      <div className="menu-impact-art" aria-hidden="true">
+        <span>
+          LAST
+          <br />
+          CHANCE
+        </span>
+      </div>
       <div className="dispatch-print" aria-hidden="true" />
       <header className="dispatch-header">
         <span className="dispatch-brand">
@@ -37,6 +70,16 @@ export function MainMenu() {
           />{" "}
           DLICOM <small>× NXR</small>
         </span>
+        <button
+          className="opening-replay"
+          onClick={() => {
+            unlockAudio();
+            playSound("start");
+            replayIntro();
+          }}
+        >
+          ↻ {id ? "PEMBUKA" : "OPENING"}
+        </button>
         <span className="dispatch-best">
           {t.best} <b>{bestScore.toLocaleString()}</b>
         </span>
@@ -46,6 +89,7 @@ export function MainMenu() {
           {id ? "KURIR AKTIF" : "YOUR COURIER"} / {STAGES[stageIndex].number}
         </span>
         <div className="hangar-craft">
+          <i aria-hidden="true">{id ? "KURIR SINYAL" : "SIGNAL COURIER"}</i>
           <b>{craft.name}</b>
           <span>
             {craft.engines.length} {id ? "MESIN" : "ENGINES"} ·{" "}
@@ -74,7 +118,11 @@ export function MainMenu() {
         <nav className="dispatch-actions" aria-label="Game menu">
           <button
             className="dispatch-launch"
-            onClick={() => openBriefing(true)}
+            onClick={() => {
+              unlockAudio();
+              playSound("start");
+              openBriefing(true);
+            }}
           >
             <span aria-hidden="true">↗</span>
             <b>{t.transmit}</b>
@@ -110,7 +158,10 @@ export function MainMenu() {
               type="button"
               className={index === stageIndex ? "selected" : ""}
               aria-pressed={index === stageIndex}
-              onClick={() => selectStage(index)}
+              onClick={() => {
+                playSound("click");
+                selectStage(index);
+              }}
               key={stage.id}
             >
               <svg viewBox="0 0 100 58" aria-hidden="true">

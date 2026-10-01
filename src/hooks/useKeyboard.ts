@@ -22,7 +22,9 @@ export function useKeyboard() {
       }
       if (key === "escape" && !event.repeat) {
         const state = useGameStore.getState();
-        if (state.panel !== "none") state.closePanel();
+        if (state.phase === "ident" || state.phase === "title")
+          state.finishIntro();
+        else if (state.panel !== "none") state.closePanel();
         else if (state.phase === "playing") state.pause();
         else if (state.phase === "paused") state.resume();
         else if (state.phase === "briefing" || state.phase === "tutorial")

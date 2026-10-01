@@ -1,0 +1,313 @@
+/* The opening is rendered by the game's existing camera and craft. */
+.cine-boot {
+  background: transparent;
+  place-items: normal;
+  color: #fff3d6;
+  pointer-events: none;
+}
+.cine-boot::before,
+.cine-boot::after {
+  display: none;
+}
+.cine-boot--loading {
+  background: #123848;
+  background-image: repeating-linear-gradient(
+    -25deg,
+    transparent 0 70px,
+    #a9edeb0c 71px 73px,
+    transparent 74px 140px
+  );
+  pointer-events: auto;
+}
+.cine-brand {
+  position: absolute;
+  top: 28px;
+  left: 4vw;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font:
+    900 11px Arial,
+    sans-serif;
+  letter-spacing: 0.07em;
+  z-index: 3;
+}
+.cine-brand img {
+  border-radius: 50%;
+}
+.cine-brand small {
+  color: #b2edeb;
+  font-size: 9px;
+}
+.cine-shutter {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 8%;
+  background: #102637;
+  z-index: 2;
+}
+.cine-shutter--top {
+  top: 0;
+  animation: cinema-top 0.5s both;
+}
+.cine-shutter--bottom {
+  bottom: 0;
+  animation: cinema-bottom 0.5s both;
+}
+.cine-boot--loading .cine-shutter {
+  display: none;
+}
+.cine-loader {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  display: grid;
+  justify-items: center;
+  width: min(400px, 80%);
+  gap: 25px;
+}
+.cine-loader > strong {
+  font:
+    800 11px Consolas,
+    monospace;
+  letter-spacing: 0.13em;
+  text-align: center;
+}
+.loading-packet {
+  position: relative;
+  width: 190px;
+  height: 135px;
+  background: #b2edeb;
+  border: 4px solid #102637;
+  box-shadow: 8px 8px 0 #fff3d6;
+  rotate: -7deg;
+  display: grid;
+  place-items: center;
+  color: #102637;
+  animation: packet-float 1.6s ease-in-out infinite;
+}
+.loading-packet::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid #10263740;
+}
+.loading-packet > span {
+  font:
+    1000 italic 70px/0.8 Arial,
+    sans-serif;
+  letter-spacing: -0.08em;
+}
+.loading-packet small {
+  font-size: 0.4em;
+  letter-spacing: -0.04em;
+}
+.loading-packet i {
+  position: absolute;
+  bottom: -17px;
+  right: -18px;
+  background: #ffe185;
+  border: 3px solid #102637;
+  font:
+    800 34px Arial,
+    sans-serif;
+  padding: 0 9px;
+  rotate: 14deg;
+}
+.loading-links {
+  display: flex;
+  gap: 9px;
+}
+.loading-links i {
+  width: 32px;
+  height: 5px;
+  background: #fff3d6;
+  transform: skewX(-20deg);
+  animation: connection-beat 1s ease-in-out infinite;
+}
+.loading-links i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.loading-links i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.cine-message {
+  position: absolute;
+  left: 5vw;
+  bottom: 17%;
+  padding: 15px 20px;
+  border-left: 4px solid #ffe185;
+  background: #102637cc;
+  max-width: 45%;
+  rotate: -2deg;
+  animation: message-arrival 0.7s 0.15s both;
+}
+.cine-message > span {
+  font:
+    800 10px Consolas,
+    monospace;
+  letter-spacing: 0.14em;
+  color: #b2edeb;
+}
+.cine-message > strong {
+  display: block;
+  font:
+    900 italic clamp(25px, 3.2vw, 46px)/1.1 Arial,
+    sans-serif;
+  margin: 12px 0;
+}
+.cine-message > small {
+  font:
+    700 9px Consolas,
+    monospace;
+  letter-spacing: 0.1em;
+}
+.cine-title {
+  position: absolute;
+  left: 5vw;
+  bottom: 17%;
+  width: 46%;
+  max-width: 550px;
+  rotate: -3deg;
+  animation: opening-title 0.65s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.cine-title .flight-logo {
+  color: #fff3d6;
+  gap: 15px;
+}
+.cine-title .logo-charge {
+  font:
+    1000 italic clamp(85px, 11vw, 165px)/0.85 Arial,
+    sans-serif;
+  color: #ffe185;
+  text-shadow: 6px 6px 0 #102637;
+  -webkit-text-stroke: 1px #fff3d6;
+}
+.cine-title .logo-wordmark {
+  font:
+    1000 italic clamp(28px, 4vw, 60px)/0.88 Arial,
+    sans-serif;
+  text-shadow: 4px 4px 0 #102637;
+}
+.cine-title .logo-wordmark small {
+  display: none;
+}
+.cine-title p {
+  display: inline-block;
+  font:
+    800 12px Arial,
+    sans-serif;
+  margin: 20px 0 0;
+  color: #102637;
+  background: #b2edeb;
+  padding: 9px 13px;
+  box-shadow: 4px 4px 0 #102637;
+}
+.cine-boot .boot-skip {
+  pointer-events: auto;
+  right: 4vw;
+  bottom: 25px;
+  padding: 9px 15px;
+  width: auto;
+  border: 1px solid #fff3d680;
+  background: #102637;
+  color: #fff3d6;
+  font:
+    800 10px Consolas,
+    monospace;
+  z-index: 4;
+}
+.cine-boot .boot-skip:hover {
+  background: #ffe185;
+  color: #102637;
+}
+@keyframes packet-float {
+  50% {
+    translate: 0 -8px;
+    rotate: -3deg;
+  }
+}
+@keyframes connection-beat {
+  50% {
+    opacity: 0.25;
+  }
+}
+@keyframes cinema-top {
+  from {
+    translate: 0 -100%;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+@keyframes cinema-bottom {
+  from {
+    translate: 0 100%;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+@keyframes message-arrival {
+  from {
+    opacity: 0;
+    translate: -30px 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes opening-title {
+  from {
+    opacity: 0;
+    translate: -70px 0;
+    scale: 1.1;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+@media (max-width: 700px) {
+  .cine-brand {
+    top: 18px;
+    left: 20px;
+  }
+  .cine-message {
+    left: 20px;
+    bottom: 18%;
+    max-width: calc(100% - 40px);
+  }
+  .cine-title {
+    left: 20px;
+    bottom: 18%;
+    width: calc(100% - 40px);
+  }
+  .cine-title .logo-charge {
+    font-size: 90px;
+  }
+  .cine-title .logo-wordmark {
+    font-size: 31px;
+  }
+  .cine-title p {
+    font-size: 10px;
+  }
+  .cine-boot .boot-skip {
+    bottom: 20px;
+    right: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cine-boot *,
+  .cine-boot *::before {
+    animation: none !important;
+  }
+}
+.game-shell--reduced .cine-boot *,
+.game-shell--reduced .cine-boot *::before {
+  animation: none !important;
+}

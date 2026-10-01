@@ -10,6 +10,8 @@ import "./art-direction.css";
 import "./profile.css";
 import "./dispatch.css";
 import "./flight-ui.css";
+import "./kinetic-ui.css";
+import "./cinematic.css";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??

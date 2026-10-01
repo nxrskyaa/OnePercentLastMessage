@@ -17,6 +17,13 @@ import {
   flightSlope,
   flightLengthScale,
 } from "@/game/flightPath";
+import {
+  PRESENTATION,
+  presentationState,
+  easeShot,
+  introDistance,
+  introIgnition,
+} from "@/game/presentation";
 
 interface PlayerProps {
   playerRef: RefObject<THREE.Group | null>;
@@ -67,6 +74,64 @@ export function Player({
     if (!body || !model) return;
     const state = useGameStore.getState();
     if (state.phase !== "playing") {
+      const intro = state.phase === "ident" || state.phase === "title";
+      const preview = [
+        "loading",
+        "ident",
+        "title",
+        "menu",
+        "profile",
+        "briefing",
+        "tutorial",
+        "countdown",
+      ].includes(state.phase);
+      if (preview) {
+        const reduced = useSettingsStore.getState().reducedMotion;
+        const hero = intro ? easeShot(presentationState.introTime, 4.3, 6) : 1;
+        const launch =
+          state.phase === "countdown"
+            ? easeShot(presentationState.phaseTime, 0, 1.8)
+            : 0;
+        const z = intro
+          ? introDistance(presentationState.introTime)
+          : PRESENTATION.previewZ * (1 - launch);
+        const center = flightCenter(z, state.stageIndex);
+        body.position.set(
+          center.x,
+          center.y +
+            (reduced
+              ? 0
+              : Math.sin(presentationState.time * 1.8) * 0.18 * hero),
+          z,
+        );
+        body.rotation.set(0, 0, 0);
+        const compact =
+          camera instanceof THREE.PerspectiveCamera && camera.aspect < 1;
+        model.scale.setScalar(
+          THREE.MathUtils.lerp(
+            THREE.MathUtils.lerp(1.25, compact ? 1.2 : 2.4, hero),
+            1,
+            launch,
+          ),
+        );
+        model.rotation.set(
+          -0.08 * hero * (1 - launch),
+          (-0.5 +
+            (reduced
+              ? 0
+              : presentationState.pointer.x * 0.14 +
+                Math.sin(presentationState.time * 0.7) * 0.07)) *
+            hero *
+            (1 - launch),
+          -0.1 * hero * (1 - launch),
+        );
+        signalState.boost.value = intro
+          ? introIgnition(presentationState.introTime)
+          : state.phase === "countdown"
+            ? launch * 0.65
+            : 0.06;
+        return;
+      }
       if (state.phase === "failed") {
         model.scale.setScalar(
           THREE.MathUtils.damp(
@@ -85,27 +150,7 @@ export function Player({
             Math.min(frameDelta, 0.05),
           ),
         );
-      } else if (state.phase !== "paused") {
-        model.scale.setScalar(
-          state.phase === "menu"
-            ? camera instanceof THREE.PerspectiveCamera && camera.aspect < 1
-              ? 1.2
-              : 2.2
-            : 1.3,
-        );
       }
-      if (
-        [
-          "loading",
-          "ident",
-          "title",
-          "menu",
-          "briefing",
-          "tutorial",
-          "countdown",
-        ].includes(state.phase)
-      )
-        model.rotation.set(-0.08, -0.5, -0.1);
       return;
     }
 

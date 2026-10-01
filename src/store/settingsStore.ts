@@ -103,7 +103,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   hydrated: false,
   runtimeQuality: "medium",
   hydrate: () => {
-    let settings = DEFAULT_SETTINGS;
+    let settings = {
+      ...DEFAULT_SETTINGS,
+      reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)")
+        .matches,
+    };
     try {
       const raw = window.localStorage.getItem(KEY);
       if (raw) settings = validate(JSON.parse(raw));

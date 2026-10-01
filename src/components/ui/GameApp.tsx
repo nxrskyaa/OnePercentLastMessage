@@ -19,6 +19,7 @@ import { SettingsMenu } from "@/components/ui/SettingsMenu";
 import { configureAudio, setAudioPhase, shutdownAudio } from "@/lib/audio";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
+import { PRESENTATION } from "@/game/presentation";
 
 const GameCanvas = dynamic(() => import("@/components/game/GameCanvas"), {
   ssr: false,
@@ -60,18 +61,18 @@ export function GameApp() {
     if (phase === "ident") {
       const timer = window.setTimeout(
         () => useGameStore.getState().setPhase("title"),
-        950,
+        reducedMotion ? PRESENTATION.reducedIdentMs : PRESENTATION.identMs,
       );
       return () => window.clearTimeout(timer);
     }
     if (phase === "title") {
       const timer = window.setTimeout(
         () => useGameStore.getState().finishIntro(),
-        1250,
+        reducedMotion ? PRESENTATION.reducedTitleMs : PRESENTATION.titleMs,
       );
       return () => window.clearTimeout(timer);
     }
-  }, [phase]);
+  }, [phase, reducedMotion]);
 
   useEffect(
     () => configureAudio({ masterVolume, musicVolume, sfxVolume, mute }),

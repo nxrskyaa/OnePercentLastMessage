@@ -7,6 +7,7 @@ import type { CourierCraft } from "@/game/crafts";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { signalState } from "@/rendering/signalState";
+import { presentationState } from "@/game/presentation";
 
 const flameVertex = `varying vec2 vUv;
 void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
@@ -118,20 +119,23 @@ export function NitroDrive({ craft }: { craft: CourierCraft }) {
   useFrame(() => {
     const live = resourcesRef.current;
     const phase = useGameStore.getState().phase;
-    const active = phase === "playing" || phase === "paused";
+    const preview = ["ident", "title", "menu", "countdown"].includes(phase);
+    const active = preview || phase === "playing" || phase === "paused";
     if (rig.current) rig.current.visible = active;
     if (!active) return;
     const reduced = useSettingsStore.getState().reducedMotion;
     const power = signalState.boost.value;
-    const time = signalState.flightTime;
-    const length = THREE.MathUtils.lerp(
-      GAME_CONFIG.nitro.idleJetLength,
-      GAME_CONFIG.nitro.boostJetLength,
-      power,
-    );
+    const time = preview ? presentationState.time : signalState.flightTime;
+    const idlePreview = phase === "menu";
+    const length =
+      THREE.MathUtils.lerp(
+        GAME_CONFIG.nitro.idleJetLength,
+        GAME_CONFIG.nitro.boostJetLength,
+        power,
+      ) * (idlePreview ? 0.5 : 1);
     live.flame.uniforms.uTime.value = reduced ? 0 : time;
     live.flame.uniforms.uPower.value = power;
-    live.core.opacity = 0.6 + power * 0.35;
+    live.core.opacity = (0.6 + power * 0.35) * (idlePreview ? 0.4 : 1);
     for (let i = 0; i < craft.engines.length; i++) {
       const group = jets.current[i];
       if (group)
@@ -169,11 +173,12 @@ export function NitroDrive({ craft }: { craft: CourierCraft }) {
       shocks.current.instanceMatrix.needsUpdate = true;
     }
     if (light.current)
-      light.current.intensity = THREE.MathUtils.lerp(
-        GAME_CONFIG.nitro.idleLight,
-        GAME_CONFIG.nitro.boostLight,
-        power,
-      );
+      light.current.intensity =
+        THREE.MathUtils.lerp(
+          GAME_CONFIG.nitro.idleLight,
+          GAME_CONFIG.nitro.boostLight,
+          power,
+        ) * (idlePreview ? 0.35 : 1);
     const positions = live.buffer.getAttribute(
       "position",
     ) as THREE.BufferAttribute;
@@ -181,7 +186,9 @@ export function NitroDrive({ craft }: { craft: CourierCraft }) {
     const streakCount = low ? 12 : GAME_CONFIG.nitro.streakCount;
     live.buffer.setDrawRange(0, streakCount * 2);
     live.line.opacity =
-      reduced || !useSettingsStore.getState().screenEffects ? 0 : power * 0.4;
+      reduced || preview || !useSettingsStore.getState().screenEffects
+        ? 0
+        : power * 0.4;
     if (streaks.current) streaks.current.visible = live.line.opacity > 0.02;
     for (let i = 0; i < streakCount; i++) {
       const angle = i * 2.39996;
