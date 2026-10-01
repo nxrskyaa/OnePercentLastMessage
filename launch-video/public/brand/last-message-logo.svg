@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1860" height="720" viewBox="0 0 620 240" fill="none">
+  <path d="M20 27 160 15 149 165 10 188Z" fill="#101e32" stroke="#f8fbef" stroke-width="6"/>
+  <path d="m49 13 53-4-1 15-53 4Z" fill="#eafd85"/>
+  <path d="m3 179 153-19-1 38-149 20Z" fill="#eafd85"/>
+  <text x="31" y="156" fill="#f8fbef" font-family="Arial,sans-serif" font-size="150" font-weight="900" transform="rotate(-5 31 156)">1</text>
+  <text x="96" y="101" fill="#eafd85" font-family="Arial,sans-serif" font-size="60" font-weight="900" transform="rotate(-5 96 101)">%</text>
+  <path d="m170 34 423-20-11 105-411 18Z" fill="#f8fbef"/>
+  <path d="m172 132 437-18-6 103-443 20Z" fill="#f8fbef"/>
+  <text x="190" y="113" fill="#101e32" font-family="Arial,sans-serif" font-weight="900" font-size="96" letter-spacing="-5" transform="rotate(-3 190 113)">LAST</text>
+  <text x="180" y="207" fill="#101e32" font-family="Arial,sans-serif" font-weight="900" font-size="80" letter-spacing="-5" transform="rotate(-3 180 207)">MESSAGE</text>
+  <path d="m511 45 55-3-28 29 29-1-51 47 12-36-27 1Z" fill="#101e32"/>
+  <path d="m158 229 442-19" stroke="#8fe8e1" stroke-width="5"/>
+</svg>

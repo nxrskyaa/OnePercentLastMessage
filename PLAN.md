@@ -1,5 +1,15 @@
 # 1% — Last Message: implementation plan
 
+## Launch package — October 1, 2026
+
+- Verify the two official Dlicom announcements, then document submission steps and local-time deadline.
+- Replace the long changelog-like README with a clear play link, real screenshots, controls and development instructions. Separate player guide, technical notes, credits and launch checklist; prepare repository metadata and a tagged release.
+- Build a separate Remotion project, using the game's existing logos, art and original soundtrack. Record the actual game renderer with scripted control input in a development-only capture page; preserve normal collisions, battery drain and scoring. Keep capture tools unavailable in production.
+- Edit a short introduction and gameplay film with deliberate cuts, motion typography, restrained original sound effects and a clear play-link ending. Export an upload-ready MP4, source project and poster; check rendered frames, full video decode, sound levels and text bounds.
+- Write one conversational English X paragraph with the working play link and @DlicomApp tag. Publishing the X post and sending its link to Discord remain the user's launch actions.
+
+Verification: game lint, formatting, TypeScript/production build, audio lifecycle, craft budgets and all 108 course simulations pass. The development-only capture route returns 404 in a local production server. Two scripted Tidal recordings deliver through normal gameplay; the film uses the first take's actual telemetry and score, plus Prism/Solar excerpts. The exported 993-frame film is 1080p H.264/AAC at 30 FPS, approximately 33.109 seconds, and fully decodes without errors. Playback reached the end in the in-app browser with audio unmuted and no media error; nine rendered review frames fit their text inside the canvas. Audio is -17.78 LUFS integrated and -4.38 dBTP. Corrected intrinsic SVG rasterization for sharp video logos and compact result spacing after observing clipped awards at 1280 × 720. See docs/QA.md for the limits and asset provenance.
+
 ## Flight readability and difficulty repair — October 1, 2026
 
 - Fix unintended mouse steering and reduce coasting after steering/climb keys are released; let braking override boost. Keep automatic course following and explain it explicitly.
@@ -126,6 +136,7 @@ Verified on September 24, 2026: production build, lint, and formatting pass. Bro
 - Menu, briefing, profile, tutorial and pause now use demand rendering. Only active gameplay/countdown and end effects render continuously. Fixed Space being swallowed in menu controls.
 
 ## Flight repair verification — October 1, 2026
+
 - Verified 108 full-course movement simulations across three stages and twelve seeds: expert pilots, cruise pilots reacting every 0.4 seconds with alternate boosters omitted from guidance, and the same delayed pilots at 30 FPS. The delayed cruise pilots finish with battery remaining; an idle pilot still fails. Added checks for brake priority, keyboard priority and release damping.
 - ESLint, strict TypeScript production build and the audio lifecycle regression check pass. Browser checks cover menu, briefing, scan cooldown, pause/resume via button and Escape, battery depletion and retry. At 390 x 844 the climb button changes altitude and release holds it; controls and the direction cue fit the viewport. At 1280 x 720 the desktop key diagram and 3D guide are visible.
 - Local in-app browser samples on Low were approximately 160 FPS. These are observations on this desktop, not physical-phone or cross-browser benchmarks. Full successful runs were simulated; no manual full-course success is claimed. The observed browser console has no app errors, with a dependency warning about deprecated THREE.Clock.

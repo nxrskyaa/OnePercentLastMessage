@@ -712,6 +712,25 @@
     padding-block: 17px;
   }
 }
+@media (max-height: 800px) and (min-width: 961px) {
+  .kinetic-results .receipt-record {
+    padding-block: 16px;
+  }
+  .kinetic-results .receipt-grade {
+    padding-block: 7px;
+    margin-block: 10px;
+  }
+  .kinetic-results .receipt-grade > b {
+    font-size: 60px;
+  }
+  .kinetic-results .receipt-score {
+    padding-block: 10px;
+    margin-block: 10px;
+  }
+  .kinetic-results .receipt-stats {
+    gap: 8px;
+  }
+}
 @media (max-height: 600px) and (min-width: 701px) {
   .kinetic-menu .dispatch-content {
     padding: 5px 0;
