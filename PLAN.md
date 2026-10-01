@@ -1,5 +1,14 @@
 # 1% — Last Message: implementation plan
 
+## Curved skyway and flight UI — October 1, 2026
+
+- Replace the straight world axis with one authored continuous spatial route, shared by world geometry, craft, lighting, navigation and collision coordinates. Preserve lateral/vertical control relative to the route; account for its slope in forward travel.
+- Build distinct stage bends, elevated switchbacks and descending approaches. Batch route rails and markings; keep water flat and the existing render budget.
+- Replace the opaque menu poster with a flight hangar composition that exposes the real 3D craft and world. Rebuild the live HUD around compact instruments, course navigation and speed. Recompose results independently of the downloadable card.
+- Verify route continuity, collision alignment, reachable courses, UI overflow and actual browser frames; run lint/build, push and verify Vercel production.
+
+Verification: lint, formatting and strict production build passed. Course tests check continuous centers/slopes, the elevated crest and receiver endpoints for all three stages; all 36 movement-limited simulations deliver in roughly 125–132 seconds with 0.13–0.21% battery remaining, and idle flight fails. This is simulated reachability, not a complete human playthrough. Chrome production-build QA exercised menu/briefing, actual curved flight, obstacle damage, battery failure, results, retry, touch climb, scan cooldown, touch boost and pause. Desktop menu/results were reviewed at 1280 × 720; 391 × 844 menu/results have no horizontal document overflow. Corrected section culling that previously removed the current architecture before the player had passed it. Sampled rendering after the fix was 55–73 FPS on desktop Low with adaptive resolution and 82–83 FPS at the narrow viewport; physical phones and other engines remain untested. Logs showed extension conflicts and a nonfatal Three.Clock deprecation warning, with no observed app-origin runtime errors. UI and world screenshots are saved locally under `output/last-message-flight-ui` outside the repository.
+
 ## Rocket silhouettes and visible nitro — October 1, 2026
 
 - Replace the shared bulb-like packet with three original courier craft: rounded twin-pod Skimmer, faceted delta Needle, and broad three-engine Comet. Keep the DILI message visor and authored material accents.

@@ -9,6 +9,7 @@ import "./brand.css";
 import "./art-direction.css";
 import "./profile.css";
 import "./dispatch.css";
+import "./flight-ui.css";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??

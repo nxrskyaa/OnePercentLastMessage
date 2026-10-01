@@ -12,6 +12,8 @@ import { formatTime } from "@/lib/format";
 import { useGameStore } from "@/store/gameStore";
 import { usePlayerProfileStore } from "@/store/playerProfileStore";
 import { useSettingsStore } from "@/store/settingsStore";
+import { RouteMap } from "./RouteMap";
+import { craftAt } from "@/game/crafts";
 
 export function ResultsScreen() {
   const phase = useGameStore((state) => state.phase);
@@ -93,7 +95,7 @@ export function ResultsScreen() {
           : "C";
   return (
     <section
-      className={`receipt-screen ${success ? "receipt-success" : "receipt-failed"}`}
+      className={`receipt-screen flight-results ${success ? "receipt-success" : "receipt-failed"}`}
       aria-label="Run result"
     >
       <header className="receipt-top">
@@ -107,13 +109,28 @@ export function ResultsScreen() {
       </header>
       <div className="receipt-poster">
         <div className="receipt-halftone" aria-hidden="true" />
-        <div className="receipt-character" aria-hidden="true">
-          <span>{success ? "SENT!" : "RETRY!"}</span>
+        <div className="result-flight-log">
+          <span>
+            {language === "id" ? "CATATAN PENERBANGAN" : "FLIGHT RECORDER"}
+          </span>
+          <RouteMap
+            stage={stageIndex}
+            progress={success ? 1 : 1 - distance / 1800}
+            large
+          />
+          <h3>{craftAt(stageIndex).name}</h3>
+          <p>
+            {success
+              ? language === "id"
+                ? "PESAN SAMPAI"
+                : "RECEIVER REACHED"
+              : `${Math.round((1 - distance / 1800) * 100)}% ${language === "id" ? "LINTASAN SELESAI" : "ROUTE COMPLETE"}`}
+          </p>
           <Image
             src="/brand/dili-blue-cutout.png"
-            width={650}
-            height={975}
-            alt=""
+            width={100}
+            height={150}
+            alt="DILI"
             unoptimized
           />
         </div>

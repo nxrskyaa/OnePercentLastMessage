@@ -7,6 +7,7 @@ import { copyFor } from "@/game/copy";
 import { formatTime } from "@/lib/format";
 import { courseAct } from "@/game/course";
 import { craftAt } from "@/game/crafts";
+import { RouteMap } from "./RouteMap";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
 
@@ -27,10 +28,12 @@ export function HUD() {
   const critical = battery < 0.1;
   const act = courseAct(distance);
   const altitude = useGameStore((state) => state.altitude ?? 0);
-  const craft = craftAt(useGameStore((state) => state.stageIndex));
+  const stageIndex = useGameStore((state) => state.stageIndex);
+  const craft = craftAt(stageIndex);
+  const speed = useGameStore((state) => state.speed);
   return (
     <div
-      className={`game-hud ${critical ? "game-hud--critical" : ""}`}
+      className={`game-hud flight-hud ${critical ? "game-hud--critical" : ""}`}
       aria-live="off"
     >
       <header className="hud-primary">
@@ -93,6 +96,19 @@ export function HUD() {
           {altitude.toFixed(1)}
         </b>
         <small>{craft.name} · Q ↑ / E ↓</small>
+      </div>
+      <div className="flight-navigation">
+        <header>
+          <span>{language === "id" ? "NAVIGASI" : "NAVIGATION"}</span>
+          <b>{act.mark} / 04</b>
+        </header>
+        <RouteMap stage={stageIndex} progress={1 - distance / 1800} />
+        <div>
+          <span>{craft.name}</span>
+          <b>
+            {Math.round(speed * 3.6)} <small>KM/H</small>
+          </b>
+        </div>
       </div>
       {distance <
         Math.abs(GAME_CONFIG.destination.z) +

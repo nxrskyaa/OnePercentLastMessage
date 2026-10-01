@@ -13,7 +13,10 @@ export function PauseMenu() {
   const language = useSettingsStore((state) => state.language);
   const t = copyFor(language);
   return (
-    <section className="pause-screen" aria-label="Transmission paused">
+    <section
+      className="pause-screen flight-pause"
+      aria-label="Transmission paused"
+    >
       <div className="pause-card">
         <span className="micro-label">{t.powerStable}</span>
         <h2>

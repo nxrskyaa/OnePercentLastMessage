@@ -8,8 +8,9 @@ const LIGHT_STOPS = HARBOR.lightStops;
 import { stageAt } from "@/game/stages";
 import { makeSoftLightTexture } from "@/rendering/lightTextures";
 import { useGameStore } from "@/store/gameStore";
+import { bendGeometry } from "@/rendering/bendGeometry";
 
-function makeLanterns() {
+function makeLanterns(stageIndex: number) {
   const metal: THREE.BufferGeometry[] = [];
   const porcelain: THREE.BufferGeometry[] = [];
   const cores: THREE.BufferGeometry[] = [];
@@ -63,7 +64,7 @@ function makeLanterns() {
     });
     parts.forEach((part) => part.dispose());
     if (!result) throw new Error("Lantern geometry could not be assembled");
-    return result;
+    return bendGeometry(result, stageIndex);
   };
   return {
     metal: merge(metal),
@@ -75,7 +76,10 @@ function makeLanterns() {
 
 export function RelayLanterns() {
   const stage = stageAt(useGameStore((state) => state.stageIndex));
-  const geometry = useMemo(() => makeLanterns(), []);
+  const geometry = useMemo(
+    () => makeLanterns(Number(stage.number) - 1),
+    [stage],
+  );
   const texture = useMemo(() => makeSoftLightTexture(), []);
   const hot = useMemo(
     () => new THREE.Color(stage.accentSoft).multiplyScalar(3.2),

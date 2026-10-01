@@ -7,6 +7,7 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { curtainOpening, type GameNode } from "@/game/nodes";
 import { energySurface } from "@/rendering/materials";
 import { useGameStore } from "@/store/gameStore";
+import { flightCenter } from "@/game/flightPath";
 import { useSettingsStore } from "@/store/settingsStore";
 import { FlightObstacle } from "./FlightObstacle";
 import { signalState } from "@/rendering/signalState";
@@ -284,6 +285,7 @@ export function NodeManager({
   playerRef: RefObject<THREE.Group | null>;
 }) {
   const low = useSettingsStore((state) => state.runtimeQuality === "low");
+  const stageIndex = useGameStore((state) => state.stageIndex);
   const groups = useRef<Array<THREE.Group | null>>([]);
   useFrame(() => {
     const playerZ = playerRef.current?.position.z ?? 0;
@@ -301,6 +303,11 @@ export function NodeManager({
       {nodes.map((node, index) => (
         <group
           key={node.id}
+          position={[
+            flightCenter(node.z, stageIndex).x,
+            flightCenter(node.z, stageIndex).y,
+            0,
+          ]}
           ref={(group) => {
             groups.current[index] = group;
           }}

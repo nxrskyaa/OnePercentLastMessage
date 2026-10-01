@@ -53,7 +53,7 @@ export const GAME_CONFIG = {
     trackerPrivacyDamage: 12,
     trackerBatteryDamage: 0.04,
     nearMissMargin: 4.2,
-    boosterCharge: 0.08,
+    boosterCharge: 0.09,
     publicPrivacyDamage: 12,
     relayBurstSpeed: 4.5,
     relayBurstSeconds: 1.8,

@@ -3,6 +3,8 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { HARBOR, dockHeight } from "@/game/harbor";
 import type { StageDefinition } from "@/game/stages";
+import { bendGeometry } from "./bendGeometry";
+import { flightCenter } from "@/game/flightPath";
 
 type Surface = "stone" | "metal" | "glass" | "light";
 type V3 = [number, number, number];
@@ -343,6 +345,21 @@ export function makeHarbor(stage: StageDefinition, section = 0) {
     }
   });
   // Purposeful service conduit follows the player corridor, disappearing underwater.
+  // Open deck ribs, paired guide rails and grounded pylons expose the skyway's
+  // switchbacks and height above the water without filling it with a solid road.
+  for (let d = section * 450; d < (section + 1) * 450; d += 24) {
+    const z = -d;
+    box("metal", [42, 0.35, 1.3], [0, -10.6, z], "#789ba2");
+    for (const side of [-1, 1]) {
+      box("stone", [1.5, 3.5, 1.3], [side * 20, -9, z]);
+      box("light", [1.7, 0.18, 3], [side * 20, -7.1, z], stage.accent);
+    }
+    if (d % 120 === 0) {
+      const h = flightCenter(z, Number(stage.number) - 1).y;
+      for (const side of [-1, 1])
+        box("stone", [3.2, Math.max(2, h + 6), 4], [side * 24, -13 - h / 2, z]);
+    }
+  }
   for (const side of [-1, 1]) {
     const pts: V3[] = [];
     for (let j = 0; j <= 18; j++)
@@ -436,7 +453,7 @@ export function makeHarbor(stage: StageDefinition, section = 0) {
       const merged = mergeGeometries(normalized)!;
       normalized.forEach((g) => g.dispose());
       geometries.forEach((g) => g.dispose());
-      merged.computeBoundingSphere();
+      bendGeometry(merged, Number(stage.number) - 1);
       return [name, merged];
     }),
   ) as Record<Surface, THREE.BufferGeometry>;

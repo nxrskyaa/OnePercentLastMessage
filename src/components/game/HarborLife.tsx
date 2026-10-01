@@ -9,6 +9,7 @@ import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import { signalState } from "@/rendering/signalState";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { flightCenter } from "@/game/flightPath";
 
 const COUNT = 32;
 function buoyGeometry() {
@@ -48,8 +49,10 @@ export function HarborLife({
       object = simulation.object;
     for (let i = 0; i < COUNT; i++) {
       const side = i % 2 ? -1 : 1,
-        x = side * (19 + (i % 3) * 2.7),
         z = 20 - Math.floor(i / 2) * 112;
+      const x =
+        side * (19 + (i % 3) * 2.7) +
+        flightCenter(z, Number(stage.number) - 1).x;
       const playerZ = playerRef.current?.position.z ?? 0;
       const playerX = playerRef.current?.position.x ?? 0;
       const proximity =
@@ -93,8 +96,9 @@ export function HarborLife({
       const z = -75 - i * 220,
         direction = i % 2 ? 1 : -1;
       object.position.set(
-        Math.sin(t * 0.13 + i * 2) * 70,
-        27 + (i % 3) * 12,
+        flightCenter(z, Number(stage.number) - 1).x +
+          Math.sin(t * 0.13 + i * 2) * 70,
+        flightCenter(z, Number(stage.number) - 1).y + 27 + (i % 3) * 12,
         z,
       );
       object.rotation.set(0, 0, Math.cos(t * 0.13 + i * 2) * -0.12 * direction);

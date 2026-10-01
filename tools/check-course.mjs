@@ -29,6 +29,33 @@ function load(relative) {
   return result.exports;
 }
 const { GAME_CONFIG: config } = load("src/game/config.ts");
+const { flightCenter, flightLengthScale, flightSlope } = load(
+  "src/game/flightPath.ts",
+);
+
+for (let stage = 0; stage < 3; stage++) {
+  assert.deepEqual(JSON.parse(JSON.stringify(flightCenter(0, stage))), {
+    x: 0,
+    y: 0,
+  });
+  assert.equal(Math.abs(flightCenter(-1800, stage).x), 0);
+  for (let d = 1; d <= 1800; d++) {
+    const a = flightCenter(-d, stage),
+      b = flightCenter(-d + 1, stage),
+      slope = flightSlope(-d, stage);
+    assert.ok([a.x, a.y, slope.x, slope.y].every(Number.isFinite));
+    assert.ok(
+      Math.hypot(a.x - b.x, a.y - b.y) < 2.5,
+      "Route must stay continuous and flyable",
+    );
+    assert.ok(flightLengthScale(-d, stage) >= 1);
+  }
+  assert.ok(
+    Math.abs(flightCenter(-650, stage).x) > 60,
+    "Switchback must be visible",
+  );
+  assert.ok(flightCenter(-895, stage).y > 40, "Sky bridge must be elevated");
+}
 const { generateNodes, aperture, hitsObstacle, rotorAngle } =
   load("src/game/nodes.ts");
 const damp = (value, target, response, dt) =>
@@ -61,7 +88,10 @@ function simulate(seed, stage, idle = false) {
     let tx = 0,
       ty = 0;
     if (target && !idle) {
-      const arrival = elapsed + (z - target.z) / Math.max(speed, 1);
+      const arrival =
+        elapsed +
+        ((z - target.z) * flightLengthScale((z + target.z) / 2, stage)) /
+          Math.max(speed, 1);
       const p = aperture(target, arrival);
       tx = p.x;
       ty = p.y;
@@ -116,7 +146,10 @@ function simulate(seed, stage, idle = false) {
       Math.min(config.movement.maxAltitude, y + vy * dt),
     );
     const previous = z;
-    z = Math.max(config.destination.z, z - speed * dt);
+    z = Math.max(
+      config.destination.z,
+      z - (speed * dt) / flightLengthScale(z, stage),
+    );
     elapsed += dt;
     battery = Math.max(0, battery - config.battery.drainPerSecond * dt);
     for (const n of nodes) {

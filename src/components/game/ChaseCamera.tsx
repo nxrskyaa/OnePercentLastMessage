@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { GAME_CONFIG } from "@/game/config";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
+import { flightCenter } from "@/game/flightPath";
 
 export function ChaseCamera({
   playerRef,
@@ -28,25 +29,40 @@ export function ChaseCamera({
     const menu = !["playing", "paused", "success", "failed"].includes(
       state.phase,
     );
+    const menuOffset = camera.aspect < 1 ? -3 : -8;
     const orbit =
       menu && !settings.reducedMotion
         ? Math.sin(clock.elapsedTime * 0.17) * 2.4
         : 0;
+    const center = flightCenter(player.position.z, state.stageIndex);
+    const back = flightCenter(
+      player.position.z + (menu ? 17 : 11),
+      state.stageIndex,
+    );
+    const ahead = flightCenter(
+      player.position.z - (menu ? 7 : GAME_CONFIG.camera.lookAhead),
+      state.stageIndex,
+    );
+    const localX = player.position.x - center.x;
+    const localY = player.position.y - center.y;
     desired.current.set(
-      player.position.x * 0.72 + (menu ? -10 : 0) + orbit,
-      player.position.y + (menu ? 8.2 : 4.6),
-      player.position.z + (menu ? 19 : 11),
+      back.x + localX * 0.72 + (menu ? menuOffset : 0) + orbit,
+      back.y + localY + (menu ? 5 : 4.6),
+      player.position.z + (menu ? 17 : 11),
     );
-    camera.position.lerp(
-      desired.current,
-      1 - Math.exp(-GAME_CONFIG.camera.followResponse * delta),
-    );
+    if (menu) camera.position.copy(desired.current);
+    else
+      camera.position.lerp(
+        desired.current,
+        1 - Math.exp(-GAME_CONFIG.camera.followResponse * delta),
+      );
     desired.current.set(
-      player.position.x * 0.82 + (menu ? 3 : 0),
-      player.position.y + 0.3,
-      player.position.z - (menu ? 34 : GAME_CONFIG.camera.lookAhead),
+      (menu ? center.x + menuOffset : ahead.x) + localX * 0.82,
+      (menu ? center.y : ahead.y) + localY + 0.3,
+      player.position.z - (menu ? 0 : GAME_CONFIG.camera.lookAhead),
     );
-    lookTarget.current.lerp(desired.current, 1 - Math.exp(-4.5 * delta));
+    if (menu) lookTarget.current.copy(desired.current);
+    else lookTarget.current.lerp(desired.current, 1 - Math.exp(-4.5 * delta));
     if (state.damagePulse !== lastDamage.current) {
       lastDamage.current = state.damagePulse;
       if (settings.cameraShake && !settings.reducedMotion) shake.current = 1;

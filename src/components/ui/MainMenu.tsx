@@ -8,6 +8,8 @@ import { STAGES } from "@/game/stages";
 import { useGameStore } from "@/store/gameStore";
 import { usePlayerProfileStore } from "@/store/playerProfileStore";
 import { useSettingsStore } from "@/store/settingsStore";
+import { RouteMap } from "./RouteMap";
+import { craftAt } from "@/game/crafts";
 
 export function MainMenu() {
   const openBriefing = useGameStore((s) => s.openBriefing);
@@ -20,8 +22,9 @@ export function MainMenu() {
   const language = useSettingsStore((s) => s.language);
   const t = copyFor(language);
   const id = language === "id";
+  const craft = craftAt(stageIndex);
   return (
-    <section className="dispatch-menu" aria-label="Main menu">
+    <section className="dispatch-menu flight-menu" aria-label="Main menu">
       <div className="dispatch-print" aria-hidden="true" />
       <header className="dispatch-header">
         <span className="dispatch-brand">
@@ -38,27 +41,25 @@ export function MainMenu() {
           {t.best} <b>{bestScore.toLocaleString()}</b>
         </span>
       </header>
-      <div className="dispatch-hero" aria-hidden="true">
-        <div className="dispatch-burst" />
-        <span className="dispatch-hero-type">
-          SEND
-          <br />
-          IT!
+      <div className="hangar-view">
+        <span className="hangar-label">
+          {id ? "KURIR AKTIF" : "YOUR COURIER"} / {STAGES[stageIndex].number}
         </span>
-        <Image
-          className="dispatch-dili"
-          src="/brand/dili-blue-cutout.png"
-          width={650}
-          height={975}
-          alt=""
-          priority
-          unoptimized
-        />
-        <span className="dispatch-sticker">
-          {id
-            ? "SATU PESAN.\nHARUS SAMPAI."
-            : "ONE MESSAGE.\nEVERYTHING AT STAKE."}
-        </span>
+        <div className="hangar-craft">
+          <b>{craft.name}</b>
+          <span>
+            {craft.engines.length} {id ? "MESIN" : "ENGINES"} ·{" "}
+            {id ? "SIAP TERBANG" : "FLIGHT READY"}
+          </span>
+        </div>
+        <div className="hangar-plan">
+          <span>{id ? "RENCANA PENERBANGAN" : "FLIGHT PLAN"}</span>
+          <RouteMap stage={stageIndex} large />
+          <div>
+            <b>01 / DEPARTURE</b>
+            <b>04 / RECEIVER</b>
+          </div>
+        </div>
       </div>
       <div className="dispatch-content">
         <span className="dispatch-kicker">
@@ -101,7 +102,7 @@ export function MainMenu() {
       </div>
       <div className="dispatch-stages" aria-label={t.selectStage}>
         <span className="dispatch-stage-label">
-          {id ? "PILIH FREKUENSIMU" : "PICK YOUR FREQUENCY"} <b>↓</b>
+          {id ? "PILIH LINTASAN" : "SELECT FLIGHT ROUTE"} <b>↓</b>
         </span>
         <div className="dispatch-stage-list">
           {STAGES.map((stage, index) => (

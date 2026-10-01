@@ -3,6 +3,8 @@
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { GAME_CONFIG } from "@/game/config";
+import { useGameStore } from "@/store/gameStore";
+import { bendGeometry } from "@/rendering/bendGeometry";
 
 function route(side: number) {
   return new THREE.CatmullRomCurve3([
@@ -42,14 +44,19 @@ function strand(curve: THREE.CatmullRomCurve3, side: number) {
 }
 
 export function RouteFork() {
+  const stageIndex = useGameStore((s) => s.stageIndex);
   const geometry = useMemo(() => {
     const safe = route(-1);
     const fast = route(1);
     return {
-      safe: [strand(safe, -1), strand(safe, 1)],
-      fast: [strand(fast, -1), strand(fast, 1)],
+      safe: [strand(safe, -1), strand(safe, 1)].map((g) =>
+        bendGeometry(g, stageIndex),
+      ),
+      fast: [strand(fast, -1), strand(fast, 1)].map((g) =>
+        bendGeometry(g, stageIndex),
+      ),
     };
-  }, []);
+  }, [stageIndex]);
   useEffect(
     () => () => {
       geometry.safe.forEach((item) => item.dispose());

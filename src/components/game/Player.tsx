@@ -12,6 +12,11 @@ import { useSettingsStore } from "@/store/settingsStore";
 import { craftAt } from "@/game/crafts";
 import { CourierRocket } from "./CourierRocket";
 import { signalState } from "@/rendering/signalState";
+import {
+  flightCenter,
+  flightSlope,
+  flightLengthScale,
+} from "@/game/flightPath";
 
 interface PlayerProps {
   playerRef: RefObject<THREE.Group | null>;
@@ -33,6 +38,7 @@ export function Player({
   const speed = useRef<number>(GAME_CONFIG.movement.cruiseSpeed);
   const sideSpeed = useRef(0);
   const verticalSpeed = useRef(0);
+  const lane = useRef({ x: 0, y: 0 });
   const battery = useRef<number>(GAME_CONFIG.battery.start);
   const privacy = useRef(100);
   const elapsed = useRef(0);
@@ -55,7 +61,7 @@ export function Player({
     signalState.flightTime = 0;
   }, []);
 
-  useFrame(({ clock }, frameDelta) => {
+  useFrame(({ clock, camera }, frameDelta) => {
     const body = playerRef.current;
     const model = visual.current;
     if (!body || !model) return;
@@ -81,12 +87,11 @@ export function Player({
         );
       } else if (state.phase !== "paused") {
         model.scale.setScalar(
-          THREE.MathUtils.damp(
-            model.scale.x,
-            1.3,
-            5,
-            Math.min(frameDelta, 0.05),
-          ),
+          state.phase === "menu"
+            ? camera instanceof THREE.PerspectiveCamera && camera.aspect < 1
+              ? 1.2
+              : 2.2
+            : 1.3,
         );
       }
       if (
@@ -100,7 +105,7 @@ export function Player({
           "countdown",
         ].includes(state.phase)
       )
-        model.rotation.y += Math.min(frameDelta, 0.05) * 0.55;
+        model.rotation.set(-0.08, -0.5, -0.1);
       return;
     }
 
@@ -151,15 +156,17 @@ export function Player({
       GAME_CONFIG.movement.lateralResponse,
       delta,
     );
-    body.position.x = THREE.MathUtils.clamp(
-      body.position.x + sideSpeed.current * delta,
+    lane.current.x = THREE.MathUtils.clamp(
+      lane.current.x + sideSpeed.current * delta,
       -GAME_CONFIG.movement.lateralLimit,
       GAME_CONFIG.movement.lateralLimit,
     );
     const previousZ = body.position.z;
     body.position.z = Math.max(
       GAME_CONFIG.destination.z,
-      body.position.z - speed.current * delta,
+      body.position.z -
+        (speed.current * delta) /
+          flightLengthScale(body.position.z, state.stageIndex),
     );
     const lift = Number(input.has("q")) - Number(input.has("e"));
     verticalSpeed.current = THREE.MathUtils.damp(
@@ -168,11 +175,17 @@ export function Player({
       GAME_CONFIG.movement.verticalResponse,
       delta,
     );
-    body.position.y = THREE.MathUtils.clamp(
-      body.position.y + verticalSpeed.current * delta,
+    lane.current.y = THREE.MathUtils.clamp(
+      lane.current.y + verticalSpeed.current * delta,
       GAME_CONFIG.movement.minAltitude,
       GAME_CONFIG.movement.maxAltitude,
     );
+    const center = flightCenter(body.position.z, state.stageIndex);
+    const slope = flightSlope(body.position.z, state.stageIndex);
+    body.position.x = center.x + lane.current.x;
+    body.position.y = center.y + lane.current.y;
+    body.rotation.y = Math.atan(slope.x);
+    body.rotation.x = -Math.atan(slope.y / Math.hypot(1, slope.x));
     model.position.y = Math.sin(clock.elapsedTime * 4.6) * 0.1;
     model.rotation.x = THREE.MathUtils.damp(
       model.rotation.x,
@@ -183,7 +196,14 @@ export function Player({
     model.rotation.z = THREE.MathUtils.damp(
       model.rotation.z,
       (-sideSpeed.current * GAME_CONFIG.movement.bankAmount) /
-        GAME_CONFIG.movement.lateralSpeed,
+        GAME_CONFIG.movement.lateralSpeed +
+        THREE.MathUtils.clamp(
+          (flightSlope(body.position.z - 10, state.stageIndex).x - slope.x) *
+            speed.current *
+            0.22,
+          -0.18,
+          0.18,
+        ),
       6,
       delta,
     );
@@ -244,17 +264,14 @@ export function Player({
       )
         continue;
       crossed.current.add(node.id);
-      const gap = Math.hypot(
-        body.position.x - node.x,
-        body.position.y - node.y,
-      );
+      const gap = Math.hypot(lane.current.x - node.x, lane.current.y - node.y);
       if (
         node.type === "curtain" ||
         node.type === "shutter" ||
         node.type === "rotor"
       ) {
         if (
-          hitsObstacle(node, body.position.x, body.position.y, elapsed.current)
+          hitsObstacle(node, lane.current.x, lane.current.y, elapsed.current)
         ) {
           privacy.current = Math.max(
             0,
@@ -349,8 +366,8 @@ export function Player({
     if (nextCurtain) {
       curtainAdvised.current.add(nextCurtain.id);
       const gap = aperture(nextCurtain, elapsed.current);
-      const climb = gap.y > body.position.y + 1.5;
-      const dive = gap.y < body.position.y - 1.5;
+      const climb = gap.y > lane.current.y + 1.5;
+      const dive = gap.y < lane.current.y - 1.5;
       state.setAdvisor(
         useSettingsStore.getState().language === "id"
           ? nextCurtain.type === "rotor"
@@ -405,7 +422,7 @@ export function Player({
         speed: speed.current,
         boosting: false,
         scanCooldown: scanCooldown.current,
-        altitude: body.position.y,
+        altitude: lane.current.y,
       });
       state.finish(elapsed.current, battery.current, privacy.current);
       playSound("success");
@@ -420,7 +437,7 @@ export function Player({
         speed: speed.current,
         boosting: false,
         scanCooldown: scanCooldown.current,
-        altitude: body.position.y,
+        altitude: lane.current.y,
       });
       state.fail(elapsed.current, distance, privacy.current);
       playSound("fail");
@@ -437,7 +454,7 @@ export function Player({
         speed: speed.current,
         boosting,
         scanCooldown: scanCooldown.current,
-        altitude: body.position.y,
+        altitude: lane.current.y,
       });
       hudInterval.current = 0;
     }

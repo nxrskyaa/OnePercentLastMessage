@@ -21,7 +21,7 @@ function HarborSection({
     const z = playerRef.current?.position.z ?? 0;
     if (group.current)
       group.current.visible =
-        -index * 450 < z + 160 && -(index + 1) * 450 > z - 700;
+        -(index + 1) * 450 < z + 160 && -index * 450 > z - 700;
   });
 
   useEffect(

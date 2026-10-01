@@ -1,6 +1,7 @@
 "use client";
 
 import { GameButton } from "@/components/ui/GameButton";
+import { RouteMap } from "@/components/ui/RouteMap";
 import { missionAt } from "@/game/missions";
 import { copyFor } from "@/game/copy";
 import { stageAt } from "@/game/stages";
@@ -19,7 +20,10 @@ export function MissionBriefing() {
   const mission = missionAt(missionIndex, language);
   const stage = stageAt(stageIndex);
   return (
-    <section className="briefing-screen" aria-label="Mission briefing">
+    <section
+      className="briefing-screen flight-briefing"
+      aria-label="Mission briefing"
+    >
       <div className="briefing-index">
         <span className="live-dot" /> {t.incoming}{" "}
         <span>#{String(missionIndex + 1).padStart(2, "0")}</span>
@@ -50,6 +54,18 @@ export function MissionBriefing() {
           ← {t.mainMenu}
         </GameButton>
       </div>
+      <aside
+        className="briefing-route"
+        aria-label={language === "id" ? "Rencana penerbangan" : "Flight plan"}
+      >
+        <span>{language === "id" ? "RENCANA PENERBANGAN" : "FLIGHT PLAN"}</span>
+        <h3>{language === "id" ? stage.nameId : stage.name}</h3>
+        <RouteMap stage={stageIndex} />
+        <p>
+          01 / {language === "id" ? "BERANGKAT" : "DEPARTURE"}
+          <span>04 / {language === "id" ? "PENERIMA" : "RECEIVER"}</span>
+        </p>
+      </aside>
     </section>
   );
 }
