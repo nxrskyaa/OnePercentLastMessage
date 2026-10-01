@@ -104,10 +104,10 @@ interface GameState extends HudSample {
 const PROFILE_KEY = "last-message.profile.v1";
 const INTRO_KEY = "last-message.hasSeenIntro";
 const TUTORIAL_KEY = "last-message.tutorialCompleted";
-const OLD_BEST_KEY = "last-message.best-time";
 
 interface Profile {
   version: 1;
+  bestTimeCourseLength: number;
   bestTime: number | null;
   bestScore: number;
   bestPrivacy: number;
@@ -125,6 +125,7 @@ function numberOr(value: unknown, fallback: number): number {
 function readProfile(): Profile {
   const empty: Profile = {
     version: 1,
+    bestTimeCourseLength: Math.abs(GAME_CONFIG.destination.z),
     bestTime: null,
     bestScore: 0,
     bestPrivacy: 0,
@@ -134,13 +135,7 @@ function readProfile(): Profile {
   };
   try {
     const raw = window.localStorage.getItem(PROFILE_KEY);
-    if (!raw) {
-      const legacy = Number(window.localStorage.getItem(OLD_BEST_KEY));
-      return {
-        ...empty,
-        bestTime: legacy > 0 && Number.isFinite(legacy) ? legacy : null,
-      };
-    }
+    if (!raw) return empty;
     const data: unknown = JSON.parse(raw);
     if (
       !data ||
@@ -151,8 +146,12 @@ function readProfile(): Profile {
     const record = data as Record<string, unknown>;
     return {
       version: 1,
+      bestTimeCourseLength: empty.bestTimeCourseLength,
       bestTime:
-        typeof record.bestTime === "number" && record.bestTime > 0
+        record.bestTimeCourseLength === empty.bestTimeCourseLength &&
+        typeof record.bestTime === "number" &&
+        Number.isFinite(record.bestTime) &&
+        record.bestTime > 0
           ? record.bestTime
           : null,
       bestScore: numberOr(record.bestScore, 0),
@@ -172,6 +171,7 @@ function readProfile(): Profile {
 function saveProfile(state: GameState): void {
   const profile: Profile = {
     version: 1,
+    bestTimeCourseLength: Math.abs(GAME_CONFIG.destination.z),
     bestTime: state.bestTime,
     bestScore: state.bestScore,
     bestPrivacy: state.bestPrivacy,
