@@ -42,3 +42,11 @@ The launch video is a cinematic gameplay demonstration with editorial typography
 - Touch layouts also activate with `any-pointer: coarse` for larger touchscreen tablets. Physical-device multitouch was not available in this session.
 - Input assertions cover analog diagonals, Nitro with both axes, keyboard priority and clearing on pause. Existing course simulations, lint and production build pass.
 - Dragging updates mutable input and the knob directly, without a React render on every pointer movement.
+
+## Dlicom feedback update — October 2
+
+- Persistent corner Dlicom/DILI dock uses the supplied logo and mascot; desktop and 390-pixel portrait inspected. The dock sits above touch actions.
+- Selected Lagoon in the hangar: paint/trim/metal/exhaust changed in the actual 3D craft; refresh retained the selected livery. Four liveries are available in the hangar and Settings.
+- A hands-off flight stopped before a moving gate, speed 0. It stayed there as time advanced, with one impact penalty. Analog climb/steer aligned the craft and resumed flight at normal cruise speed. The final stand-off keeps the craft nose in front of the panel.
+- Swept collision assertions cover nitro overshoot, side/top panels, release after alignment and rotor perimeter bypass. Simulations now use the same blocking helper as the live player.
+- Added two static alignment gates, at -365 and -705, while keeping the first 20 seconds forgiving. 108 expert and delayed-input course simulations pass across all three stages.

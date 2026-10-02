@@ -69,6 +69,7 @@ export function hitsObstacle(
   if (node.type === "rotor") {
     const dx = x - node.x,
       dy = y - node.y;
+    if (Math.hypot(dx, dy) + packet > node.radius) return true;
     const angle = rotorAngle(node, elapsed);
     const localX = Math.cos(angle) * dx + Math.sin(angle) * dy;
     const localY = -Math.sin(angle) * dx + Math.cos(angle) * dy;
@@ -81,6 +82,24 @@ export function hitsObstacle(
   }
   return false;
 }
+/** Swept forward collision: solid gates cannot be skipped even during nitro. */
+export function blockingObstacle(
+  nodes: GameNode[],
+  previousZ: number,
+  nextZ: number,
+  x: number,
+  y: number,
+  elapsed: number,
+) {
+  return nodes.find(
+    (node) =>
+      ["curtain", "shutter", "rotor"].includes(node.type) &&
+      previousZ > node.z &&
+      nextZ <= node.z + GAME_CONFIG.obstacles.gateStandOff &&
+      hitsObstacle(node, x, y, elapsed),
+  );
+}
+
 /** Authored beats leave time to read, steer and change altitude; seeds alter gentle gate motion. */
 export function generateNodes(runId: number, stageIndex = 0): GameNode[] {
   const nodes: GameNode[] = [];
@@ -109,12 +128,14 @@ export function generateNodes(runId: number, stageIndex = 0): GameNode[] {
   gate(-235, -3, 3);
   add("booster", -285, -3, 3, 5);
   add("tracker", -345, 3, 2, 3);
+  gate(-365, 0, 1);
   gate(-415, 4, 0);
   add("booster", -460, 4, 0, 5);
   add("tip", -490, 5, -2, 2.6);
   gate(-550, -4, 5, true);
   add("booster", -595, -4, 5, 5);
   add("relay", -650, 0, 4, 5);
+  gate(-705, -2, 5);
   add("safe", GAME_CONFIG.course.splitZ, -9, 7, 6);
   add("public", GAME_CONFIG.course.splitZ, 9, -3, 6);
   add("tip", -790, 9, -3, 2.6);

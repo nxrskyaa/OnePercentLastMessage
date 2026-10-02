@@ -56,10 +56,46 @@ for (let stage = 0; stage < 3; stage++) {
   );
   assert.ok(flightCenter(-895, stage).y > 40, "Sky bridge must be elevated");
 }
-const { generateNodes, aperture, hitsObstacle, rotorAngle } =
+const { generateNodes, aperture, hitsObstacle, rotorAngle, blockingObstacle } =
   load("src/game/nodes.ts");
 const { flightControls, axisVelocity, pilotTarget, pilotCue } =
   load("src/game/pilot.ts");
+const gate = generateNodes(1, 0).find((node) => node.type === "shutter");
+const opening = aperture(gate, 0);
+assert.equal(
+  blockingObstacle(
+    [gate],
+    gate.z + 3,
+    gate.z - 8,
+    opening.x + gate.radius + 1,
+    opening.y,
+    0,
+  )?.id,
+  gate.id,
+  "Boost cannot tunnel through panels",
+);
+assert.equal(
+  blockingObstacle([gate], gate.z + 3, gate.z - 8, opening.x, opening.y + 12, 0)
+    ?.id,
+  gate.id,
+  "Cannot fly over solid gates",
+);
+assert.equal(
+  blockingObstacle([gate], gate.z + 3, gate.z - 8, opening.x, opening.y, 0),
+  undefined,
+  "Aligned pilot can pass",
+);
+assert.equal(
+  blockingObstacle([gate], gate.z + 2.2, gate.z + 2, opening.x, opening.y, 0),
+  undefined,
+  "Blocked pilot can realign and resume",
+);
+const rotor = generateNodes(1, 0).find((node) => node.type === "rotor");
+assert.equal(
+  hitsObstacle(rotor, rotor.x + 20, rotor.y, 0),
+  true,
+  "Rotor perimeter prevents bypass",
+);
 const brake = flightControls(new Set(["shift", "s"]));
 assert.equal(brake.boosting, false, "Brakes override nitro");
 assert.equal(brake.targetSpeed, config.movement.brakeSpeed);
@@ -122,6 +158,7 @@ function simulate(seed, stage, idle = false, novice = false, dt = 1 / 60) {
     burstUntil = 0,
     burstSpeed = 0;
   const crossed = new Set();
+  const blockedHits = new Set();
   while (
     battery > 0 &&
     Math.hypot(x, y, z - config.destination.z) > config.destination.radius &&
@@ -213,6 +250,16 @@ function simulate(seed, stage, idle = false, novice = false, dt = 1 / 60) {
       config.destination.z,
       z - (speed * dt) / flightLengthScale(z, stage),
     );
+    const blocker = blockingObstacle(nodes, previous, z, x, y, elapsed + dt);
+    if (blocker) {
+      z = Math.min(previous, blocker.z + config.obstacles.gateStandOff);
+      speed = 0;
+      if (!blockedHits.has(blocker.id)) {
+        blockedHits.add(blocker.id);
+        hits++;
+        battery = Math.max(0, battery - config.obstacles.damageBattery);
+      }
+    }
     elapsed += dt;
     battery = Math.max(0, battery - config.battery.drainPerSecond * dt);
     for (const n of nodes) {
@@ -303,7 +350,7 @@ assert.equal(
   false,
   "Ignoring altitude and power gates must not finish the course",
 );
-assert(idle.hits >= 3, "Mandatory maneuvers must be meaningful");
+assert(idle.hits >= 1, "Idle pilot is stopped at a solid gate");
 console.log("36 movement-limited route simulations passed; idle run fails.");
 
 for (let stage = 0; stage < 3; stage++) {

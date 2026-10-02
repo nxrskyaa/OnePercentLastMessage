@@ -142,23 +142,34 @@ export function HUD() {
           <strong>{feedback.title}</strong>
         </div>
       )}
-      {advisor && (
-        <div key={`advisor-${advisor.id}`} className="dili-hint" role="status">
+      <aside className="dili-dock" aria-label="DILI network companion">
+        <header>
           <Image
-            src="/brand/dili-blue-cutout.png"
-            width={42}
-            height={42}
-            alt="DILI"
+            src="/brand/dlicom-mark-reference.jpg"
+            width={28}
+            height={28}
+            alt="Dlicom logo"
             unoptimized
           />
-          <span>{advisor.text}</span>
+          <strong>DLICOM</strong>
+          <span>● DILI</span>
+        </header>
+        <div className="dili-dock-body">
+          <Image
+            src="/brand/dili-blue-cutout.png"
+            width={64}
+            height={80}
+            alt="DILI mascot"
+            unoptimized
+          />
+          <p key={advisor?.id ?? 0}>
+            {advisor?.text ??
+              (language === "id"
+                ? "Aku DILI. Ikuti ◇, lewati celah terang. Pindai untuk membaca jalur."
+                : "I'm DILI. Follow ◇ through the bright openings. Scan to read the route.")}
+          </p>
         </div>
-      )}
-      {critical && (
-        <div className="critical-alert" role="alert">
-          {t.lowPower}
-        </div>
-      )}
+      </aside>
       <footer className="hud-footer">
         <div
           className={`scan-indicator ${scanCooldown <= 0 ? "ready" : ""}`}

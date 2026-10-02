@@ -42,3 +42,11 @@ Retry starts another flight immediately. Results show the outcome, time, battery
 ## Comfort and performance
 
 Settings include quality, music/SFX volume, mute, reduced motion and camera feedback options. Start with Auto on desktop and use Low on devices with slow frames. Pausing or hiding the tab holds the flight and stops audio. Best scores and settings are saved in the browser; clearing site storage resets them.
+
+## Solid gates and courier skins
+
+Solid sky-lock panels and rotor blades stop your craft. Aim for the bright opening with the ◇ guide; you can still steer and change altitude while stopped. Each obstacle charges impact damage once; battery continues to drain while you line up. Relay rings and power pickups remain optional score/resource opportunities.
+
+Choose Original, Lagoon, Sunrise or Orchid in the hangar or Settings. The livery is saved locally and changes paint, trim, metal and exhaust colors, with the same flight handling.
+
+DILI stays in the lower-right corner with the original Dlicom mark. Scan for context; DILI also warns about approaching gates and explains blocked panels.

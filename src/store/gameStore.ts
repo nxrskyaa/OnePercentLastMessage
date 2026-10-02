@@ -251,7 +251,7 @@ function feedbackFor(
       };
     case "curtainHit":
       return {
-        title: id ? "TERJERAT PEMINDAI" : "SCANNER CAUGHT YOU",
+        title: id ? "ARAHKAN KE CELAH" : "ALIGN TO OPENING",
         detail: `-${GAME_CONFIG.obstacles.damagePrivacy}% ${id ? "PRIVASI" : "PRIVACY"} · -${GAME_CONFIG.obstacles.damageBattery.toFixed(3)}% ${id ? "BATERAI" : "BATTERY"}`,
         tone: "red",
         points: -200,

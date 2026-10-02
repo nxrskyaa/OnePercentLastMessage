@@ -140,3 +140,10 @@ Verified on September 24, 2026: production build, lint, and formatting pass. Bro
 - Verified 108 full-course movement simulations across three stages and twelve seeds: expert pilots, cruise pilots reacting every 0.4 seconds with alternate boosters omitted from guidance, and the same delayed pilots at 30 FPS. The delayed cruise pilots finish with battery remaining; an idle pilot still fails. Added checks for brake priority, keyboard priority and release damping.
 - ESLint, strict TypeScript production build and the audio lifecycle regression check pass. Browser checks cover menu, briefing, scan cooldown, pause/resume via button and Escape, battery depletion and retry. At 390 x 844 the climb button changes altitude and release holds it; controls and the direction cue fit the viewport. At 1280 x 720 the desktop key diagram and 3D guide are visible.
 - Local in-app browser samples on Low were approximately 160 FPS. These are observations on this desktop, not physical-phone or cross-browser benchmarks. Full successful runs were simulated; no manual full-course success is claimed. The observed browser console has no app errors, with a dependency warning about deprecated THREE.Clock.
+
+## Dlicom feedback — October 2, 2026
+
+- Show verified Dlicom mark in a persistent corner companion dock and give DILI a larger portrait, default guidance and blocked-gate advice.
+- Offer Original, Lagoon, Sunrise and Orchid cosmetic liveries with persistent choice and live hangar previews.
+- Make solid apertures and rotor boundaries stop forward progress; re-align to continue. Charge collision damage only once per obstacle, never every frame.
+- Add two static approach gates with time to align; verify reachability with actual blocking, desktop/browser controls and responsive HUD.

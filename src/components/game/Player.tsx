@@ -12,7 +12,12 @@ import {
   pilotCue,
   pilotTarget,
 } from "@/game/pilot";
-import { aperture, hitsObstacle, type GameNode } from "@/game/nodes";
+import {
+  aperture,
+  blockingObstacle,
+  hitsObstacle,
+  type GameNode,
+} from "@/game/nodes";
 import { playSound, setAudioIntensity } from "@/lib/audio";
 import { useGameStore } from "@/store/gameStore";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -48,7 +53,11 @@ export function Player({
   nodes,
 }: PlayerProps) {
   const visual = useRef<THREE.Group>(null);
-  const craft = craftAt(useGameStore((state) => state.stageIndex));
+  const skin = useSettingsStore((state) => state.craftSkin);
+  const craft = craftAt(
+    useGameStore((state) => state.stageIndex),
+    skin,
+  );
   const speed = useRef<number>(GAME_CONFIG.movement.cruiseSpeed);
   const sideSpeed = useRef(0);
   const verticalSpeed = useRef(0);
@@ -64,6 +73,7 @@ export function Player({
   const lastTipAt = useRef(-100);
   const tipCombo = useRef(0);
   const crossed = useRef(new Set<string>());
+  const blockedHits = useRef(new Set<string>());
   const splitAdvised = useRef(false);
   const curtainAdvised = useRef(new Set<string>());
   const warningLevel = useRef(0);
@@ -223,6 +233,40 @@ export function Player({
       GAME_CONFIG.movement.minAltitude,
       GAME_CONFIG.movement.maxAltitude,
     );
+    const blocker = blockingObstacle(
+      nodes,
+      previousZ,
+      body.position.z,
+      lane.current.x,
+      lane.current.y,
+      elapsed.current + delta,
+    );
+    if (blocker) {
+      body.position.z = Math.min(
+        previousZ,
+        blocker.z + GAME_CONFIG.obstacles.gateStandOff,
+      );
+      speed.current = 0;
+      if (!blockedHits.current.has(blocker.id)) {
+        blockedHits.current.add(blocker.id);
+        privacy.current = Math.max(
+          0,
+          privacy.current - GAME_CONFIG.obstacles.damagePrivacy,
+        );
+        battery.current = Math.max(
+          0,
+          battery.current - GAME_CONFIG.obstacles.damageBattery,
+        );
+        state.recordEvent("curtainHit");
+        hitUntil.current = elapsed.current + 0.42;
+        state.setAdvisor(
+          useSettingsStore.getState().language === "id"
+            ? "Panel menahanmu. Arahkan ke ◇; geser analog atau gunakan A/D dan Q/E."
+            : "Panel blocked. Aim for ◇ with the stick or A/D and Q/E; then fly through.",
+        );
+        playSound("hit");
+      }
+    }
     const center = flightCenter(body.position.z, state.stageIndex);
     const slope = flightSlope(body.position.z, state.stageIndex);
     body.position.x = center.x + lane.current.x;

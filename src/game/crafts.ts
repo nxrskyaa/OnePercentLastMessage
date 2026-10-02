@@ -101,6 +101,55 @@ export const COURIER_CRAFTS: CourierCraft[] = [
     ],
   },
 ];
-export function craftAt(stageIndex: number) {
-  return COURIER_CRAFTS[((stageIndex % 3) + 3) % 3];
+export type CraftSkin = "original" | "lagoon" | "sunrise" | "orchid";
+export const CRAFT_SKINS = [
+  {
+    id: "original",
+    name: "Original",
+    color: "#e7f1e9",
+    trim: "#387a99",
+    metal: "#a17750",
+    exhaust: "#58d6ff",
+  },
+  {
+    id: "lagoon",
+    name: "Lagoon",
+    color: "#67cfc4",
+    trim: "#134a61",
+    metal: "#d4e3da",
+    exhaust: "#6ce6d3",
+  },
+  {
+    id: "sunrise",
+    name: "Sunrise",
+    color: "#f4c657",
+    trim: "#a94d45",
+    metal: "#e6dcc4",
+    exhaust: "#ffc575",
+  },
+  {
+    id: "orchid",
+    name: "Orchid",
+    color: "#d8a6df",
+    trim: "#554481",
+    metal: "#d4d7ea",
+    exhaust: "#d7b4f5",
+  },
+] as const;
+const SKINNED_CRAFTS = CRAFT_SKINS.map((skin) =>
+  COURIER_CRAFTS.map((craft) =>
+    skin.id === "original"
+      ? craft
+      : {
+          ...craft,
+          paint: skin.color,
+          trim: skin.trim,
+          metal: skin.metal,
+          exhaust: skin.exhaust,
+        },
+  ),
+);
+export function craftAt(stageIndex: number, skin: CraftSkin = "original") {
+  const index = CRAFT_SKINS.findIndex((item) => item.id === skin);
+  return SKINNED_CRAFTS[Math.max(0, index)][((stageIndex % 3) + 3) % 3];
 }

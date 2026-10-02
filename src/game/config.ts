@@ -51,6 +51,7 @@ export const GAME_CONFIG = {
   scan: { cooldown: 5 },
   course: { splitZ: -740, splitStart: -640, splitEnd: -860, visibleAhead: 260 },
   obstacles: {
+    gateStandOff: 6,
     damageBattery: 0.025,
     damagePrivacy: 9,
     rotorSpeed: 0.26,

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect } from "react";
 import { GameLogo } from "./GameLogo";
 import { formatTime } from "@/lib/format";
+import { SkinSelector } from "./SkinSelector";
 import { copyFor } from "@/game/copy";
 import { STAGES } from "@/game/stages";
 import { useGameStore } from "@/store/gameStore";
@@ -25,7 +26,8 @@ export function MainMenu() {
   const language = useSettingsStore((s) => s.language);
   const t = copyFor(language);
   const id = language === "id";
-  const craft = craftAt(stageIndex);
+  const skin = useSettingsStore((s) => s.craftSkin);
+  const craft = craftAt(stageIndex, skin);
   const replayIntro = useGameStore((s) => s.replayIntro);
   const reduced = useSettingsStore((s) => s.reducedMotion);
   useEffect(
@@ -89,6 +91,14 @@ export function MainMenu() {
           {id ? "KURIR AKTIF" : "YOUR COURIER"} / {STAGES[stageIndex].number}
         </span>
         <div className="hangar-craft">
+          <Image
+            className="hangar-dili"
+            src="/brand/dili-blue-cutout.png"
+            width={62}
+            height={80}
+            alt="DILI mascot"
+            unoptimized
+          />
           <i aria-hidden="true">{id ? "KURIR SINYAL" : "SIGNAL COURIER"}</i>
           <b>{craft.name}</b>
           <span>
@@ -96,6 +106,7 @@ export function MainMenu() {
             {id ? "SIAP TERBANG" : "FLIGHT READY"}
           </span>
         </div>
+        <SkinSelector />
         <div className="hangar-plan">
           <span>{id ? "RENCANA PENERBANGAN" : "FLIGHT PLAN"}</span>
           <RouteMap stage={stageIndex} large />

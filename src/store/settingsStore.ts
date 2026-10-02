@@ -1,3 +1,4 @@
+import { CRAFT_SKINS, type CraftSkin } from "@/game/crafts";
 import { create } from "zustand";
 
 export type Quality = "auto" | "low" | "medium" | "high";
@@ -5,6 +6,7 @@ export type Language = "en" | "id";
 
 export interface GameSettings {
   version: 1;
+  craftSkin: CraftSkin;
   masterVolume: number;
   musicVolume: number;
   sfxVolume: number;
@@ -34,6 +36,7 @@ function runtimeQualityFor(quality: Quality): "low" | "medium" | "high" {
 }
 export const DEFAULT_SETTINGS: GameSettings = {
   version: 1,
+  craftSkin: "original",
   masterVolume: 0.72,
   musicVolume: 0.38,
   sfxVolume: 0.68,
@@ -63,6 +66,9 @@ function validate(input: unknown): GameSettings {
     : DEFAULT_SETTINGS.quality;
   return {
     version: 1,
+    craftSkin: CRAFT_SKINS.some((skin) => skin.id === raw.craftSkin)
+      ? (raw.craftSkin as CraftSkin)
+      : "original",
     masterVolume: clamp(raw.masterVolume, DEFAULT_SETTINGS.masterVolume),
     musicVolume: clamp(raw.musicVolume, DEFAULT_SETTINGS.musicVolume),
     sfxVolume: clamp(raw.sfxVolume, DEFAULT_SETTINGS.sfxVolume),

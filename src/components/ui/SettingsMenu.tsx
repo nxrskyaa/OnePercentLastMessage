@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { GameButton } from "@/components/ui/GameButton";
+import { SkinSelector } from "./SkinSelector";
 import { copyFor } from "@/game/copy";
 import { useGameStore } from "@/store/gameStore";
 import {
@@ -122,6 +123,7 @@ export function SettingsMenu() {
           </button>
         </div>
       </div>
+      <SkinSelector />
       <div className="settings-grid">
         <div className="settings-group">
           <span className="micro-label">{t.audio}</span>
