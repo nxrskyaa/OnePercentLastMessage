@@ -15,6 +15,7 @@ import "./cinematic.css";
 import "./pilot-ui.css";
 import "./touch.css";
 import "./dlicom.css";
+import "./menu-responsive.css";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??

@@ -50,3 +50,11 @@ The launch video is a cinematic gameplay demonstration with editorial typography
 - A hands-off flight stopped before a moving gate, speed 0. It stayed there as time advanced, with one impact penalty. Analog climb/steer aligned the craft and resumed flight at normal cruise speed. The final stand-off keeps the craft nose in front of the panel.
 - Swept collision assertions cover nitro overshoot, side/top panels, release after alignment and rotor perimeter bypass. Simulations now use the same blocking helper as the live player.
 - Added two static alignment gates, at -365 and -705, while keeping the first 20 seconds forgiving. 108 expert and delayed-input course simulations pass across all three stages.
+
+## Mobile menu layout repair — October 2
+
+- Replaced the fixed-height overlapping mobile hangar with document-flow sections: craft/mascot, skin controls, then route preview. The route selector and footer follow below.
+- Inspected 360 × 740, 390 × 844, 844 × 390 and 820 × 1180. Measured craft, skins, map and stage bounds are vertically separated; document width matches each viewport. Menu scroll makes all controls reachable.
+- Selected Prism/Needle and Orchid through the mobile menu. Both selections update, with room for the craft name and mascot.
+- Small-phone utility buttons use two columns and at least 44-pixel targets. Desktop composition remains outside this media query.
+- Lint and production build pass. These checks use browser viewports, not a physical-phone test.

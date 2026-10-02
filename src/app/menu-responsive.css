@@ -1,0 +1,183 @@
+/* Compact screens use normal document flow; no overlaid hangar panels. */
+@media (max-width: 960px) {
+  .flight-menu.kinetic-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: max(16px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-right))
+      max(20px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+    overflow-y: auto;
+    overflow-x: hidden;
+    align-items: stretch;
+  }
+  .kinetic-menu .dispatch-header {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .kinetic-menu .opening-replay {
+    margin: 0 0 0 auto;
+  }
+  .kinetic-menu .dispatch-best {
+    padding: 0;
+    margin: 0;
+  }
+  .kinetic-menu .dispatch-content {
+    position: static;
+    width: 100%;
+    max-width: none;
+    padding: 24px 0 0;
+    order: 1;
+    flex-shrink: 0;
+  }
+  .kinetic-menu .hangar-view {
+    position: static;
+    inset: auto;
+    order: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    height: auto;
+    min-height: 0;
+    margin: 22px 0 0;
+    padding: 14px;
+    border: 1px solid #b5fff04a;
+    background: #102637d9;
+    flex-shrink: 0;
+  }
+  .kinetic-menu .hangar-label {
+    display: block;
+    margin: 0;
+    padding: 0;
+    background: none;
+    transform: none;
+    font-size: 9px;
+  }
+  .kinetic-menu .hangar-craft {
+    position: relative;
+    inset: auto;
+    margin: 0;
+    padding: 0 70px 0 0;
+    min-height: 68px;
+    text-align: left;
+    align-content: center;
+    animation: none;
+    gap: 7px;
+  }
+  .kinetic-menu .hangar-craft b {
+    font-size: clamp(26px, 6vw, 36px);
+    transform: none;
+  }
+  .kinetic-menu .hangar-craft > span {
+    padding: 0;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    line-height: 1.4;
+  }
+  .kinetic-menu .hangar-dili {
+    width: 54px;
+    height: 68px;
+    right: 0;
+    bottom: 0;
+  }
+  .kinetic-menu .courier-skins {
+    margin: 0;
+    min-width: 0;
+  }
+  .kinetic-menu .courier-skins > div {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .kinetic-menu .courier-skins button {
+    min-width: 0;
+    min-height: 44px;
+    padding: 6px 2px;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 10px;
+  }
+  .kinetic-menu .courier-skins i {
+    width: 16px;
+    height: 16px;
+  }
+  .kinetic-menu .hangar-plan {
+    position: static;
+    inset: auto;
+    width: 100%;
+    margin: 0;
+    padding: 10px;
+    transform: none;
+    box-shadow: none;
+    border: 0;
+    border-top: 1px solid #b5fff038;
+    background: none;
+    animation: none;
+  }
+  .kinetic-menu .hangar-plan .route-map {
+    height: 48px;
+    margin: 5px 0;
+  }
+  .kinetic-menu .hangar-plan > span,
+  .kinetic-menu .hangar-plan > div {
+    font-size: 8px;
+  }
+  .kinetic-menu .dispatch-stages {
+    position: static;
+    order: 3;
+    margin: 22px 0 0;
+    width: 100%;
+    flex-shrink: 0;
+  }
+  .kinetic-menu .dispatch-stage-list {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .kinetic-menu .dispatch-stage-list button {
+    min-height: 58px;
+  }
+  .kinetic-menu .dispatch-footer {
+    position: static;
+    order: 4;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 24px 0 0;
+    font-size: 8px;
+    flex-shrink: 0;
+  }
+  .kinetic-menu .dispatch-footer > b {
+    max-width: 35%;
+    overflow-wrap: anywhere;
+  }
+}
+@media (max-width: 420px) {
+  .kinetic-menu .dispatch-tools {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+  .kinetic-menu .dispatch-tools button {
+    flex-direction: row;
+    min-height: 44px;
+    gap: 8px;
+    padding: 7px;
+    font-size: 10px;
+  }
+  .kinetic-menu .dispatch-tools button > span {
+    font-size: 20px;
+  }
+  .kinetic-menu .dispatch-kicker {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+  .kinetic-menu .dispatch-content h1 {
+    margin: 18px 0 10px;
+  }
+}
