@@ -100,6 +100,36 @@ export function blockingObstacle(
   );
 }
 
+/** Shared dimensions of the physical polygon relay frame. */
+export function relayFrame(node: GameNode) {
+  return {
+    radius: node.type === "booster" ? 4.35 : node.type === "relay" ? 5.2 : 6,
+    sides: node.type === "booster" ? 8 : 6,
+  };
+}
+
+/** Contact with frame bars, including packet clearance; open centres stay safe. */
+export function hitsRelayRim(node: GameNode, x: number, y: number) {
+  if (!["relay", "booster", "safe", "public"].includes(node.type)) return false;
+  const { radius, sides } = relayFrame(node);
+  const halfLength = radius * Math.sin(Math.PI / sides) * 0.92;
+  const dx = x - node.x,
+    dy = y - node.y;
+  for (let i = 0; i < sides; i++) {
+    const angle = (i * Math.PI * 2) / sides + Math.PI / sides;
+    const radial = dx * Math.cos(angle) + dy * Math.sin(angle) - radius;
+    const tangent = -dx * Math.sin(angle) + dy * Math.cos(angle);
+    const outsideX = Math.max(
+      0,
+      Math.abs(radial) - GAME_CONFIG.obstacles.rimHalfWidth,
+    );
+    const outsideY = Math.max(0, Math.abs(tangent) - halfLength);
+    if (Math.hypot(outsideX, outsideY) <= GAME_CONFIG.movement.collisionRadius)
+      return true;
+  }
+  return false;
+}
+
 /** Authored beats leave time to read, steer and change altitude; seeds alter gentle gate motion. */
 export function generateNodes(runId: number, stageIndex = 0): GameNode[] {
   const nodes: GameNode[] = [];

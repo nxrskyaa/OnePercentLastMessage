@@ -56,9 +56,16 @@ for (let stage = 0; stage < 3; stage++) {
   );
   assert.ok(flightCenter(-895, stage).y > 40, "Sky bridge must be elevated");
 }
-const { generateNodes, aperture, hitsObstacle, rotorAngle, blockingObstacle } =
-  load("src/game/nodes.ts");
-const { flightControls, axisVelocity, pilotTarget, pilotCue } =
+const {
+  generateNodes,
+  aperture,
+  hitsObstacle,
+  rotorAngle,
+  blockingObstacle,
+  hitsRelayRim,
+  relayFrame,
+} = load("src/game/nodes.ts");
+const { flightControls, axisVelocity, pilotTarget, pilotCue, controlScale } =
   load("src/game/pilot.ts");
 const gate = generateNodes(1, 0).find((node) => node.type === "shutter");
 const opening = aperture(gate, 0);
@@ -96,6 +103,51 @@ assert.equal(
   true,
   "Rotor perimeter prevents bypass",
 );
+const relay = generateNodes(1, 0).find((n) => n.type === "relay");
+const frame = relayFrame(relay);
+const barAngle = Math.PI / frame.sides;
+assert.equal(hitsRelayRim(relay, relay.x, relay.y), false, "Centre is safe");
+assert.equal(
+  hitsRelayRim(
+    relay,
+    relay.x + Math.cos(barAngle) * frame.radius,
+    relay.y + Math.sin(barAngle) * frame.radius,
+  ),
+  true,
+  "Visible frame bar causes damage",
+);
+assert.equal(
+  hitsRelayRim(relay, relay.x + 12, relay.y),
+  false,
+  "Empty sky is not a wall",
+);
+for (const dt of [1 / 30, 1 / 60, 1 / 144]) {
+  for (const forward of [13.5, 22.5, 27.5]) {
+    let vx = 0,
+      vy = 0,
+      x = 0,
+      y = 0;
+    const scale = controlScale(forward);
+    for (let t = 0; t < 1; t += dt) {
+      vx = axisVelocity(vx, 0.5, config.movement.lateralSpeed * scale, 12, dt);
+      vy = axisVelocity(vy, 0.5, config.movement.verticalSpeed * scale, 12, dt);
+      x += vx * dt;
+      y += vy * dt;
+    }
+    assert(
+      x / forward > 0.26 && y / forward > 0.18,
+      "Both axes retain authority at maximum burst speed",
+    );
+    for (let t = 0; t < 0.25; t += dt) {
+      vx = axisVelocity(vx, 0, 10 * scale, 12, dt);
+      vy = axisVelocity(vy, 0, 7 * scale, 12, dt);
+    }
+    assert(
+      Math.abs(vx) < 0.05 && Math.abs(vy) < 0.05,
+      "Release stops axes at high speed",
+    );
+  }
+}
 const brake = flightControls(new Set(["shift", "s"]));
 assert.equal(brake.boosting, false, "Brakes override nitro");
 assert.equal(brake.targetSpeed, config.movement.brakeSpeed);
@@ -134,7 +186,14 @@ assert.equal(gameInput.pressed.current.size, 0, "Pause clears held actions");
 const damp = (value, target, response, dt) =>
   target + (value - target) * Math.exp(-response * dt);
 
-function simulate(seed, stage, idle = false, novice = false, dt = 1 / 60) {
+function simulate(
+  seed,
+  stage,
+  idle = false,
+  novice = false,
+  dt = 1 / 60,
+  nitro = false,
+) {
   const nodes = generateNodes(seed, stage);
   // A novice follows the actual visible cue, reacts only every 0.4 seconds,
   // cruises without W, and overlooks alternate power nodes when choosing a target.
@@ -220,22 +279,25 @@ function simulate(seed, stage, idle = false, novice = false, dt = 1 / 60) {
     vx = axisVelocity(
       vx,
       sx,
-      config.movement.lateralSpeed,
+      config.movement.lateralSpeed * controlScale(speed),
       config.movement.lateralResponse,
       dt,
     );
     vy = axisVelocity(
       vy,
       sy,
-      config.movement.verticalSpeed,
+      config.movement.verticalSpeed * controlScale(speed),
       config.movement.verticalResponse,
       dt,
     );
+    const boosting = nitro && elapsed % 12 < 3;
     speed = damp(
       speed,
-      (idle || novice
-        ? config.movement.cruiseSpeed
-        : config.movement.accelerateSpeed) +
+      (boosting
+        ? config.movement.boostSpeed
+        : idle || novice
+          ? config.movement.cruiseSpeed
+          : config.movement.accelerateSpeed) +
         (elapsed < burstUntil ? burstSpeed : 0),
       config.movement.speedResponse,
       dt,
@@ -261,11 +323,22 @@ function simulate(seed, stage, idle = false, novice = false, dt = 1 / 60) {
       }
     }
     elapsed += dt;
-    battery = Math.max(0, battery - config.battery.drainPerSecond * dt);
+    battery = Math.max(
+      0,
+      battery -
+        (config.battery.drainPerSecond +
+          (boosting ? config.battery.boostExtraDrainPerSecond : 0)) *
+          dt,
+    );
     for (const n of nodes) {
       if (crossed.has(n.id) || previous <= n.z || z > n.z) continue;
       crossed.add(n.id);
       const gap = Math.hypot(x - n.x, y - n.y);
+      if (hitsRelayRim(n, x, y)) {
+        hits++;
+        battery = Math.max(0, battery - config.obstacles.rimBatteryDamage);
+        continue;
+      }
       if (
         ["shutter", "rotor", "curtain"].includes(n.type) &&
         hitsObstacle(n, x, y, elapsed)
@@ -373,4 +446,15 @@ for (let stage = 0; stage < 3; stage++) {
 }
 console.log(
   "36 delayed cruise pilots and 36 at 30Hz pass with missed pickups; input release and brake priority pass.",
+);
+
+for (let stage = 0; stage < 3; stage++)
+  for (let seed = 1; seed <= 12; seed++) {
+    for (const dt of [1 / 30, 1 / 60]) {
+      const run = simulate(seed, stage, false, false, dt, true);
+      assert(run.success, JSON.stringify(run));
+    }
+  }
+console.log(
+  "72 nitro course runs pass at 30/60Hz; high-speed axes, release and physical rims verified.",
 );

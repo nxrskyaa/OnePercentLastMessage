@@ -140,6 +140,7 @@ export function HUD() {
           role="status"
         >
           <strong>{feedback.title}</strong>
+          <small>{feedback.detail}</small>
         </div>
       )}
       <aside className="dili-dock" aria-label="DILI network companion">

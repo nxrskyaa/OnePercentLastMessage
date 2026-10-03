@@ -21,6 +21,12 @@ let soundtrack: HTMLAudioElement | null = null;
 let musicSource: MediaElementAudioSourceNode | null = null;
 let musicGain: GainNode | null = null;
 let musicFilter: BiquadFilterNode | null = null;
+let drive: {
+  motor: OscillatorNode;
+  air: AudioBufferSourceNode;
+  filter: BiquadFilterNode;
+  gain: GainNode;
+} | null = null;
 let unlocked = false;
 let boosted = false;
 let critical = false;
@@ -66,7 +72,72 @@ function ensureAudio(): AudioContext | null {
   }
 }
 
+/** One reusable jet layer; no new oscillators on each frame or boost press. */
+function syncDrive() {
+  const active =
+    unlocked &&
+    boosted &&
+    currentPhase === "playing" &&
+    !document.hidden &&
+    !settings.mute &&
+    settings.masterVolume > 0 &&
+    settings.sfxVolume > 0;
+  if (!context || !sfx) return;
+  try {
+    if (active && !drive) {
+      const motor = context.createOscillator();
+      const air = context.createBufferSource();
+      const filter = context.createBiquadFilter();
+      const gain = context.createGain();
+      const buffer = context.createBuffer(
+        1,
+        context.sampleRate,
+        context.sampleRate,
+      );
+      const data = buffer.getChannelData(0);
+      let seed = 137;
+      for (let i = 0; i < data.length; i++) {
+        seed = (seed * 16807) % 2147483647;
+        data[i] = (seed / 2147483647 - 0.5) * 0.35;
+      }
+      air.buffer = buffer;
+      air.loop = true;
+      motor.type = "triangle";
+      motor.frequency.value = 75;
+      filter.type = "lowpass";
+      filter.Q.value = 0.6;
+      gain.gain.value = 0;
+      motor.connect(filter);
+      air.connect(filter);
+      filter.connect(gain).connect(sfx);
+      motor.start();
+      air.start();
+      drive = { motor, air, filter, gain };
+    }
+    if (drive) {
+      drive.gain.gain.setTargetAtTime(
+        active ? 0.12 : 0,
+        context.currentTime,
+        active ? 0.09 : 0.035,
+      );
+      drive.motor.frequency.setTargetAtTime(
+        active ? 142 : 75,
+        context.currentTime,
+        0.18,
+      );
+      drive.filter.frequency.setTargetAtTime(
+        active ? 2200 : 450,
+        context.currentTime,
+        0.18,
+      );
+    }
+  } catch {
+    // Synthesis is optional on browsers with restricted audio support.
+  }
+}
+
 function applyVolume() {
+  syncDrive();
   if (context && master && sfx) {
     const now = context.currentTime;
     master.gain.setTargetAtTime(
@@ -145,6 +216,7 @@ function syncMusic() {
 function onAudioVisibility() {
   if (!document.hidden && context?.state === "suspended")
     void context.resume().catch(() => {});
+  syncDrive();
   syncMusic();
 }
 
@@ -216,7 +288,7 @@ const SOUNDS: Record<Sound, [number, number, number, OscillatorType]> = {
   scan: [220, 850, 0.4, "sine"],
   relay: [500, 720, 0.18, "sine"],
   tip: [660, 940, 0.16, "sine"],
-  boost: [110, 240, 0.17, "sawtooth"],
+  boost: [75, 310, 0.36, "triangle"],
   hit: [230, 75, 0.28, "sawtooth"],
   success: [410, 820, 0.6, "sine"],
   fail: [220, 60, 0.55, "triangle"],
@@ -258,6 +330,15 @@ export function playSound(sound: Sound) {
 }
 
 export function shutdownAudio() {
+  if (drive) {
+    drive.motor.stop();
+    drive.air.stop();
+    drive.motor.disconnect();
+    drive.air.disconnect();
+    drive.filter.disconnect();
+    drive.gain.disconnect();
+    drive = null;
+  }
   soundtrack?.pause();
   soundtrack?.removeAttribute("src");
   soundtrack?.load();

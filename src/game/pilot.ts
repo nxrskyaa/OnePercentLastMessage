@@ -51,6 +51,17 @@ export function flightControls(
   };
 }
 
+/** Maintain steering authority per metre during nitro and relay bursts. */
+export function controlScale(speed: number) {
+  return Math.max(
+    1,
+    Math.min(
+      GAME_CONFIG.movement.maxControlScale,
+      speed / GAME_CONFIG.movement.cruiseSpeed,
+    ),
+  );
+}
+
 export function axisVelocity(
   previous: number,
   input: number,

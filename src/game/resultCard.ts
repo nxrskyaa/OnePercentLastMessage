@@ -201,7 +201,7 @@ export function drawResultCard(
       data.privacy / 100,
     ],
     [
-      id ? "PELACAK / TIPS" : "TRACKERS / TIPS",
+      id ? "BENTURAN / TIPS" : "COLLISIONS / TIPS",
       `${data.trackerHits} / ${data.tipsCollected}`,
       null,
     ],

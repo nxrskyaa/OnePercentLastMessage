@@ -58,3 +58,11 @@ The launch video is a cinematic gameplay demonstration with editorial typography
 - Selected Prism/Needle and Orchid through the mobile menu. Both selections update, with room for the craft name and mascot.
 - Small-phone utility buttons use two columns and at least 44-pixel targets. Desktop composition remains outside this media query.
 - Lint and production build pass. These checks use browser viewports, not a physical-phone test.
+
+## October 3 reviewer update
+
+- New relay-frame collision tests use shared polygon dimensions. Contact subtracts 150 points, 0.012% battery and 3% privacy once per crossing. Panel and tracker receipts now expose existing negative points.
+- 180 full-course simulations pass: 108 normal/expert/delayed pilots and 72 intermittent-nitro pilots across three stages and twelve seeds, including 30Hz runs. The simulator applies rim damage. Additional 30/60/144Hz checks cover proportional controls and fast input release at cruise, nitro and maximum public-burst speed.
+- Audio harness verifies that one motor/air layer is reused, fades on boost release, and respects pause, mute, SFX volume, hidden tabs and shutdown. Autoplay failure remains nonfatal.
+- Local browser: a blocked gate remained at 1256m with 85% privacy across subsequent observations, proving the hit did not repeat each frame; analog drag raised altitude from +0.0 to +0.5. New score/resource detail is present in the HUD. At 390 x 844 the document width is 390px; no app console errors were observed.
+- Local desktop sample: around 100 FPS, Medium/WebGL2. This is a desktop observation, not a physical-phone benchmark. Manual full-course success and cross-browser audio audition were not performed in this pass.

@@ -8,6 +8,7 @@ import { gameInput } from "@/game/input";
 import { GAME_CONFIG } from "@/game/config";
 import {
   axisVelocity,
+  controlScale,
   flightControls,
   pilotCue,
   pilotTarget,
@@ -16,6 +17,7 @@ import {
   aperture,
   blockingObstacle,
   hitsObstacle,
+  hitsRelayRim,
   type GameNode,
 } from "@/game/nodes";
 import { playSound, setAudioIntensity } from "@/lib/audio";
@@ -83,6 +85,9 @@ export function Player({
   useEffect(() => {
     signalState.boost.value = 0;
     signalState.flightTime = 0;
+    signalState.damage = 0;
+    signalState.steer = 0;
+    signalState.lift = 0;
   }, []);
 
   useFrame(({ clock, camera }, frameDelta) => {
@@ -202,10 +207,11 @@ export function Player({
       delta,
     );
 
+    const authority = controlScale(speed.current);
     sideSpeed.current = axisVelocity(
       sideSpeed.current,
       steer,
-      GAME_CONFIG.movement.lateralSpeed,
+      GAME_CONFIG.movement.lateralSpeed * authority,
       GAME_CONFIG.movement.lateralResponse,
       delta,
     );
@@ -224,7 +230,7 @@ export function Player({
     verticalSpeed.current = axisVelocity(
       verticalSpeed.current,
       lift,
-      GAME_CONFIG.movement.verticalSpeed,
+      GAME_CONFIG.movement.verticalSpeed * authority,
       GAME_CONFIG.movement.verticalResponse,
       delta,
     );
@@ -258,7 +264,8 @@ export function Player({
           battery.current - GAME_CONFIG.obstacles.damageBattery,
         );
         state.recordEvent("curtainHit");
-        hitUntil.current = elapsed.current + 0.42;
+        hitUntil.current =
+          elapsed.current + GAME_CONFIG.obstacles.hitFeedbackSeconds;
         state.setAdvisor(
           useSettingsStore.getState().language === "id"
             ? "Panel menahanmu. Arahkan ke ◇; geser analog atau gunakan A/D dan Q/E."
@@ -273,7 +280,21 @@ export function Player({
     body.position.y = center.y + lane.current.y;
     body.rotation.y = Math.atan(slope.x);
     body.rotation.x = -Math.atan(slope.y / Math.hypot(1, slope.x));
-    model.position.y = Math.sin(clock.elapsedTime * 4.6) * 0.1;
+    const reducedMotion = useSettingsStore.getState().reducedMotion;
+    const impact = Math.max(
+      0,
+      (hitUntil.current - elapsed.current) /
+        GAME_CONFIG.obstacles.hitFeedbackSeconds,
+    );
+    signalState.damage = impact;
+    signalState.steer = steer;
+    signalState.lift = lift;
+    model.position.x = reducedMotion
+      ? 0
+      : Math.sin(elapsed.current * 65) * impact * 0.12;
+    model.position.y = reducedMotion
+      ? 0
+      : Math.sin(clock.elapsedTime * 4.6) * 0.1;
     model.rotation.x = THREE.MathUtils.damp(
       model.rotation.x,
       -verticalSpeed.current * 0.025,
@@ -305,7 +326,7 @@ export function Player({
     model.scale.setScalar(
       THREE.MathUtils.damp(
         model.scale.x,
-        struck ? 1.7 : relayPulse ? 1.5 : boosting ? 1.48 : 1.3,
+        struck ? 1.23 : relayPulse ? 1.5 : boosting ? 1.48 : 1.3,
         7,
         delta,
       ),
@@ -352,6 +373,21 @@ export function Player({
         continue;
       crossed.current.add(node.id);
       const gap = Math.hypot(lane.current.x - node.x, lane.current.y - node.y);
+      if (hitsRelayRim(node, lane.current.x, lane.current.y)) {
+        battery.current = Math.max(
+          0,
+          battery.current - GAME_CONFIG.obstacles.rimBatteryDamage,
+        );
+        privacy.current = Math.max(
+          0,
+          privacy.current - GAME_CONFIG.obstacles.rimPrivacyDamage,
+        );
+        state.recordEvent("rimHit");
+        hitUntil.current =
+          elapsed.current + GAME_CONFIG.obstacles.hitFeedbackSeconds;
+        playSound("hit");
+        continue;
+      }
       if (
         node.type === "curtain" ||
         node.type === "shutter" ||
@@ -369,7 +405,8 @@ export function Player({
             battery.current - GAME_CONFIG.obstacles.damageBattery,
           );
           state.recordEvent("curtainHit");
-          hitUntil.current = elapsed.current + 0.42;
+          hitUntil.current =
+            elapsed.current + GAME_CONFIG.obstacles.hitFeedbackSeconds;
           playSound("hit");
         } else {
           state.recordEvent("curtainClear");
@@ -387,7 +424,8 @@ export function Player({
             battery.current - GAME_CONFIG.nodes.trackerBatteryDamage,
           );
           state.recordEvent("tracker");
-          hitUntil.current = elapsed.current + 0.42;
+          hitUntil.current =
+            elapsed.current + GAME_CONFIG.obstacles.hitFeedbackSeconds;
           state.setAdvisor(
             useSettingsStore.getState().language === "id"
               ? "Terkena pelacak. Lindungi privasimu; hindari cincin merah berikutnya."

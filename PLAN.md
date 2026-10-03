@@ -147,3 +147,11 @@ Verified on September 24, 2026: production build, lint, and formatting pass. Bro
 - Offer Original, Lagoon, Sunrise and Orchid cosmetic liveries with persistent choice and live hangar previews.
 - Make solid apertures and rotor boundaries stop forward progress; re-align to continue. Charge collision damage only once per obstacle, never every frame.
 - Add two static approach gates with time to align; verify reachability with actual blocking, desktop/browser controls and responsive HUD.
+
+## Reviewer flight feedback — October 3, 2026
+
+- Match relay-rim contact to the same polygon frame dimensions used by the renderer. Apply one strike per crossing: -150 points, -0.012% battery and -3% privacy. Existing panel/tracker penalties now show their score and resource losses in a short HUD receipt; collision sparks, craft recoil and a restrained hull flash communicate impact.
+- Scale both steering axes with actual forward speed, capped at 1.7x, including relay/public bursts. Keep brake priority, proportional analog input and fast release damping.
+- Add a reusable motor/filtered-air nitro sound with smooth ignition and release. Respect pause, mute, SFX volume, tab visibility and teardown. Preserve the original soundtrack tempo.
+- Add articulated engine control vanes for each craft silhouette. Respect reduced motion and retain the existing lighting limits.
+- Verification: production build and ESLint pass; 108 course runs plus 72 intermittent nitro runs cover three stages, twelve seeds and 30/60Hz. Simulations include the new rim damage. High-speed proportional steering and release are checked at 30/60/144Hz. Audio lifecycle tests cover sustained nitro, reuse, pause/mute/visibility and cleanup. In-browser contact subtracts privacy once while blocked, analog input changes altitude, and the 390px HUD has no horizontal overflow or observed console errors. Desktop samples were approximately 100 FPS in this local session; physical phones and other engines were not benchmarked.

@@ -4,6 +4,9 @@ import { uniform } from "three/tsl";
 /** Shared GPU uniforms: gameplay updates them directly without rerendering React. */
 export const signalState = {
   flightTime: 0,
+  damage: 0,
+  steer: 0,
+  lift: 0,
   scanOrigin: uniform(new THREE.Vector3()),
   scanRadius: uniform(-1000),
   scanStrength: uniform(0),

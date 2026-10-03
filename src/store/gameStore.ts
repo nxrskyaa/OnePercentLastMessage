@@ -29,6 +29,7 @@ export type GameEvent =
   | "tip"
   | "public"
   | "safe"
+  | "rimHit"
   | "curtainHit"
   | "curtainClear";
 export interface Feedback {
@@ -212,7 +213,7 @@ function feedbackFor(
     case "tracker":
       return {
         title: id ? "PRIVASI BOCOR" : "PRIVACY BREACH",
-        detail: `-${GAME_CONFIG.nodes.trackerPrivacyDamage}% ${id ? "PRIVASI" : "PRIVACY"} · -${GAME_CONFIG.nodes.trackerBatteryDamage.toFixed(2)}% ${id ? "BATERAI" : "BATTERY"}`,
+        detail: `-300 PTS · -${GAME_CONFIG.nodes.trackerPrivacyDamage}% ${id ? "PRIVASI" : "PRIVACY"} · -${GAME_CONFIG.nodes.trackerBatteryDamage.toFixed(2)}% ${id ? "BATERAI" : "BATTERY"}`,
         tone: "red",
         points: -300,
       };
@@ -249,10 +250,17 @@ function feedbackFor(
         tone: "cyan",
         points: 100,
       };
+    case "rimHit":
+      return {
+        title: id ? "BENTURAN CINCIN" : "RIM STRIKE",
+        detail: `-${GAME_CONFIG.obstacles.rimPoints} PTS · -${GAME_CONFIG.obstacles.rimBatteryDamage.toFixed(3)}% ${id ? "BATERAI" : "BATTERY"}`,
+        tone: "red",
+        points: -GAME_CONFIG.obstacles.rimPoints,
+      };
     case "curtainHit":
       return {
         title: id ? "ARAHKAN KE CELAH" : "ALIGN TO OPENING",
-        detail: `-${GAME_CONFIG.obstacles.damagePrivacy}% ${id ? "PRIVASI" : "PRIVACY"} · -${GAME_CONFIG.obstacles.damageBattery.toFixed(3)}% ${id ? "BATERAI" : "BATTERY"}`,
+        detail: `-200 PTS · -${GAME_CONFIG.obstacles.damagePrivacy}% ${id ? "PRIVASI" : "PRIVACY"} · -${GAME_CONFIG.obstacles.damageBattery.toFixed(3)}% ${id ? "BATERAI" : "BATTERY"}`,
         tone: "red",
         points: -200,
       };
@@ -437,7 +445,9 @@ export const useGameStore = create<GameState>((set, get) => ({
         nearMisses: state.nearMisses + Number(event === "nearMiss"),
         trackerHits:
           state.trackerHits +
-          Number(event === "tracker" || event === "curtainHit"),
+          Number(
+            event === "tracker" || event === "curtainHit" || event === "rimHit",
+          ),
         boostersUsed: state.boostersUsed + Number(event === "booster"),
         tipsCollected: state.tipsCollected + Number(event === "tip"),
         maxTipCombo:
@@ -445,7 +455,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             ? Math.max(state.maxTipCombo, combo)
             : state.maxTipCombo,
         damagePulse:
-          event === "tracker" || event === "curtainHit"
+          event === "tracker" || event === "curtainHit" || event === "rimHit"
             ? state.damagePulse + 1
             : state.damagePulse,
         route:

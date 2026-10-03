@@ -4,7 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { type RefObject, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { curtainOpening, type GameNode } from "@/game/nodes";
+import { curtainOpening, relayFrame, type GameNode } from "@/game/nodes";
 import { energySurface } from "@/rendering/materials";
 import { useGameStore } from "@/store/gameStore";
 import { flightCenter } from "@/game/flightPath";
@@ -131,7 +131,11 @@ function frameGeometry(radius: number, sides: number) {
     const x = Math.cos(angle) * radius;
     const y = Math.sin(angle) * radius;
     const rotation = angle + Math.PI / 2;
-    const bar = new THREE.BoxGeometry(length, 0.62, 1.35);
+    const bar = new THREE.BoxGeometry(
+      length,
+      GAME_CONFIG.obstacles.rimHalfWidth * 2,
+      1.35,
+    );
     bar.rotateZ(rotation);
     bar.translate(x, y, 0);
     frame.push(bar);
@@ -252,15 +256,10 @@ function NodeVisual({ node, low }: { node: GameNode; low: boolean }) {
         <TrackerScanner />
       </group>
     );
-  const radius =
-    node.type === "booster" ? 4.35 : node.type === "relay" ? 5.2 : 6;
+  const { radius, sides } = relayFrame(node);
   return (
     <group position={[node.x, node.y, node.z]}>
-      <PolygonFrame
-        radius={radius}
-        sides={node.type === "booster" ? 8 : 6}
-        energy={energy}
-      />
+      <PolygonFrame radius={radius} sides={sides} energy={energy} />
       {node.type === "booster" && (
         <>
           <mesh material={energy}>

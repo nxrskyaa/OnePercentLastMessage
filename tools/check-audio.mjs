@@ -33,11 +33,30 @@ class Node {
 class Context {
   state = "running";
   currentTime = 0;
+  sampleRate = 48000;
+  engines = [];
   destination = new Node();
   nodes = [];
   sources = 0;
   constructor() {
     contexts.push(this);
+  }
+  createOscillator() {
+    const node = new Node();
+    node.start = () => {
+      node.started = true;
+    };
+    node.stop = () => {
+      node.stopped = true;
+    };
+    this.engines.push(node);
+    return node;
+  }
+  createBufferSource() {
+    return this.createOscillator();
+  }
+  createBuffer(_, size) {
+    return { getChannelData: () => new Float32Array(size) };
   }
   createGain() {
     const node = new Node();
@@ -46,7 +65,7 @@ class Context {
   }
   createBiquadFilter() {
     const node = new Node();
-    this.filter = node;
+    if (!this.filter) this.filter = node;
     return node;
   }
   createMediaElementSource() {
@@ -129,11 +148,38 @@ assert.equal(contexts[0].sources, 1);
 audio.setAudioPhase("playing");
 assert.equal(contexts[0].filter.frequency.value, 10000);
 audio.setAudioIntensity(true, 0.7);
-assert.equal(contexts[0].filter.frequency.value, 16000);
+assert.equal(contexts[0].engines.length, 2, "Motor and air start on boost");
+const driveGain = contexts[0].nodes.at(-1);
+assert.equal(driveGain.gain.value, 0.12, "Nitro has a sustained audible layer");
+audio.setAudioIntensity(false, 0.7);
+assert.equal(driveGain.gain.value, 0, "Release fades nitro");
+audio.setAudioIntensity(true, 0.7);
+assert.equal(
+  contexts[0].engines.length,
+  2,
+  "Repeated boost reuses the same engine",
+);
 assert.equal(media[0].playbackRate, 1, "Boost preserves musical tempo");
+document.hidden = true;
+listeners.get("visibilitychange")();
+assert.equal(driveGain.gain.value, 0, "Hidden tab silences sustained nitro");
+document.hidden = false;
+listeners.get("visibilitychange")();
+assert.equal(driveGain.gain.value, 0.12);
+audio.configureAudio({ ...settings, mute: true });
+assert.equal(
+  driveGain.gain.value,
+  0,
+  "Mute silences nitro independently of music",
+);
+audio.configureAudio(settings);
+audio.configureAudio({ ...settings, sfxVolume: 0 });
+assert.equal(driveGain.gain.value, 0, "SFX slider silences nitro");
+audio.configureAudio(settings);
 audio.setAudioIntensity(false, 0.08);
 assert.equal(contexts[0].filter.frequency.value, 6500);
 audio.setAudioPhase("paused");
+assert.equal(driveGain.gain.value, 0, "Pause silences nitro");
 audio.unlockAudio();
 await settle();
 assert.equal(
@@ -172,6 +218,10 @@ assert.equal(contexts[0].state, "closed");
 assert.equal(media[0].removed, true);
 assert.equal(media[0].src, "");
 assert.equal(listeners.size, 0);
+assert(
+  contexts[0].engines.every((n) => n.stopped && n.disconnected),
+  "Engine sources are cleaned up",
+);
 
 // Failed source attachment must still allow direct media volume, at max boost.
 rejectSource = true;
